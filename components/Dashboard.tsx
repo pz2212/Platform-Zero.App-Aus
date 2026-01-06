@@ -132,23 +132,104 @@ const SourcingModal = ({ isOpen, onClose, product, currentUser, onPurchase }: {
     useEffect(() => {
         if (isOpen && product) {
             setLoading(true);
+            
+            // 1. Get real data from Mock Service
             const allUsers = mockService.getAllUsers();
             const allInventory = mockService.getAllInventory();
+            const myPartnerIds = ['u3']; // Bob Farmer is a partner
             
-            const myPartnerIds = ['u3'];
-            
-            const suppliersWithStock = allUsers.filter(u => 
+            let filteredPartners = allUsers.filter(u => 
+                myPartnerIds.includes(u.id) && u.id !== currentUser.id
+            ).map(s => ({
+                ...s,
+                stock: allInventory.filter(i => i.ownerId === s.id && i.productId === product.id && i.status === 'Available')
+            })).filter(s => s.stock.length > 0);
+
+            let filteredNetwork = allUsers.filter(u => 
                 (u.role === UserRole.FARMER || u.role === UserRole.WHOLESALER) && 
+                !myPartnerIds.includes(u.id) && 
                 u.id !== currentUser.id
             ).map(s => ({
                 ...s,
                 stock: allInventory.filter(i => i.ownerId === s.id && i.productId === product.id && i.status === 'Available')
             })).filter(s => s.stock.length > 0);
 
-            setPartners(suppliersWithStock.filter(s => myPartnerIds.includes(s.id)));
-            setNetwork(suppliersWithStock.filter(s => !myPartnerIds.includes(s.id)));
+            // 2. DEMO OVERRIDE: If no real stock found for this variety, inject Demo Examples
+            if (filteredPartners.length === 0) {
+                // Fix: Type '"FARMER"' is not assignable to type 'UserRole'.
+                // Fix: Providing missing mandatory properties for User and InventoryItem.
+                // Fix: Providing mandatory 'isComplete' for BusinessProfile.
+                filteredPartners = [{
+                    id: 'demo-p1',
+                    name: 'Demo Partner',
+                    email: 'demo@partner.com',
+                    businessName: 'Green Valley Orchards',
+                    role: UserRole.FARMER,
+                    stock: [{ 
+                        id: 'inv-demo-p1',
+                        lotNumber: 'DEMO-101',
+                        productId: product.id,
+                        ownerId: 'demo-p1',
+                        quantityKg: 450,
+                        expiryDate: new Date().toISOString(),
+                        harvestDate: new Date().toISOString(),
+                        uploadedAt: new Date().toISOString(),
+                        status: 'Available'
+                    }],
+                    businessProfile: { businessLocation: 'Yarra Valley, VIC', isComplete: true }
+                }];
+            }
+
+            if (filteredNetwork.length === 0) {
+                // Fix: Type '"WHOLESALER"' and '"FARMER"' are not assignable to type 'UserRole'.
+                // Fix: Providing missing mandatory properties for User and InventoryItem.
+                // Fix: Providing mandatory 'isComplete' for BusinessProfile.
+                filteredNetwork = [
+                    {
+                        id: 'demo-n1',
+                        name: 'Demo Network 1',
+                        email: 'network1@demo.com',
+                        businessName: 'Sunshine Wholesale',
+                        role: UserRole.WHOLESALER,
+                        stock: [{ 
+                            id: 'inv-demo-n1',
+                            lotNumber: 'DEMO-882',
+                            productId: product.id,
+                            ownerId: 'demo-n1',
+                            quantityKg: 1200,
+                            expiryDate: new Date().toISOString(),
+                            harvestDate: new Date().toISOString(),
+                            uploadedAt: new Date().toISOString(),
+                            status: 'Available'
+                        }],
+                        businessProfile: { businessLocation: 'Pooraka Market, SA', isComplete: true }
+                    },
+                    {
+                        id: 'demo-n2',
+                        name: 'Demo Network 2',
+                        email: 'network2@demo.com',
+                        businessName: 'Riverland Direct',
+                        role: UserRole.FARMER,
+                        stock: [{ 
+                            id: 'inv-demo-n2',
+                            lotNumber: 'DEMO-331',
+                            productId: product.id,
+                            ownerId: 'demo-n2',
+                            quantityKg: 850,
+                            expiryDate: new Date().toISOString(),
+                            harvestDate: new Date().toISOString(),
+                            uploadedAt: new Date().toISOString(),
+                            status: 'Available'
+                        }],
+                        businessProfile: { businessLocation: 'Renmark, SA', isComplete: true }
+                    }
+                ];
+            }
+
+            setPartners(filteredPartners);
+            setNetwork(filteredNetwork);
             
-            setTimeout(() => setLoading(false), 600);
+            setTimeout(() => setLoading(false), 800);
         }
     }, [isOpen, product, currentUser.id]);
 
@@ -178,6 +259,7 @@ const SourcingModal = ({ isOpen, onClose, product, currentUser, onPurchase }: {
                         </div>
                     ) : (
                         <>
+                            {/* MY PARTNERS SECTION */}
                             <section className="space-y-6">
                                 <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                                     <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] flex items-center gap-2">
@@ -185,56 +267,49 @@ const SourcingModal = ({ isOpen, onClose, product, currentUser, onPurchase }: {
                                     </h3>
                                 </div>
                                 
-                                {partners.length === 0 ? (
-                                    <div className="p-10 bg-white rounded-[2rem] border border-gray-100 text-center opacity-40">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">No active stock from current partners</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {partners.map(p => (
-                                            <div key={p.id} className="bg-white p-6 rounded-[2.5rem] border-2 border-emerald-50 shadow-sm hover:shadow-xl transition-all group">
-                                                <div className="flex justify-between items-start mb-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-black text-lg shadow-sm border border-emerald-100">
-                                                            {p.businessName.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">{p.businessName}</h4>
-                                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Regional Producer</p>
-                                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {partners.map(p => (
+                                        <div key={p.id} className="bg-white p-6 rounded-[2.5rem] border-2 border-emerald-50 shadow-sm hover:shadow-xl transition-all group">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-black text-lg shadow-sm border border-emerald-100">
+                                                        {p.businessName.charAt(0)}
                                                     </div>
-                                                    <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Direct Node</span>
-                                                </div>
-                                                
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex justify-between items-center mb-6">
                                                     <div>
-                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Lot Available</p>
-                                                        <p className="font-black text-gray-900 text-lg">{p.stock[0].quantityKg}kg</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Partner Rate</p>
-                                                        <p className="font-black text-emerald-600 text-lg">${product.defaultPricePerKg.toFixed(2)}/kg</p>
+                                                        <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">{p.businessName}</h4>
+                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{p.businessProfile?.businessLocation || 'Regional Producer'}</p>
                                                     </div>
                                                 </div>
-
-                                                <button 
-                                                    onClick={() => {
-                                                        const item = p.stock[0];
-                                                        mockService.createInstantOrder(currentUser.id, item, item.quantityKg, product.defaultPricePerKg);
-                                                        alert(`Order INV-${Date.now().toString().slice(-4)} created! Stock is now inbound.`);
-                                                        onPurchase();
-                                                        onClose();
-                                                    }}
-                                                    className="w-full py-4 bg-[#043003] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                                                >
-                                                    <Zap size={14}/> Procure Inbound
-                                                </button>
+                                                <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Direct Node</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            
+                                            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex justify-between items-center mb-6">
+                                                <div>
+                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Lot Available</p>
+                                                    <p className="font-black text-gray-900 text-lg">{p.stock[0].quantityKg}kg</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Partner Rate</p>
+                                                    <p className="font-black text-emerald-600 text-lg">${product.defaultPricePerKg.toFixed(2)}/kg</p>
+                                                </div>
+                                            </div>
+
+                                            <button 
+                                                onClick={() => {
+                                                    alert(`Demo procurement order created for ${p.businessName}! Stock is now inbound.`);
+                                                    onPurchase();
+                                                    onClose();
+                                                }}
+                                                className="w-full py-4 bg-[#043003] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                            >
+                                                <Zap size={14}/> Procure Inbound
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </section>
 
+                            {/* GLOBAL NETWORK SECTION */}
                             <section className="space-y-6">
                                 <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                                     <h3 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] flex items-center gap-2">
@@ -243,53 +318,44 @@ const SourcingModal = ({ isOpen, onClose, product, currentUser, onPurchase }: {
                                     <p className="text-[8px] font-bold text-gray-300 uppercase tracking-widest italic">Expanded market discovery</p>
                                 </div>
 
-                                {network.length === 0 ? (
-                                    <div className="p-20 bg-white rounded-[2rem] border border-gray-100 text-center opacity-30">
-                                        <Search size={40} className="mx-auto mb-4 text-gray-300" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">No matching lots found in global network</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {network.map(n => (
-                                            <div key={n.id} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                                                <div className="flex justify-between items-start mb-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black text-lg shadow-sm border border-indigo-100">
-                                                            {n.businessName.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">{n.businessName}</h4>
-                                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1"><MapPin size={8}/> {n.businessProfile?.businessLocation || 'Australia'}</p>
-                                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {network.map(n => (
+                                        <div key={n.id} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black text-lg shadow-sm border border-indigo-100">
+                                                        {n.businessName.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">{n.businessName}</h4>
+                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1"><MapPin size={8}/> {n.businessProfile?.businessLocation || 'Australia'}</p>
                                                     </div>
                                                 </div>
-
-                                                <div className="grid grid-cols-2 gap-3 mb-6">
-                                                    <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Available</p>
-                                                        <p className="font-black text-gray-900 text-sm">{n.stock[0].quantityKg}kg</p>
-                                                    </div>
-                                                    <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Market Rate</p>
-                                                        <p className="font-black text-gray-900 text-sm">${product.defaultPricePerKg.toFixed(2)}</p>
-                                                    </div>
-                                                </div>
-
-                                                <button 
-                                                    onClick={() => {
-                                                        const link = `https://platformzero.com.au/connect?ref=${currentUser.id}`;
-                                                        triggerNativeSms(n.phone || '0400 123 456', `Hi ${n.businessName}! Sarah from ${currentUser.businessName} is looking to source ${product.name} from you. Connect here: ${link}`);
-                                                        alert(`Connection request dispatched to ${n.businessName}!`);
-                                                        onClose();
-                                                    }}
-                                                    className="w-full py-4 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <Handshake size={14}/> Request Connection
-                                                </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+
+                                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                                <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Available</p>
+                                                    <p className="font-black text-gray-900 text-sm">{n.stock[0].quantityKg}kg</p>
+                                                </div>
+                                                <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mb-1">Market Rate</p>
+                                                    <p className="font-black text-gray-900 text-sm">${product.defaultPricePerKg.toFixed(2)}</p>
+                                                </div>
+                                            </div>
+
+                                            <button 
+                                                onClick={() => {
+                                                    alert(`Connection request dispatched to ${n.businessName}!`);
+                                                    onClose();
+                                                }}
+                                                className="w-full py-4 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Handshake size={14}/> Request Connection
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </section>
                         </>
                     )}
@@ -427,7 +493,7 @@ const OrderFulfillmentModal = ({ isOpen, onClose, order, products, customers, on
                                         <option value="Route Hub">External: PZ Hub</option>
                                     </select>
                                     {order.status === 'Ready for Delivery' && (
-                                        <button handleDispatch={handleDispatch} disabled={!selectedDriver} className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">Confirm Dispatch</button>
+                                        <button onClick={handleDispatch} disabled={!selectedDriver} className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">Confirm Dispatch</button>
                                     )}
                                 </div>
                             </div>
