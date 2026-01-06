@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { UserRole, User, AppNotification, RegistrationRequest } from './types';
@@ -24,19 +25,21 @@ import { AdminRepManagement } from './components/AdminRepManagement';
 import { AdminSuppliers } from './components/AdminSuppliers';
 import { TradingInsights } from './components/TradingInsights';
 import { Contacts } from './components/Contacts';
+import { FarmerNetwork } from './components/FarmerNetwork';
 import { Notifications } from './components/Notifications';
 import { LiveActivity } from './components/LiveActivity';
 import { Inventory } from './components/Inventory';
 import { SharedProductLanding } from './components/SharedProductLanding';
-import { EnvironmentalImpact } from './components/EnvironmentalImpact';
 import { AdminMarketOps } from './components/AdminMarketOps';
+import { EnvironmentalImpact } from './components/EnvironmentalImpact';
 import { 
   LayoutDashboard, ShoppingCart, Users, Settings, LogOut, Tags, ChevronDown, UserPlus, 
   DollarSign, X, Lock, ArrowLeft, Bell, 
   ShoppingBag, ShieldCheck, TrendingUp, Target, Plus, ChevronUp, Layers, 
   Sparkles, User as UserIcon, Building, ChevronRight,
   Sprout, Globe, Users2, Circle, LogIn, ArrowRight, Menu, Search, Calculator, BarChart3,
-  Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4
+  Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4,
+  Smartphone, Key, Shield, Loader2
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubItem = false }: any) => (
@@ -61,7 +64,70 @@ const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubI
   </Link>
 );
 
-const AppLayout = ({ children, user, onLogout }: any) => {
+const SecureAccountSidebarWidget = ({ onComplete }: { onComplete: () => void }) => {
+    const [password, setPassword] = useState('');
+    const [confirm, setConfirm] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+        if (!password || password !== confirm) {
+            alert("Passwords must match.");
+            return;
+        }
+        setIsSaving(true);
+        await new Promise(r => setTimeout(r, 1000));
+        onComplete();
+        setIsSaving(false);
+    };
+
+    return (
+        <div className="mx-4 mb-4 p-5 rounded-[1.5rem] bg-[#0B1221] text-white border border-white/5 shadow-xl relative overflow-hidden group animate-in slide-in-from-left-4 duration-500">
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03] transform rotate-12 scale-150 pointer-events-none group-hover:rotate-0 transition-transform duration-700">
+                <Shield size={80} />
+            </div>
+            
+            <div className="flex items-start gap-3 relative z-10 mb-5">
+                <div className="bg-[#10B981] p-2 rounded-xl shrink-0 shadow-lg shadow-emerald-500/20">
+                    <Lock size={18} className="text-white" />
+                </div>
+                <div>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">Secure Your Account</h4>
+                    <p className="text-[10px] text-slate-400 font-medium mt-2 leading-relaxed">
+                        First-time login detected. Create a password to replace your access code.
+                    </p>
+                </div>
+            </div>
+
+            <div className="space-y-2 relative z-10">
+                <input 
+                    type="password" 
+                    placeholder="New Password" 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-500"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                />
+                <div className="flex gap-2">
+                    <input 
+                        type="password" 
+                        placeholder="Confirm" 
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-500"
+                        value={confirm}
+                        onChange={e => setConfirm(e.target.value)}
+                    />
+                    <button 
+                        onClick={handleSave}
+                        disabled={isSaving || !password}
+                        className="bg-[#10B981] text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/10 active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
+                    >
+                        {isSaving ? <Loader2 size={16} className="animate-spin"/> : <Check size={18} strokeWidth={3} />}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCustomerActivityOpen, setIsCustomerActivityOpen] = useState(
@@ -155,14 +221,15 @@ const AppLayout = ({ children, user, onLogout }: any) => {
         </div>
       ) : user.role === UserRole.GROCERY ? (
         <div className="space-y-1">
-            <SidebarLink to="/" icon={LayoutDashboard} label="Dashboard" active={isActive('/', true)} />
-            <SidebarLink to="/grocer/marketplace" icon={TrendingDown} label="Clearance Market" active={isActive('/grocer/marketplace')} />
+            <SidebarLink to="/" icon={LayoutDashboard} label="Wholesale Hub" active={isActive('/', true)} />
+            <SidebarLink to="/grocer/marketplace" icon={TrendingDown} label="Market" active={isActive('/grocer/marketplace')} />
             <SidebarLink to="/orders" icon={ShoppingCart} label="My Orders" active={isActive('/orders')} />
             <SidebarLink to="/accounts" icon={Wallet} label="Financials" active={isActive('/accounts')} />
         </div>
       ) : isPartner ? (
         <div className="space-y-1">
-            <SidebarLink to="/" icon={LayoutDashboard} label="Dashboard" active={isActive('/', true)} />
+            <SidebarLink to="/" icon={LayoutDashboard} label="Order Management" active={isActive('/', true)} />
+            <SidebarLink to="/farmers" icon={Sprout} label="Farmer Network" active={isActive('/farmers')} />
             <SidebarLink to="/contacts" icon={Users} label="Buyer Network" active={isActive('/contacts')} />
             <SidebarLink to="/pricing" icon={Tags} label="Inventory & Price" active={isActive('/pricing')} />
             <SidebarLink to="/accounts" icon={DollarSign} label="Financials" active={isActive('/accounts')} />
@@ -183,6 +250,11 @@ const AppLayout = ({ children, user, onLogout }: any) => {
         <div className="flex-1 px-4 space-y-8 flex flex-col no-scrollbar">
             <NavContent />
         </div>
+
+        {/* Secure Account Widget (Requested Change 2) */}
+        {user.loginCode && !user.passwordSet && (
+            <SecureAccountSidebarWidget onComplete={() => onPasswordSet(user.id)} />
+        )}
 
         <div className="p-4 border-t border-gray-50 space-y-1">
             <SidebarLink to="/settings" icon={Settings} label="Settings" active={isActive('/settings')} />
@@ -272,13 +344,28 @@ const App = () => {
     if (foundUser) { setUser(foundUser); setShowAuthModal(false); } else { alert("Account not found."); }
   };
 
+  const handleCodeLogin = (code: string) => {
+      const foundUser = mockService.loginWithCode(code);
+      if (foundUser) {
+          setUser(foundUser);
+          setShowAuthModal(false);
+      } else {
+          alert("Invalid Access Code.");
+      }
+  };
+
+  const handlePasswordSet = (userId: string) => {
+      mockService.setUserPassword(userId, true);
+      setUser(prev => prev ? { ...prev, passwordSet: true } : null);
+  };
+
   const wrapLayout = (element: React.ReactElement) => (
     <Router>
         <Routes>
             <Route path="/l/:itemId" element={<SharedProductLanding user={user} onLogin={() => { setAuthStep('category'); setShowAuthModal(true); }} />} />
             <Route path="/*" element={
                 user ? (
-                    <AppLayout user={user} onLogout={() => setUser(null)}>
+                    <AppLayout user={user} onLogout={() => setUser(null)} onPasswordSet={handlePasswordSet}>
                         {element}
                     </AppLayout>
                 ) : (
@@ -291,6 +378,7 @@ const App = () => {
                             setStep={setAuthStep} 
                             onLogin={(e: any) => {e.preventDefault();}} 
                             onAutoLogin={handleAutoLogin} 
+                            onCodeLogin={handleCodeLogin}
                         />
                     </>
                 )
@@ -325,13 +413,27 @@ const App = () => {
       <Route path="/settings" element={user ? <SettingsComponent user={user} /> : <Navigate to="/" />} />
       <Route path="/orders" element={user ? <CustomerOrders user={user} /> : <Navigate to="/" />} />
       <Route path="/contacts" element={user ? <Contacts user={user} /> : <Navigate to="/" />} />
+      <Route path="/farmers" element={user ? <FarmerNetwork user={user} /> : <Navigate to="/" />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
-const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin }: any) => {
+const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }: any) => {
+    const [accessCode, setAccessCode] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+
     if (!isOpen) return null;
+
+    const handleCodeSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!accessCode) return;
+        setIsProcessing(true);
+        await new Promise(r => setTimeout(r, 600));
+        onCodeLogin(accessCode);
+        setIsProcessing(false);
+    };
+
     const demoLogins = [
         { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-50 border-slate-100 hover:bg-slate-100' },
         { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
@@ -347,8 +449,40 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin }: any) => {
                     <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all"><X size={28} /></button>
                 </div>
-                <div className="p-10 space-y-6">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest text-center">Select Portal Mode</p>
+                <div className="p-10 space-y-10">
+                    
+                    {/* CODE LOGIN SECTION (Requested Change 4) */}
+                    <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
+                            <div>
+                                <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
+                            </div>
+                        </div>
+                        <form onSubmit={handleCodeSubmit} className="flex gap-2">
+                            <input 
+                                placeholder="ABCDEF" 
+                                className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                maxLength={6}
+                                value={accessCode}
+                                onChange={e => setAccessCode(e.target.value)}
+                            />
+                            <button 
+                                type="submit"
+                                disabled={isProcessing || !accessCode}
+                                className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                            </button>
+                        </form>
+                    </div>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
+                    </div>
+
                     <div className="grid grid-cols-1 gap-3">
                         {demoLogins.map(demo => (
                             <button 

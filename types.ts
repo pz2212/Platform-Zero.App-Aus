@@ -81,6 +81,9 @@ export interface User {
   activeBuyingInterests?: string[];
   commissionRate?: number;
   smsNotificationsEnabled?: boolean;
+  favorites?: string[];
+  loginCode?: string;
+  passwordSet?: boolean;
 }
 
 export type ProductUnit = 'KG' | 'Tray' | 'Bin' | 'Tonne' | 'loose' | 'Each' | 'Bag';
@@ -149,11 +152,18 @@ export interface OrderIssue {
   reportedAt: string;
   images?: string[];
   replacementRequired?: 'URGENT' | 'NEXT_DELIVERY' | 'NONE';
-  // HQ Admin Tracking
   supplierStatus: 'PENDING' | 'ACCEPTED' | 'FIXED' | 'DISPUTED';
   supplierAction?: 'REFUND' | 'REPLACEMENT' | 'CREDIT';
   repStatus: 'UNSEEN' | 'ACTIONING' | 'RESOLVED';
   assignedRepId?: string;
+}
+
+export interface LogisticsDetails {
+    method: 'PICKUP' | 'LOGISTICS';
+    deliveryDate: string;
+    deliveryTime: string;
+    deliveryLocation: string;
+    driverName?: string;
 }
 
 export interface Order {
@@ -208,6 +218,8 @@ export interface Customer {
   onboardingData?: {
     deliveryAddress?: string;
   };
+  assignedPortal?: UserRole;
+  loginCode?: string;
 }
 
 export interface SupplierPriceRequestItem {
@@ -259,13 +271,6 @@ export interface Packer {
   email: string;
   phone: string;
   status: 'Active' | 'Inactive';
-}
-
-export interface LogisticsDetails {
-  method: 'PICKUP' | 'LOGISTICS';
-  deliveryDate?: string;
-  deliveryTime?: string;
-  deliveryLocation?: string;
 }
 
 export interface OnboardingFormTemplate {

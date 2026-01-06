@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, Product, InventoryItem, OrderItem, ProductUnit } from '../types';
 import { mockService } from '../services/mockDataService';
@@ -5,7 +6,7 @@ import {
   ShoppingCart, Search, Plus, X, Leaf, Minus, 
   Truck, Calendar, Clock, User as UserIcon, DollarSign, 
   Check, ChevronDown, Package, ShoppingBag, Sparkles, TrendingDown,
-  Store, Loader2, Wind, Droplets, Recycle, Trash2
+  Store, Loader2, Wind, Droplets, Recycle, Trash2, Heart
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +20,7 @@ interface CartItem {
     lotId?: string;
 }
 
-const ProductCard: React.FC<any> = ({ product, item, onAdd }) => {
+const ProductCard: React.FC<any> = ({ product, item, onAdd, isFavorited, onToggleFavorite }) => {
     const [qty, setQty] = useState(1);
     const unit = product.unit || 'KG';
 
@@ -27,6 +28,14 @@ const ProductCard: React.FC<any> = ({ product, item, onAdd }) => {
 
     return (
         <div className="bg-white rounded-[2.5rem] border border-gray-100 p-10 flex flex-col h-full shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+            {/* Favorite Button */}
+            <button 
+                onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
+                className="absolute top-8 right-8 z-20 p-3 rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all group-hover:shadow-md active:scale-90"
+            >
+                <Heart size={20} className={isFavorited ? "fill-red-500 text-red-500" : ""} />
+            </button>
+
             <div className="mb-8">
                 <div className="w-16 h-16 rounded-[1.25rem] overflow-hidden mb-6 border border-gray-100 shadow-sm">
                     <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
@@ -78,12 +87,11 @@ const ProductCard: React.FC<any> = ({ product, item, onAdd }) => {
     );
 };
 
-const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder, onUpdateCart }: { 
+const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: { 
     isOpen: boolean, 
     onClose: () => void, 
     cart: CartItem[], 
-    onPlaceOrder: (details: any) => void,
-    onUpdateCart: (lotId: string, delta: number) => void
+    onPlaceOrder: (details: any) => void
 }) => {
     const [deliveryDate, setDeliveryDate] = useState('');
     const [deliveryTime, setDeliveryTime] = useState('');
@@ -127,39 +135,14 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder, onUpdateCart }: {
                                 <p className="font-black uppercase tracking-widest text-xs">Cart Empty</p>
                             </div>
                         ) : cart.map((item, idx) => (
-                            <div key={`${item.productId}-${idx}`} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-black text-gray-900 uppercase text-sm leading-tight truncate pr-2">{item.productName}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                            {item.qty} X {item.unit}
-                                        </p>
-                                    </div>
-                                    <span className="font-black text-gray-900 text-sm">${(item.qty * item.price).toFixed(2)}</span>
+                            <div key={`${item.productId}-${idx}`} className="flex justify-between items-start py-2">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-black text-gray-900 uppercase text-[13px] leading-tight truncate pr-2">{item.productName}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                        {item.qty} X {item.unit}
+                                    </p>
                                 </div>
-                                <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-50">
-                                    <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                                        <button 
-                                            onClick={() => onUpdateCart(item.lotId!, -1)}
-                                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                        >
-                                            <Minus size={14} strokeWidth={3}/>
-                                        </button>
-                                        <span className="w-8 text-center font-black text-xs text-gray-900">{item.qty}</span>
-                                        <button 
-                                            onClick={() => onUpdateCart(item.lotId!, 1)}
-                                            className="p-2 text-gray-400 hover:text-emerald-500 transition-colors"
-                                        >
-                                            <Plus size={14} strokeWidth={3}/>
-                                        </button>
-                                    </div>
-                                    <button 
-                                        onClick={() => onUpdateCart(item.lotId!, -item.qty)}
-                                        className="p-2 text-gray-300 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
-                                    >
-                                        <Trash2 size={16}/>
-                                    </button>
-                                </div>
+                                <span className="font-black text-gray-900 text-sm shrink-0">${(item.qty * item.price).toFixed(2)}</span>
                             </div>
                         ))}
                     </div>
@@ -304,21 +287,28 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>(user?.favorites || []);
 
   useEffect(() => {
-    const products = mockService.getAllProducts();
-    const inventory = mockService.getAllInventory();
-    
-    const aged = inventory.filter(item => {
-        if (item.status !== 'Available') return false;
-        return true;
-    }).map(item => ({
-        item,
-        product: products.find(p => p.id === item.productId)!
-    })).filter(x => !!x.product);
+    const fetch = () => {
+        const products = mockService.getAllProducts();
+        const inventory = mockService.getAllInventory();
+        
+        const aged = inventory.filter(item => {
+            if (item.status !== 'Available') return false;
+            return true;
+        }).map(item => ({
+            item,
+            product: products.find(p => p.id === item.productId)!
+        })).filter(x => !!x.product);
 
-    setMarketInventory(aged);
-  }, []);
+        setMarketInventory(aged);
+        if (user) setFavorites(mockService.getAllUsers().find(u => u.id === user.id)?.favorites || []);
+    };
+    fetch();
+    const interval = setInterval(fetch, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const addToCart = (product: Product, item: InventoryItem, qty: number, price: number) => {
       setCart(prev => {
@@ -338,26 +328,10 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
       alert(`${product.name} added to cart!`);
   };
 
-  const updateCartItem = (lotId: string, delta: number) => {
-    setCart(prev => {
-        const itemIdx = prev.findIndex(i => i.lotId === lotId);
-        if (itemIdx === -1) return prev;
-        
-        const newCart = [...prev];
-        const newQty = newCart[itemIdx].qty + delta;
-        
-        if (newQty <= 0) {
-            return newCart.filter((_, i) => i !== itemIdx);
-        } else {
-            // Check inventory limit
-            const inventorySource = marketInventory.find(m => m.item.id === lotId);
-            const maxAvailable = inventorySource?.item.quantityKg || 9999;
-            const finalQty = Math.min(maxAvailable, newQty);
-            
-            newCart[itemIdx] = { ...newCart[itemIdx], qty: finalQty };
-            return newCart;
-        }
-    });
+  const handleToggleFavorite = (productId: string) => {
+      if (!user) return;
+      mockService.toggleFavorite(user.id, productId);
+      setFavorites(mockService.getAllUsers().find(u => u.id === user.id)?.favorites || []);
   };
 
   const handlePlaceOrder = (details: any) => {
@@ -424,7 +398,14 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-2">
             {marketInventory.filter(x => x.product.name.toLowerCase().includes(searchTerm.toLowerCase())).map((pair, idx) => (
-                <ProductCard key={idx} product={pair.product} item={pair.item} onAdd={addToCart} />
+                <ProductCard 
+                    key={idx} 
+                    product={pair.product} 
+                    item={pair.item} 
+                    onAdd={addToCart} 
+                    isFavorited={favorites.includes(pair.product.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                />
             ))}
             {marketInventory.length === 0 && (
                 <div className="col-span-full py-40 text-center text-gray-300">
@@ -439,7 +420,6 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
             onClose={() => setIsCheckoutOpen(false)}
             cart={cart}
             onPlaceOrder={handlePlaceOrder}
-            onUpdateCart={updateCartItem}
         />
     </div>
   );

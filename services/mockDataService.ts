@@ -4,10 +4,11 @@ import {
   SupplierPriceRequest, PricingRule,
   SupplierPriceRequestItem, AppNotification, ChatMessage, OrderItem,
   Driver, Packer, RegistrationRequest, OnboardingFormTemplate,
-  BusinessProfile, OrderIssue, Industry
+  BusinessProfile, OrderIssue, Industry, ProductUnit
 } from '../types';
 import { triggerNativeSms } from './smsService';
 
+/* Exported RoleIncentive interface for CustomerPortals */
 export interface RoleIncentive {
   amount: number;
   weeks: number;
@@ -17,25 +18,11 @@ export interface RoleIncentive {
   referrerBonusAmount: number;
 }
 
-export interface DeliAppItem {
-    id: string;
-    productName: string;
-    description: string;
-    price: number;
-    quantity: number;
-    vendorName: string;
-    imageUrl: string;
-    rating: number;
-    distance: string;
-    categories: string[];
-    isLive: boolean;
-}
-
 export const USERS: User[] = [
   { id: 'u1', name: 'Admin User', businessName: 'Platform Zero', role: UserRole.ADMIN, email: 'admin@pz.com' },
   { id: 'u2', name: 'Sarah Wholesaler', businessName: 'Fresh Wholesalers', role: UserRole.WHOLESALER, email: 'sarah@fresh.com', dashboardVersion: 'v2', activeSellingInterests: ['Tomatoes', 'Lettuce', 'Eggplants'], activeBuyingInterests: ['Potatoes', 'Apples'], businessProfile: { isComplete: true } as any },
   { id: 'u3', name: 'Bob Farmer', businessName: 'Green Valley Farms', role: UserRole.FARMER, email: 'bob@greenvalley.com', dashboardVersion: 'v2', activeSellingInterests: ['Potatoes', 'Apples'], activeBuyingInterests: [], businessProfile: { isComplete: true } as any },
-  { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true },
+  { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true, favorites: ['p1', 'p2', 'p5'] },
   { id: 'u5', name: 'Gary Grocer', businessName: 'Local Corner Grocers', role: UserRole.GROCERY, email: 'gary@grocer.com', phone: '0411 222 333', industry: 'Grocery Store', smsNotificationsEnabled: true },
   { id: 'rep1', name: 'Alex Johnson', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep1@pz.com', commissionRate: 5.0 },
   { id: 'rep2', name: 'Sam Taylor', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep2@pz.com', commissionRate: 5.0 },
@@ -74,369 +61,483 @@ class MockDataService {
   private inventory: InventoryItem[] = [
     { id: 'i1', lotNumber: 'PZ-LOT-1001', productId: 'p1', ownerId: 'u2', quantityKg: 30, expiryDate: new Date(Date.now() + 86400000 * 5).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Green Valley Farms', harvestLocation: 'Yarra Valley', warehouseLocation: 'Zone A-4', discountAfterDays: 3, discountPricePerKg: 3.00, logisticsPrice: 15.00 },
     { id: 'i2', lotNumber: 'PZ-LOT-1002', productId: 'p2', ownerId: 'u2', quantityKg: 80, expiryDate: new Date(Date.now() + 86400000 * 14).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Bob\'s Spuds', harvestLocation: 'Gippsland', warehouseLocation: 'Cold Room 1', logisticsPrice: 20.00 },
-    { id: 'i3', lotNumber: 'PZ-LOT-1003', productId: 'p4', ownerId: 'u2', quantityKg: 0, expiryDate: new Date(Date.now() + 86400000 * 3).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Green Valley Farms', harvestLocation: 'Yarra Valley', warehouseLocation: 'Zone C-2', logisticsPrice: 12.50 },
   ];
 
   private orders: Order[] = [];
   private issues: OrderIssue[] = [];
   private notifications: AppNotification[] = [];
   private customers: Customer[] = [
-    { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson' },
-    { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor' },
+    { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER },
+    { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor', assignedPortal: UserRole.GROCERY },
   ];
 
   private drivers: Driver[] = [];
   private packers: Packer[] = [];
-  private registrationRequests: RegistrationRequest[] = [];
-  private supplierPriceRequests: SupplierPriceRequest[] = [
-    {
-      id: 'pr-demo-1',
-      supplierId: 'u2',
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-      customerContext: 'New Bistro Client',
-      customerLocation: 'Richmond, VIC',
-      items: [
-        { productId: 'p1', productName: 'Roma Tomatoes', qty: 100, invoicePrice: 5.50, targetPrice: 4.00 }
-      ]
-    }
+  private registrationRequests: RegistrationRequest[] = [
+      { id: 'reg1', businessName: 'Sunshine Cafe', name: 'John Doe', email: 'john@sunshine.com', requestedRole: UserRole.CONSUMER, status: 'Pending', submittedDate: new Date().toISOString() }
   ];
-  private chatMessages: ChatMessage[] = [];
+  private priceRequests: SupplierPriceRequest[] = [
+      { id: 'pr1', supplierId: 'u2', status: 'PENDING', createdAt: new Date().toISOString(), customerContext: 'New Bistro', customerLocation: 'Sydney', items: [] }
+  ];
 
   constructor() {
       this.generateDemoOrders();
-      this.generateDemoIssues();
   }
 
   private generateDemoOrders() {
       const now = new Date();
-      // Match screenshot: Local Corner Grocers - $185.00
       this.orders.push({
-          id: `o-today-1`, buyerId: 'u5', sellerId: 'u2', items: [
-            { productId: 'p1', quantityKg: 20, pricePerKg: 4.50 },
-            { productId: 'p2', quantityKg: 50, pricePerKg: 1.20 },
-            { productId: 'p4', quantityKg: 6, pricePerKg: 5.50 }
-          ], totalAmount: 185.00, status: 'Confirmed', date: now.toISOString(), paymentStatus: 'Unpaid', source: 'Direct'
+          id: 'o-alice-101', buyerId: 'u4', sellerId: 'u2', items: [
+            { productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' }
+          ], totalAmount: 325.00, status: 'Delivered', date: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), deliveredAt: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), paymentStatus: 'Unpaid', source: 'Direct', logistics: { deliveryLocation: 'Adelaide CBD', deliveryTime: '13:46' }
       });
-      // Demand for Demand Matrix:
-      // Tomatoes: 20kg + 30kg = 50kg (Screenshot shows 50kg demand)
-      // Lettuce: 50kg = 50kg (Screenshot shows 50kg demand)
-      // Eggplant: 10kg = 10kg (Screenshot shows 10kg demand)
       this.orders.push({
-        id: `o-demand-1`, buyerId: 'u4', sellerId: 'u2', items: [
-          { productId: 'p1', quantityKg: 30, pricePerKg: 4.50 },
-          { productId: 'p4', quantityKg: 4, pricePerKg: 5.50 }
-        ], totalAmount: 325.00, status: 'Pending', date: now.toISOString(), paymentStatus: 'Unpaid', source: 'Direct'
-    });
-  }
-
-  private generateDemoIssues() {
-      this.issues.push({
-          id: 'iss-1',
-          orderId: 'o-delivered-1',
-          productId: 'p4',
-          type: 'Quality/Bruising',
-          description: '5kg of eggplants arrived with heavy bruising, unusable for service.',
-          reportedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          supplierStatus: 'PENDING',
-          repStatus: 'UNSEEN',
-          assignedRepId: 'rep1'
+        id: 'o-alice-102', buyerId: 'u4', sellerId: 'u2', items: [
+          { productId: 'p2', quantityKg: 10, pricePerKg: 1.20, unit: 'KG' }
+        ], totalAmount: 185.00, status: 'Delivered', date: new Date(now.getTime() - 86400000).toISOString(), deliveredAt: new Date(now.getTime() - 86400000).toISOString(), paymentStatus: 'Paid', source: 'Direct'
       });
   }
-
-  getTodayIssues() { return this.issues; }
-  
-  updateIssueSupplierStatus(id: string, status: OrderIssue['supplierStatus'], action?: OrderIssue['supplierAction']) {
-    const issue = this.issues.find(i => i.id === id);
-    if (issue) {
-        issue.supplierStatus = status;
-        if (action) issue.supplierAction = action;
-    }
-  }
-
-  updateIssueRepStatus(id: string, status: OrderIssue['repStatus']) {
-    const issue = this.issues.find(i => i.id === id);
-    if (issue) issue.repStatus = status;
-  }
-
-  getIndustryIncentives() { return this.industryIncentives; }
-  updateIndustryIncentive(industry: Industry, percent: number) { this.industryIncentives[industry] = percent; }
-
-  getRoleIncentives() { return this.roleIncentives; }
-  updateRoleIncentive(role: string, data: RoleIncentive) { this.roleIncentives[role] = data; }
 
   getAllUsers() { return this.users; }
   getCustomers() { return this.customers; }
-  getAppNotifications(userId: string) { return this.notifications.filter(n => n.userId === userId); }
-  markNotificationAsRead(id: string) { const n = this.notifications.find(x => x.id === id); if (n) n.isRead = true; }
-  markAllNotificationsRead(userId: string) { this.notifications.forEach(n => { if (n.userId === userId) n.isRead = true; }); }
   getAllProducts() { return this.products; }
+  getProduct(id: string) { return this.products.find(p => p.id === id); }
   getInventory(userId: string) { return this.inventory.filter(i => i.ownerId === userId); }
   getAllInventory() { return this.inventory; }
-  addInventoryItem(item: InventoryItem) { this.inventory.push(item); }
-  updateInventoryStatus(id: string, status: any) { const item = this.inventory.find(i => i.id === id); if (item) item.status = status; }
   getOrders(userId: string) { if (userId === 'u1') return this.orders; return this.orders.filter(o => o.buyerId === userId || o.sellerId === userId); }
-  
+  getAppNotifications(userId: string) { return this.notifications.filter(n => n.userId === userId); }
+  getTodayIssues() { return this.issues; }
+  getPzRepresentatives() { return this.users.filter(u => u.role === UserRole.PZ_REP); }
+  getWholesalers() { return this.users.filter(u => u.role === UserRole.WHOLESALER || u.role === UserRole.FARMER); }
+  getIndustryIncentives() { return this.industryIncentives; }
+  getRoleIncentives() { return this.roleIncentives; }
+  getChatMessages(u1: string, u2: string) { return []; }
+
+  toggleFavorite(userId: string, productId: string) {
+      const user = this.users.find(u => u.id === userId);
+      if (user) {
+          if (!user.favorites) user.favorites = [];
+          if (user.favorites.includes(productId)) {
+              user.favorites = user.favorites.filter(id => id !== productId);
+          } else {
+              user.favorites.push(productId);
+          }
+      }
+  }
+
   createFullOrder(buyerId: string, items: OrderItem[], total: number) {
       const buyerProfile = this.customers.find(c => c.id === buyerId);
       const sellerId = buyerProfile?.connectedSupplierId || 'u2'; 
       const newOrder: Order = { id: `o-${Date.now()}`, buyerId, sellerId, items, totalAmount: total, status: 'Pending', date: new Date().toISOString(), paymentStatus: 'Unpaid', source: 'Direct' };
       this.orders.push(newOrder);
-      this.addAppNotification(sellerId, 'New Order Received', `Order for $${total.toFixed(2)} received.`, 'ORDER');
       return newOrder;
   }
 
-  createInstantOrder(buyerId: string, item: InventoryItem, quantity: number, price: number) {
-    const newOrder: Order = { 
-        id: `o-inst-${Date.now()}`, 
-        buyerId, 
-        sellerId: item.ownerId, 
-        items: [{ productId: item.productId, quantityKg: quantity, pricePerKg: price }], 
-        totalAmount: quantity * price, 
-        status: 'Confirmed', 
-        date: new Date().toISOString(), 
-        paymentStatus: 'Unpaid', 
-        source: 'Marketplace' 
+  submitOrderIssue(orderId: string, issueData: any) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const buyer = this.customers.find(c => c.id === order.buyerId);
+    const repId = buyer?.assignedPzRepId || 'rep1';
+
+    const newIssue: OrderIssue = {
+        id: `iss-${Date.now()}`,
+        orderId: order.id,
+        productId: issueData.productId,
+        type: issueData.issueType,
+        description: issueData.description || `Reported ${issueData.issueType} issue.`,
+        reportedAt: new Date().toISOString(),
+        images: issueData.images,
+        replacementRequired: issueData.replacementRequired,
+        supplierStatus: 'PENDING',
+        repStatus: 'UNSEEN',
+        assignedRepId: repId
     };
-    this.orders.push(newOrder);
-    return newOrder;
-  }
 
-  acceptOrderV2(id: string) {
-    const order = this.orders.find(o => o.id === id);
-    if (order) { 
-        order.status = 'Confirmed'; 
-        order.confirmedAt = new Date().toISOString(); 
-        const buyer = this.users.find(u => u.id === order.buyerId);
-        if (buyer?.smsNotificationsEnabled && buyer.phone) {
-            triggerNativeSms(buyer.phone, `PZ UPDATE: Your order #${order.id.split('-').pop()} has been confirmed by the supplier.`);
-        }
-    }
-  }
+    this.issues.push(newIssue);
+    order.issue = newIssue;
 
-  updateUserInterests(id: string, s: string[], b: string[]) {
-    const u = this.users.find(x => x.id === id);
-    if (u) { u.activeSellingInterests = s; u.activeBuyingInterests = b; }
+    // Notify Rep
+    this.addAppNotification(repId, 'New Dispute Logged', `${buyer?.businessName} reported an issue for Order #${orderId.split('-').pop()}`, 'ORDER');
+    // Notify Supplier
+    this.addAppNotification(order.sellerId, 'Buyer Dispute Received', `A quality issue was reported for Order #${orderId.split('-').pop()}. Action required.`, 'ORDER');
   }
-
-  updateProductPricing(id: string, price: number, unit: any) {
-    const p = this.products.find(x => x.id === id);
-    if (p) { p.defaultPricePerKg = price; p.unit = unit; }
-  }
-
-  generateLotId() { return `PZ-${Math.floor(1000 + Math.random() * 9000)}`; }
-  findBuyersForProduct(name: string) { return this.customers.filter(c => c.commonProducts?.toLowerCase().includes(name.toLowerCase())); }
-  getPzRepresentatives() { return this.users.filter(u => u.role === UserRole.PZ_REP); }
-  getInventoryByOwner(ownerId: string) { return this.getInventory(ownerId); }
-  addProduct(product: Product) { this.products.push(product); }
-  updateProductPrice(id: string, price: number) { const p = this.products.find(x => x.id === id); if (p) p.defaultPricePerKg = price; }
 
   updateCustomerSupplier(customerId: string, supplierId: string) {
-    const customer = this.customers.find(c => c.id === customerId);
-    if (customer) {
-      customer.connectedSupplierId = supplierId;
+      const customer = this.customers.find(c => c.id === customerId);
       const supplier = this.users.find(u => u.id === supplierId);
-      if (supplier) { customer.connectedSupplierName = supplier.businessName; customer.connectedSupplierRole = supplier.role; }
-    }
+      if (customer && supplier) {
+          customer.connectedSupplierId = supplierId;
+          customer.connectedSupplierName = supplier.businessName;
+      }
   }
 
-  updateCustomerMarkup(customerId: string, markup: number) {
+  updateCustomerPortal(customerId: string, portalRole: UserRole) {
       const customer = this.customers.find(c => c.id === customerId);
       if (customer) {
-          customer.pzMarkup = markup;
+          customer.assignedPortal = portalRole;
+      }
+  }
+
+  dispatchAccess(customerId: string): string {
+      const customer = this.customers.find(c => c.id === customerId);
+      if (!customer) return '';
+      
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      customer.loginCode = code;
+      
+      // Create user entry for this customer so they can log in
+      if (!this.users.find(u => u.id === customer.id)) {
+          this.users.push({
+              id: customer.id,
+              name: customer.contactName,
+              businessName: customer.businessName,
+              role: customer.assignedPortal || UserRole.CONSUMER,
+              email: customer.email || `${customer.id}@placeholder.com`,
+              loginCode: code,
+              passwordSet: false
+          });
+      } else {
+          const user = this.users.find(u => u.id === customer.id);
+          if (user) {
+              user.loginCode = code;
+              user.role = customer.assignedPortal || user.role;
+          }
+      }
+
+      return code;
+  }
+
+  loginWithCode(code: string): User | null {
+      const user = this.users.find(u => u.loginCode === code.toUpperCase());
+      return user || null;
+  }
+
+  setUserPassword(userId: string, passwordReset: boolean) {
+      const user = this.users.find(u => u.id === userId);
+      if (user) {
+          user.passwordSet = true;
+      }
+  }
+
+  /* Missing methods implementation starts here */
+
+  updateProductPrice(id: string, price: number) {
+      const p = this.products.find(p => p.id === id);
+      if (p) p.defaultPricePerKg = price;
+  }
+
+  acceptOrderV2(orderId: string) {
+      const o = this.orders.find(o => o.id === orderId);
+      if (o) o.status = 'Confirmed';
+  }
+
+  packOrder(orderId: string, packerName: string) {
+      const o = this.orders.find(o => o.id === orderId);
+      if (o) {
+          o.status = 'Ready for Delivery';
+          o.packedAt = new Date().toISOString();
+      }
+  }
+
+  getSupplierPriceRequests(supplierId: string) {
+      return this.priceRequests.filter(r => r.supplierId === supplierId);
+  }
+
+  getAllSupplierPriceRequests() {
+      return this.priceRequests;
+  }
+
+  generateLotId() {
+      return `PZ-LOT-${Math.floor(Math.random() * 9000 + 1000)}`;
+  }
+
+  addInventoryItem(item: InventoryItem) {
+      this.inventory.push(item);
+  }
+
+  addProduct(product: Product) {
+      this.products.push(product);
+  }
+
+  updateProductPricing(id: string, price: number, unit: ProductUnit) {
+      const p = this.products.find(p => p.id === id);
+      if (p) {
+          p.defaultPricePerKg = price;
+          p.unit = unit;
       }
   }
 
   updateCustomerRep(customerId: string, repId: string) {
-      const customer = this.customers.find(c => c.id === customerId);
+      const c = this.customers.find(c => c.id === customerId);
       const rep = this.users.find(u => u.id === repId);
-      if (customer && rep) {
-          customer.assignedPzRepId = repId;
-          customer.assignedPzRepName = rep.name;
+      if (c && rep) {
+          c.assignedPzRepId = repId;
+          c.assignedPzRepName = rep.name;
       }
   }
 
-  getDrivers(wholesalerId: string) { return this.drivers.filter(d => d.wholesalerId === wholesalerId); }
-  addDriver(driver: Driver) { this.drivers.push(driver); }
-  getDriverOrders(driverId: string) { const driver = this.drivers.find(d => d.id === driverId); return this.orders.filter(o => o.logistics?.driverName === driver?.name); }
-  deliverOrder(orderId: string, driverName: string, photo: string) {
-    const order = this.orders.find(o => o.id === orderId);
-    if (order) { 
-        order.status = 'Delivered'; 
-        order.deliveredAt = new Date().toISOString(); 
-        order.logistics = { ...order.logistics, driverName, deliveryPhoto: photo, deliveryDate: new Date().toISOString() }; 
-        const buyer = this.users.find(u => u.id === order.buyerId);
-        if (buyer?.smsNotificationsEnabled && buyer.phone) {
-            triggerNativeSms(buyer.phone, `PZ DELIVERED: Order #${order.id.split('-').pop()} has arrived! Please verify the contents in your portal.`);
-        }
-    }
+  updateCustomerMarkup(customerId: string, markup: number) {
+      const c = this.customers.find(c => c.id === customerId);
+      if (c) c.pzMarkup = markup;
   }
 
-  getPackers(wholesalerId: string) { return this.packers.filter(p => p.wholesalerId === wholesalerId); }
-  addPacker(packer: Packer) { this.packers.push(packer); }
-  getPackerOrders(packerId: string) { return this.orders.filter(o => o.status === 'Confirmed'); }
-  
-  packOrder(orderId: string, packerName: string) {
-    const order = this.orders.find(o => o.id === orderId);
-    if (order) {
-        order.status = 'Ready for Delivery';
-        order.packedAt = new Date().toISOString();
-        const buyer = this.users.find(u => u.id === order.buyerId);
-        if (buyer?.smsNotificationsEnabled && buyer.phone) {
-            triggerNativeSms(buyer.phone, `PZ UPDATE: Order #${order.id.split('-').pop()} has been packed and is ready for dispatch.`);
-        }
-    }
+  getDrivers(wholesalerId: string) {
+      return this.drivers.filter(d => d.wholesalerId === wholesalerId);
   }
 
-  addAppNotification(userId: string, title: string, message: string, type: AppNotification['type']) {
-    this.notifications.push({ id: `n-${Date.now()}`, userId, title, message, type, timestamp: new Date().toISOString(), isRead: false });
+  addDriver(driver: Driver) {
+      this.drivers.push(driver);
   }
 
-  addEmployee(user: User) { this.users.push(user); }
-  updateUserVersion(userId: string, version: 'v1' | 'v2') { const user = this.users.find(u => u.id === userId); if (user) user.dashboardVersion = version; }
-  updateUserSmsPreference(userId: string, enabled: boolean, phone?: string) {
-      const user = this.users.find(u => u.id === userId);
-      if (user) {
-          user.smsNotificationsEnabled = enabled;
-          if (phone) user.phone = phone;
+  getDriverOrders(driverId: string) {
+      const driver = this.drivers.find(d => d.id === driverId);
+      if (!driver) return [];
+      return this.orders.filter(o => o.status === 'Shipped' && o.logistics?.driverName === driver.name);
+  }
+
+  deliverOrder(orderId: string, driverName: string, photoUrl: string) {
+      const o = this.orders.find(o => o.id === orderId);
+      if (o) {
+          o.status = 'Delivered';
+          o.deliveredAt = new Date().toISOString();
+          o.logistics = { ...o.logistics, driverName, deliveryPhoto: photoUrl };
       }
   }
-  getRegistrationRequests() { return this.registrationRequests; }
-  approveRegistration(id: string) { const req = this.registrationRequests.find(r => r.id === id); if (req) req.status = 'Approved'; }
-  rejectRegistration(id: string) { const req = this.registrationRequests.find(r => r.id === id); if (req) req.status = 'Rejected'; }
-  
-  deleteUser(id: string) { this.users = this.users.filter(u => u.id !== id); }
 
-  createManualInvite(data: any): RegistrationRequest {
-    const req: RegistrationRequest = { id: `req-${Date.now()}`, businessName: data.businessName, name: data.name, email: data.email, requestedRole: data.role || UserRole.CONSUMER, status: 'Pending', submittedDate: new Date().toISOString(), industry: data.industry, consumerData: { location: data.location, mobile: data.mobile } };
-    this.registrationRequests.push(req);
-    this.customers.push({ id: `c-${Date.now()}`, businessName: data.businessName, contactName: data.name, email: data.email, phone: data.mobile, category: 'Restaurant', industry: data.industry, connectionStatus: 'Pending Connection', connectedSupplierId: USERS[1].id });
-    return req;
-  }
-  deleteRegistrationRequest(id: string) { this.registrationRequests = this.registrationRequests.filter(r => r.id !== r.id); }
-  
-  onboardNewBusiness(data: any): User {
-    const newUser: User = { id: data.id || `u-${Date.now()}`, name: data.name || 'New Lead', businessName: data.businessName, email: data.email, role: data.role || (data.type === 'Supplier' ? UserRole.WHOLESALER : UserRole.CONSUMER), industry: data.industry, phone: data.phone, businessProfile: { isComplete: false, abn: data.abn, businessLocation: data.address } as any };
-    this.users.push(newUser);
-    return newUser;
+  addEmployee(user: User) {
+      this.users.push(user);
   }
 
-  // Final Profile submission from landing flow
-  submitFinalizedOnboarding(userId: string, profile: BusinessProfile) {
-    const user = this.users.find(u => u.id === userId);
-    if (user) {
-        user.businessProfile = { ...profile, isComplete: true };
-        
-        // 1. PZ admin receives high-priority notification in "New Leads" queue context
-        this.addAppNotification('u1', 'New Lead: Trade Profile Finalized', `${user.businessName} has completed their trade identity. Review ABN/Logistics.`, 'APPLICATION');
-        
-        // 2. Add as a pending customer lead for reps
-        this.customers.push({
-            id: user.id,
-            businessName: user.businessName,
-            contactName: user.name,
-            email: user.email,
-            phone: user.phone,
-            category: 'New Lead',
-            industry: user.industry,
-            connectionStatus: 'Pending Connection'
-        });
-
-        // 3. Simulated Email Connector
-        this.triggerEmailConnector(user.email, user.name);
-    }
+  updateUserVersion(userId: string, version: 'v1' | 'v2') {
+      const u = this.users.find(u => u.id === userId);
+      if (u) u.dashboardVersion = version;
   }
 
-  private triggerEmailConnector(email: string, name: string) {
-    console.log(`%c[EMAIL CONNECTOR] Dispatching confirmation to ${email}...`, 'color: #10b981; font-weight: bold;');
-    // Simulate async email delivery
-    setTimeout(() => {
-        console.log(`%c[EMAIL DELIVERED] Message: "Hi ${name}, Platform Zero will be in contact within 1 business day."`, 'color: #3b82f6; font-style: italic;');
-    }, 1000);
+  updateUserSmsPreference(userId: string, enabled: boolean, phone: string) {
+      const u = this.users.find(u => u.id === userId);
+      if (u) {
+          u.smsNotificationsEnabled = enabled;
+          u.phone = phone;
+      }
   }
 
-  sendOnboardingComms(customerId: string) { }
-  getRepCustomers(repId: string) { return this.customers.filter(c => c.assignedPzRepId === repId); }
-  getRepIssues(repId: string) { return this.orders.filter(o => o.issue); }
+  getRegistrationRequests() {
+      return this.registrationRequests;
+  }
+
+  approveRegistration(id: string) {
+      const r = this.registrationRequests.find(r => r.id === id);
+      if (r) r.status = 'Approved';
+  }
+
+  rejectRegistration(id: string) {
+      const r = this.registrationRequests.find(r => r.id === id);
+      if (r) r.status = 'Rejected';
+  }
+
+  updateIndustryIncentive(industry: Industry, value: number) {
+      this.industryIncentives[industry] = value;
+  }
+
+  updateRoleIncentive(role: string, data: RoleIncentive) {
+      this.roleIncentives[role] = data;
+  }
+
+  getRepCustomers(repId: string) {
+      return this.customers.filter(c => c.assignedPzRepId === repId);
+  }
+
+  getRepIssues(repId: string) {
+    return this.orders.filter(o => o.issue && o.issue.assignedRepId === repId);
+  }
+
   getRepStats(repId: string) {
-    const customers = this.getRepCustomers(repId);
-    const customerIds = customers.map(c => c.id);
-    const repOrders = this.orders.filter(o => customerIds.includes(o.buyerId));
-    return { totalSales: repOrders.reduce((sum, o) => sum + o.totalAmount, 0), commissionMade: repOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, o) => sum + o.totalAmount * 0.05, 0), commissionComing: repOrders.filter(o => o.paymentStatus !== 'Paid').reduce((sum, o) => sum + o.totalAmount * 0.05, 0), customerCount: customers.length, orders: repOrders };
+      const repOrders = this.orders.filter(o => {
+          const customer = this.customers.find(c => c.id === o.buyerId);
+          return customer?.assignedPzRepId === repId;
+      });
+      const totalSales = repOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+      const rep = this.users.find(u => u.id === repId);
+      const commissionRate = rep?.commissionRate || 0;
+      const commissionMade = repOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, o) => sum + o.totalAmount * (commissionRate / 100), 0);
+      const commissionComing = repOrders.filter(o => o.paymentStatus !== 'Paid').reduce((sum, o) => sum + o.totalAmount * (commissionRate / 100), 0);
+      return {
+          totalSales,
+          commissionMade,
+          commissionComing,
+          customerCount: this.getRepCustomers(repId).length,
+          orders: repOrders
+      };
   }
-  getSupplierPriceRequests(id: string) { return this.supplierPriceRequests.filter(r => r.supplierId === id); }
-  getAllSupplierPriceRequests() { return this.supplierPriceRequests; }
-  updateSupplierPriceRequest(id: string, req: SupplierPriceRequest) { const idx = this.supplierPriceRequests.findIndex(r => r.id === id); if (idx !== -1) this.supplierPriceRequests[idx] = req; }
-  createSupplierPriceRequest(req: SupplierPriceRequest) { this.supplierPriceRequests.push(req); }
-  
-  updateSupplierPriceRequestResponse(requestId: string, updatedItems: SupplierPriceRequestItem[]) {
-      const req = this.supplierPriceRequests.find(r => r.id === requestId);
+
+  findBuyersForProduct(productName: string) {
+      return this.customers.filter(c => c.commonProducts?.toLowerCase().includes(productName.toLowerCase()));
+  }
+
+  createInstantOrder(buyerId: string, item: InventoryItem, qty: number, price: number) {
+      const newOrder: Order = {
+          id: `o-inst-${Date.now()}`,
+          buyerId,
+          sellerId: item.ownerId,
+          items: [{ productId: item.productId, quantityKg: qty, pricePerKg: price }],
+          totalAmount: qty * price,
+          status: 'Confirmed',
+          date: new Date().toISOString(),
+          paymentStatus: 'Unpaid'
+      };
+      this.orders.push(newOrder);
+      return newOrder;
+  }
+
+  addAppNotification(userId: string, title: string, message: string, type: string) {
+      this.notifications.push({
+          id: `n-${Date.now()}`,
+          userId,
+          title,
+          message,
+          type: type as any,
+          timestamp: new Date().toISOString(),
+          isRead: false
+      });
+  }
+
+  createSupplierPriceRequest(request: SupplierPriceRequest) {
+      this.priceRequests.push(request);
+  }
+
+  submitConsumerSignup(data: any) {
+      this.registrationRequests.push({
+          id: data.id || `reg-${Date.now()}`,
+          businessName: data.businessName,
+          name: data.name,
+          email: data.email,
+          requestedRole: data.requestedRole || UserRole.CONSUMER,
+          status: 'Pending',
+          submittedDate: new Date().toISOString(),
+          consumerData: {
+              location: data.location,
+              weeklySpend: data.weeklySpend,
+              orderFrequency: data.orderFrequency,
+              invoiceFile: data.invoiceFile,
+              mobile: data.mobile
+          }
+      });
+  }
+
+  onboardNewBusiness(data: any) {
+      const newUser: User = {
+          id: `u-${Date.now()}`,
+          name: data.name || data.businessName,
+          email: data.email,
+          businessName: data.businessName,
+          role: data.role || UserRole.WHOLESALER,
+          phone: data.phone
+      };
+      this.users.push(newUser);
+      return newUser;
+  }
+
+  deleteUser(id: string) {
+      this.users = this.users.filter(u => u.id !== id);
+  }
+
+  finalizeDeal(reqId: string) {
+      const req = this.priceRequests.find(r => r.id === reqId);
       if (req) {
-          req.items = updatedItems;
-          req.status = 'SUBMITTED';
-          this.addAppNotification('u1', 'Quote Received: Price Audit Complete', `Partner has responded to the quote request for ${req.customerContext}.`, 'PRICE_REQUEST');
+          req.status = 'WON';
+          const newCustomer: Customer = {
+              id: `c-${Date.now()}`,
+              businessName: req.customerContext,
+              contactName: req.customerContext,
+              category: 'Direct Lead',
+              location: req.customerLocation,
+              connectionStatus: 'Active',
+              connectedSupplierId: req.supplierId,
+              connectedSupplierName: this.users.find(u => u.id === req.supplierId)?.businessName || 'Supplier'
+          };
+          this.customers.push(newCustomer);
+          return newCustomer;
+      }
+      return null;
+  }
+
+  sendOnboardingComms(customerId: string) {
+      console.log(`Sending onboarding comms to ${customerId}`);
+  }
+
+  updateInventoryStatus(id: string, status: string) {
+      const item = this.inventory.find(i => i.id === id);
+      if (item) item.status = status as any;
+  }
+
+  sendChatMessage(senderId: string, receiverId: string, text: string) {
+      console.log(`Chat from ${senderId} to ${receiverId}: ${text}`);
+  }
+
+  markNotificationAsRead(id: string) {
+    const n = this.notifications.find(n => n.id === id);
+    if (n) n.isRead = true;
+  }
+
+  markAllNotificationsRead(userId: string) {
+      this.notifications.filter(n => n.userId === userId).forEach(n => n.isRead = true);
+  }
+
+  createManualInvite(data: any) {
+      const req: RegistrationRequest = {
+          id: `reg-man-${Date.now()}`,
+          businessName: data.businessName,
+          name: data.name,
+          email: data.email,
+          requestedRole: data.role,
+          status: 'Pending',
+          submittedDate: new Date().toISOString(),
+          paymentTerms: data.paymentTerms,
+          customTerms: data.customTerms,
+          consumerData: { mobile: data.mobile }
+      };
+      this.registrationRequests.push(req);
+      return req;
+  }
+
+  uploadToDeli(data: any, businessName: string) {
+      console.log(`Uploading to Deli storefront for ${businessName}:`, data);
+  }
+
+  updateUserInterests(userId: string, selling: string[], buying: string[]) {
+      const u = this.users.find(u => u.id === userId);
+      if (u) {
+          u.activeSellingInterests = selling;
+          u.activeBuyingInterests = buying;
       }
   }
 
-  finalizeDeal(requestId: string): Customer | undefined {
-    const req = this.supplierPriceRequests.find(r => r.id === requestId);
-    if (req) {
-      req.status = 'WON';
-      const newCustomer: Customer = {
-        id: `c-won-${Date.now()}`,
-        businessName: req.customerContext,
-        contactName: 'Procured Lead',
-        location: req.customerLocation,
-        connectedSupplierId: req.supplierId,
-        connectionStatus: 'Active',
-        category: 'Restaurant'
-      };
-      this.customers.push(newCustomer);
-      return newCustomer;
-    }
-    return undefined;
+  updateSupplierPriceRequestResponse(reqId: string, items: SupplierPriceRequestItem[]) {
+      const req = this.priceRequests.find(r => r.id === reqId);
+      if (req) {
+          req.items = items;
+          req.status = 'SUBMITTED';
+      }
   }
 
-  getChatMessages(u1: string, u2: string) {
-    return this.chatMessages.filter(m => (m.senderId === u1 && m.receiverId === u2) || (m.senderId === u2 && m.receiverId === u1));
-  }
-  sendChatMessage(senderId: string, receiverId: string, text: string) {
-    this.chatMessages.push({ id: `chat-${Date.now()}`, senderId, receiverId, text, timestamp: new Date().toISOString() });
+  getPackers(wholesalerId: string) {
+      return this.packers.filter(p => p.wholesalerId === wholesalerId);
   }
 
-  getWholesalers() { return this.users.filter(u => u.role === UserRole.WHOLESALER || u.role === UserRole.FARMER); }
-  submitConsumerSignup(data: any) { 
-    const req: RegistrationRequest = { id: data.id || `reg-${Date.now()}`, businessName: data.businessName, name: data.name, email: data.email, requestedRole: data.requestedRole || UserRole.CONSUMER, industry: data.industry, status: 'Pending', submittedDate: new Date().toISOString(), consumerData: { location: data.location, weeklySpend: data.weeklySpend, orderFrequency: data.orderFrequency, invoiceFile: data.invoiceFile, mobile: data.mobile } }; 
-    this.registrationRequests.push(req); 
-    this.onboardNewBusiness(data); // Also create a user record for onboarding
-  }
-  getProduct(id: string) { return this.products.find(p => p.id === id); }
-  updateBusinessProfile(userId: string, profile: BusinessProfile) { 
-    const user = this.users.find(u => u.id === userId); 
-    if (user) {
-        user.businessProfile = profile;
-        this.submitFinalizedOnboarding(userId, profile);
-    }
-  }
-  getFormTemplate(role: UserRole): OnboardingFormTemplate | undefined {
-    return {
-      id: `form-${role}`,
-      role,
-      sections: [
-        {
-          id: 's1',
-          title: 'Business Basics',
-          fields: [
-            { id: 'f1', label: 'Company Name', type: 'text', required: true },
-            { id: 'f2', label: 'ABN', type: 'text', required: true }
-          ]
-        }
-      ]
-    };
+  addPacker(packer: Packer) {
+      this.packers.push(packer);
   }
 
-  uploadToDeli(data: any, vendorName: string) {
-    console.log(`Uploading to Deli: ${vendorName}`, data);
+  getPackerOrders(packerId: string) {
+      const packer = this.packers.find(p => p.id === packerId);
+      if (!packer) return [];
+      return this.orders.filter(o => o.status === 'Confirmed');
+  }
+
+  updateBusinessProfile(userId: string, profile: BusinessProfile) {
+      const u = this.users.find(u => u.id === userId);
+      if (u) u.businessProfile = profile;
   }
 }
 

@@ -1,13 +1,11 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Order, Product, ParsedOrderItem, OrderItem } from '../types';
+import { User, Order, Product, OrderItem } from '../types';
 import { mockService } from '../services/mockDataService';
-import { parseNaturalLanguageOrder } from '../services/geminiService';
 import { 
-  DollarSign, ShoppingBag, Truck, MapPin, 
-  CheckCircle, Clock, Package, Leaf, ArrowRight, Search,
-  X, Loader2, Check, Sparkles, ShoppingCart, AlertTriangle,
-  ChevronRight, Minus, Plus, RefreshCcw, Calendar, Edit3, 
-  User as UserIcon, LayoutGrid, BookOpen, Trash2
+  DollarSign, ShoppingBag, Truck, CheckCircle, Clock, Package, 
+  Leaf, ArrowRight, ShoppingCart, Heart, Plus, TrendingDown,
+  ChevronRight, Calendar, Search, X, Loader2, Check, RotateCcw, Pencil
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,744 +13,222 @@ interface ConsumerDashboardProps {
   user: User;
 }
 
-const CheckoutModal = ({ isOpen, onClose, items, products, onPlaceOrder, onUpdateItems }: { 
-    isOpen: boolean, 
-    onClose: () => void, 
-    items: OrderItem[], 
-    products: Product[],
-    onPlaceOrder: (details: any) => void,
-    onUpdateItems: (productId: string, delta: number) => void
-}) => {
-    const [deliveryDate, setDeliveryDate] = useState('');
-    const [deliveryTime, setDeliveryTime] = useState('');
-    const [contactName, setContactName] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState<'pay_now' | 'invoice'>('invoice');
-
-    if (!isOpen) return null;
-
-    const subtotal = items.reduce((sum, i) => sum + (i.quantityKg * i.pricePerKg), 0);
-    const discount = paymentMethod === 'pay_now' ? subtotal * 0.1 : 0;
-    const total = subtotal - discount;
-
-    const handleSubmit = () => {
-        if (!deliveryDate || !contactName) {
-            alert("Please complete delivery information and contact name.");
-            return;
-        }
-        onPlaceOrder({
-            items,
-            total,
-            deliveryDate,
-            deliveryTime,
-            contactName,
-            paymentMethod
-        });
-    };
-
-    return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95">
-                <div className="w-full md:w-[360px] bg-[#F8FAFC] border-r border-gray-100 p-10 flex flex-col">
-                    <div className="flex items-center gap-3 mb-10">
-                        <ShoppingCart size={24} className="text-gray-900" />
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Order Summary</h2>
-                    </div>
-
-                    <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar mb-10">
-                        {items.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-                                <ShoppingCart size={48} className="mb-4" />
-                                <p className="font-black uppercase tracking-widest text-xs">Summary Empty</p>
-                            </div>
-                        ) : items.map((item, idx) => {
-                            const p = products.find(prod => prod.id === item.productId);
-                            return (
-                                <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm transition-all hover:border-emerald-200">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-black text-gray-900 uppercase text-sm leading-tight truncate pr-2">{p?.name || 'Item'}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                                {item.quantityKg}{p?.unit || 'kg'} @ ${item.pricePerKg.toFixed(2)}
-                                            </p>
-                                        </div>
-                                        <span className="font-black text-gray-900 text-sm shrink-0">${(item.quantityKg * item.pricePerKg).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-50">
-                                        <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                                            <button 
-                                                onClick={() => onUpdateItems(item.productId, -1)}
-                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            >
-                                                <Minus size={14} strokeWidth={3}/>
-                                            </button>
-                                            <span className="w-8 text-center font-black text-xs text-gray-900">{item.quantityKg}</span>
-                                            <button 
-                                                onClick={() => onUpdateItems(item.productId, 1)}
-                                                className="p-2 text-gray-400 hover:text-emerald-500 transition-colors"
-                                            >
-                                                <Plus size={14} strokeWidth={3}/>
-                                            </button>
-                                        </div>
-                                        <button 
-                                            onClick={() => onUpdateItems(item.productId, -item.quantityKg)}
-                                            className="p-2 text-gray-300 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
-                                        >
-                                            <Trash2 size={16}/>
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="space-y-4 pt-8 border-t border-gray-200">
-                        <div className="flex justify-between items-center text-gray-500 font-bold text-sm">
-                            <span className="uppercase tracking-widest text-[11px]">Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
-                        </div>
-                        {discount > 0 && (
-                            <div className="flex justify-between items-center text-emerald-600 font-bold text-sm">
-                                <span className="uppercase tracking-widest text-[11px]">Payment Discount (10%)</span>
-                                <span>-${discount.toFixed(2)}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-end pt-2">
-                            <span className="font-black text-gray-900 text-xl uppercase tracking-tighter leading-none">Total</span>
-                            <span className="font-black text-gray-900 text-3xl tracking-tighter leading-none">${total.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 bg-white p-10 flex flex-col overflow-y-auto">
-                    <div className="flex justify-between items-start mb-12">
-                        <div>
-                            <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter uppercase leading-none">Checkout Details</h2>
-                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mt-2">Logistics & Settlement Config</p>
-                        </div>
-                        <button onClick={onClose} className="text-gray-300 hover:text-gray-900 transition-colors">
-                            <X size={32} />
-                        </button>
-                    </div>
-
-                    <div className="space-y-10 flex-1">
-                        <div>
-                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                <Truck size={14}/> DELIVERY INFORMATION
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Delivery Date</label>
-                                    <div className="relative">
-                                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-                                        <input 
-                                            type="date" 
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all"
-                                            value={deliveryDate}
-                                            onChange={e => setDeliveryDate(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Delivery Time</label>
-                                    <div className="relative">
-                                        <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-                                        <input 
-                                            type="time" 
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all"
-                                            value={deliveryTime}
-                                            onChange={e => setDeliveryTime(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Who made the order?</label>
-                                <div className="relative">
-                                    <UserIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
-                                    <input 
-                                        placeholder="Contact Name"
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all"
-                                        value={contactName}
-                                        onChange={e => setContactName(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                <DollarSign size={14}/> PAYMENT METHOD
-                            </h3>
-                            <div className="space-y-4">
-                                <button 
-                                    onClick={() => setPaymentMethod('pay_now')}
-                                    className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center justify-between group ${paymentMethod === 'pay_now' ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-50 bg-[#F8FAFC] hover:border-gray-200'}`}
-                                >
-                                    <div className="flex items-center gap-6">
-                                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'pay_now' ? 'border-[#0F172A] bg-[#0F172A]' : 'border-gray-300 bg-white'}`}>
-                                            {paymentMethod === 'pay_now' && <div className="w-3 h-3 bg-white rounded-full"></div>}
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-[#0F172A] uppercase text-base leading-none">Pay Now</p>
-                                            <p className="text-[11px] text-gray-400 font-bold mt-1.5 uppercase tracking-widest">Instant credit card payment</p>
-                                        </div>
-                                    </div>
-                                    <span className="bg-[#D1FAE5] text-[#065F46] px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[#A7F3D0]">Save 10%</span>
-                                </button>
-
-                                <button 
-                                    onClick={() => setPaymentMethod('invoice')}
-                                    className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center group ${paymentMethod === 'invoice' ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-50 bg-[#F8FAFC] hover:border-gray-200'}`}
-                                >
-                                    <div className="flex items-center gap-6">
-                                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'invoice' ? 'border-[#0F172A] bg-[#0F172A]' : 'border-gray-300 bg-white'}`}>
-                                            {paymentMethod === 'invoice' && <div className="w-3 h-3 bg-white rounded-full"></div>}
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-[#0F172A] uppercase text-base leading-none">Invoice</p>
-                                            <p className="text-[11px] text-gray-400 font-bold mt-1.5 uppercase tracking-widest">Standard 7-day terms</p>
-                                        </div>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pt-10 flex gap-4">
-                        <button 
-                            onClick={onClose}
-                            className="flex-1 py-5 bg-gray-50 border border-gray-100 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            onClick={handleSubmit}
-                            disabled={items.length === 0}
-                            className="flex-[2] py-5 bg-[#043003] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
-                        >
-                            <Check size={20}/> Place Order
-                        </button>
-                    </div>
-                </div>
-            </div>
+const QuickAddCard = ({ product, onQuickAdd }: { product: Product, onQuickAdd: (p: Product) => void, key?: React.Key }) => (
+    <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all">
+        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+            <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
         </div>
-    );
-};
-
-const AiQuickOrder = ({ onItemsConfirmed, catalog }: { onItemsConfirmed: (items: OrderItem[]) => void, catalog: Product[] }) => {
-    const [text, setText] = useState('');
-    const [isParsing, setIsParsing] = useState(false);
-    const [reviewItems, setReviewItems] = useState<ParsedOrderItem[] | null>(null);
-
-    const handleParse = async () => {
-        if (!text.trim()) return;
-        setIsParsing(true);
-        try {
-            const parsed = await parseNaturalLanguageOrder(text, catalog);
-            setReviewItems(parsed);
-        } catch (e) {
-            alert("Sorry, I couldn't understand that order. Please try again.");
-        } finally {
-            setIsParsing(false);
-        }
-    };
-
-    const handleUpdateItem = (idx: number, updates: Partial<ParsedOrderItem>) => {
-        if (!reviewItems) return;
-        const newItems = [...reviewItems];
-        newItems[idx] = { ...newItems[idx], ...updates };
-        setReviewItems(newItems);
-    };
-
-    const handleFinalConfirm = () => {
-        if (!reviewItems) return;
-        
-        const hasAmbiguity = reviewItems.some(i => i.isAmbiguous && !i.selectedProductId);
-        if (hasAmbiguity) {
-            alert("Please select a specific variety for the highlighted items before adding to cart.");
-            return;
-        }
-
-        const itemsToCheckout: OrderItem[] = reviewItems.map(ri => {
-            const p = catalog.find(cat => cat.id === ri.selectedProductId);
-            return {
-                productId: ri.selectedProductId!,
-                quantityKg: ri.quantity,
-                pricePerKg: p?.defaultPricePerKg || 4.5,
-                unit: ri.unit
-            };
-        });
-
-        onItemsConfirmed(itemsToCheckout);
-        setReviewItems(null);
-        setText('');
-    };
-
-    return (
-        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm flex flex-col animate-in slide-in-from-top-4 duration-500 max-h-[85vh] md:max-h-[600px] overflow-hidden mb-8">
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <Sparkles size={22} />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">AI Quick Order</h2>
-                        <p className="text-[10px] text-indigo-500 font-black uppercase tracking-widest mt-1">Natural Language Procurement</p>
-                    </div>
-                </div>
-                {reviewItems && (
-                    <button onClick={() => setReviewItems(null)} className="text-gray-400 hover:text-red-500 transition-colors p-2"><X size={20}/></button>
-                )}
-            </div>
-
-            {reviewItems ? (
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="px-8 pt-4 pb-2 shrink-0">
-                        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
-                            <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18}/>
-                            <div>
-                                <p className="text-xs font-black text-amber-900 uppercase tracking-tight">Review Order List</p>
-                                <p className="text-[11px] text-amber-700 font-medium mt-0.5">Clarify varieties before adding to your active cart.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-4 space-y-4">
-                        {reviewItems.map((item, idx) => {
-                            const matchedProduct = catalog.find(p => p.id === item.selectedProductId);
-                            return (
-                                <div key={idx} className={`p-6 rounded-3xl border transition-all ${item.isAmbiguous && !item.selectedProductId ? 'border-amber-300 bg-amber-50/20 ring-2 ring-amber-100' : 'border-gray-50 bg-[#F8FAFC]'}`}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h4 className="font-black text-gray-900 uppercase text-base tracking-tight">{item.productName}</h4>
-                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.quantity} {item.unit}</p>
-                                        </div>
-                                        {item.isAmbiguous && !item.selectedProductId && (
-                                            <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">Select Variant</span>
-                                        )}
-                                        {item.selectedProductId && (
-                                            <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><Check size={12}/> Ready</span>
-                                        )}
-                                    </div>
-
-                                    {item.suggestedProductIds && item.suggestedProductIds.length > 0 && !item.selectedProductId && (
-                                        <div className="grid grid-cols-1 gap-2 mt-4 animate-in slide-in-from-top-2">
-                                            {item.suggestedProductIds.map(sid => {
-                                                const p = catalog.find(prod => prod.id === sid);
-                                                if (!p) return null;
-                                                return (
-                                                    <button 
-                                                        key={sid}
-                                                        onClick={() => handleUpdateItem(idx, { selectedProductId: p.id })}
-                                                        className="flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left group shadow-sm active:scale-95"
-                                                    >
-                                                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                                                            <img src={p.imageUrl} className="w-full h-full object-cover" alt=""/>
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-xs font-black text-gray-900 truncate uppercase">{p.name}</p>
-                                                            <p className="text-[9px] text-indigo-500 font-black uppercase tracking-widest">{p.variety}</p>
-                                                        </div>
-                                                        <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-500" />
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-
-                                    {item.selectedProductId && matchedProduct && (
-                                        <div className="flex items-center gap-4 p-3 bg-white border border-emerald-100 rounded-2xl shadow-sm">
-                                            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-gray-50">
-                                                <img src={matchedProduct.imageUrl} className="w-full h-full object-cover" alt=""/>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-xs font-black text-emerald-900 uppercase truncate">{matchedProduct.name} ({matchedProduct.variety})</p>
-                                            </div>
-                                            <button onClick={() => handleUpdateItem(idx, { selectedProductId: undefined })} className="p-2 text-gray-300 hover:text-red-500 transition-colors bg-gray-50 rounded-lg"><X size={16}/></button>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex gap-4 shrink-0">
-                        <button 
-                            onClick={() => setReviewItems(null)}
-                            className="flex-1 py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-[1.25rem] font-black text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all active:scale-95"
-                        >
-                            Discard
-                        </button>
-                        <button 
-                            onClick={handleFinalConfirm}
-                            className="flex-[2] py-5 bg-[#0F172A] text-white rounded-[1.25rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
-                        >
-                            <ShoppingCart size={18}/> Verify & Add to Cart
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <div className="p-8 flex-1 flex flex-col animate-in fade-in duration-500">
-                    <div className="relative group flex-1">
-                        <textarea 
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            placeholder="e.g. 100kg bananas, 5kg tomatoes, 90 trays of avocado..."
-                            className="w-full h-full min-h-[200px] p-6 bg-gray-50 border border-gray-100 rounded-[1.5rem] font-bold text-gray-900 resize-none outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all placeholder-gray-300 text-base"
-                        />
-                        <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest bg-white/80 px-2 py-1 rounded-lg backdrop-blur-sm">Supports: KG, Tray, Each, Loose, Bag</span>
-                        </div>
-                    </div>
-
-                    <button 
-                        onClick={handleParse}
-                        disabled={isParsing || !text.trim()}
-                        className="mt-8 w-full py-6 bg-[#0F172A] text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98] shrink-0"
-                    >
-                        {isParsing ? (
-                            <><Loader2 size={20} className="animate-spin" /> Matching Catalog...</>
-                        ) : (
-                            <><ShoppingCart size={18}/> Generate Order List</>
-                        )}
-                    </button>
-                </div>
-            )}
+        <div className="flex-1 min-w-0">
+            <h4 className="font-black text-gray-900 uppercase text-[11px] truncate tracking-tight">{product.name}</h4>
+            <p className="text-[10px] font-bold text-gray-400 mt-0.5">${product.defaultPricePerKg.toFixed(2)} <span className="text-[8px]">/ KG</span></p>
         </div>
-    );
-};
+        <button 
+            onClick={() => onQuickAdd(product)}
+            className="p-3 bg-gray-50 hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 rounded-xl transition-all border border-transparent hover:border-emerald-100 active:scale-95"
+            title="Quick Add 10kg"
+        >
+            <Plus size={18} strokeWidth={3}/>
+        </button>
+    </div>
+);
 
-const OrderTuningPanel = ({ order, products, onConfirm, onCancel }: { 
-    order: Order, 
-    products: Product[], 
-    onConfirm: (items: OrderItem[]) => void, 
-    onCancel: () => void 
-}) => {
-    const [editedItems, setEditedItems] = useState<OrderItem[]>([]);
-
-    useEffect(() => {
-        setEditedItems(order.items.map(i => ({ ...i })));
-    }, [order]);
-
-    const adjustQty = (productId: string, delta: number) => {
-        setEditedItems(prev => prev.map(item => 
-            item.productId === productId 
-                ? { ...item, quantityKg: Math.max(0, item.quantityKg + delta) }
-                : item
-        ).filter(item => item.quantityKg >= 0));
-    };
-
-    const removeItem = (productId: string) => {
-        setEditedItems(prev => prev.filter(item => item.productId !== productId));
-    };
-
-    const totalAmount = editedItems.reduce((sum, item) => sum + (item.quantityKg * item.pricePerKg), 0);
-
-    return (
-        <div className="flex-1 flex flex-col min-h-0 animate-in slide-in-from-bottom-4 duration-300">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-indigo-50/30">
-                <div>
-                    <h4 className="text-sm font-black text-gray-900 uppercase">Tuning Order #{order.id.split('-').pop()}</h4>
-                    <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mt-0.5">Adjust quantities before re-ordering</p>
-                </div>
-                <button onClick={onCancel} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X size={20}/></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-3">
-                {editedItems.map(item => {
-                    const p = products.find(prod => prod.id === item.productId);
-                    return (
-                        <div key={item.productId} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:border-indigo-100 transition-all">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-200 shrink-0">
-                                    <img src={p?.imageUrl} className="w-full h-full object-cover" alt=""/>
-                                </div>
-                                <div>
-                                    <p className="font-black text-gray-900 text-sm uppercase tracking-tight">{p?.name}</p>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">${item.pricePerKg.toFixed(2)} / {p?.unit || 'kg'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-                                    <button onClick={() => adjustQty(item.productId, -1)} className="p-2 text-gray-400 hover:text-red-500 transition-all"><Minus size={14}/></button>
-                                    <span className="w-12 text-center font-black text-gray-900 text-sm">{item.quantityKg}</span>
-                                    <button onClick={() => adjustQty(item.productId, 1)} className="p-2 text-gray-400 hover:text-emerald-600 transition-all"><Plus size={14}/></button>
-                                </div>
-                                <button onClick={() => removeItem(item.productId)} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><X size={16}/></button>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            <div className="p-8 border-t border-gray-100 bg-gray-50 shrink-0">
-                <div className="flex justify-between items-center mb-6 px-2">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Re-order Total</span>
-                    <span className="text-2xl font-black text-emerald-700 tracking-tighter">${totalAmount.toFixed(2)}</span>
-                </div>
-                <button 
-                    onClick={() => onConfirm(editedItems)}
-                    disabled={editedItems.length === 0}
-                    className="w-full py-5 bg-[#043003] hover:bg-black text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 group disabled:opacity-50"
-                >
-                    <RefreshCcw size={18} className="group-hover:rotate-180 transition-transform duration-500"/> Add to Active Cart
-                </button>
-            </div>
-        </div>
-    );
-};
-
-const WeeklyOrderCalendar = ({ orders, products, onReorder }: { orders: Order[], products: Product[], onReorder: (items: OrderItem[]) => void }) => {
+const WeeklyOrderCalendar = ({ orders }: { orders: Order[] }) => {
+    const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
-
-    const weekDays = useMemo(() => {
-        const days = [];
-        const today = new Date();
+    
+    // Generate last 7 days including today
+    const days = useMemo(() => {
+        const result = [];
         for (let i = 6; i >= 0; i--) {
-            const d = new Date(today.getTime() - 86400000 * i);
-            days.push(d);
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            result.push(d);
         }
-        return days;
+        return result;
     }, []);
 
-    const ordersForSelectedDay = orders.filter(o => new Date(o.date).toDateString() === selectedDate.toDateString());
+    const selectedDateOrders = useMemo(() => {
+        return orders.filter(o => new Date(o.date).toDateString() === selectedDate.toDateString());
+    }, [orders, selectedDate]);
+
+    const handleReorder = (order: Order) => {
+        alert(`Initiating one-tap re-order for Order #${order.id.split('-').pop()}. Items added to cart.`);
+        navigate('/marketplace');
+    };
 
     return (
-        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full min-h-[500px] animate-in slide-in-from-right-4">
-            <div className="p-8 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <Calendar size={22} />
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-right-4 duration-500">
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner-sm">
+                        <Calendar size={24} />
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Weekly Order Calendar</h2>
-                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1">Live History & Re-ordering</p>
+                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1.5">Live History & Re-Ordering</p>
                     </div>
                 </div>
             </div>
 
-            <div className="flex gap-2 p-6 border-b border-gray-50 overflow-x-auto no-scrollbar shrink-0 bg-white">
-                {weekDays.map((date, idx) => {
-                    const isSelected = date.toDateString() === selectedDate.toDateString();
-                    const dayOrders = orders.filter(o => new Date(o.date).toDateString() === date.toDateString());
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    
-                    return (
-                        <button 
-                            key={idx}
-                            onClick={() => { setSelectedDate(date); setViewingOrder(null); }}
-                            className={`min-w-[80px] flex-1 py-4 rounded-2xl flex flex-col items-center gap-1.5 transition-all border-2 ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-100 scale-105 z-10' : 'bg-white border-gray-50 text-gray-400 hover:border-indigo-100'}`}
-                        >
-                            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{date.toLocaleDateString('default', { weekday: 'short' })}</span>
-                            <span className="text-lg font-black tracking-tighter">{date.getDate()}</span>
-                            {dayOrders.length > 0 && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500 animate-pulse'}`}></div>}
-                            {isToday && !isSelected && <span className="text-[8px] font-black text-indigo-500 uppercase tracking-tighter">Today</span>}
-                        </button>
-                    );
-                })}
-            </div>
+            <div className="p-8 space-y-10">
+                {/* Day Selector */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
+                    {days.map((date, idx) => {
+                        const isSelected = date.toDateString() === selectedDate.toDateString();
+                        const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' }).toUpperCase();
+                        const dayNum = date.getDate();
+                        const hasOrders = orders.some(o => new Date(o.date).toDateString() === date.toDateString());
 
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-                {viewingOrder ? (
-                    <OrderTuningPanel 
-                        order={viewingOrder} 
-                        products={products} 
-                        onCancel={() => setViewingOrder(null)} 
-                        onConfirm={(items) => { onReorder(items); setViewingOrder(null); }} 
-                    />
-                ) : (
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 bg-gray-50/20">
-                        <div className="mb-6 px-2 flex justify-between items-end">
-                            <div>
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Selected Day</h3>
-                                <p className="text-lg font-black text-gray-900 tracking-tight uppercase leading-none mt-1">
-                                    {selectedDate.toLocaleDateString('default', { weekday: 'long', day: 'numeric', month: 'short' })}
-                                </p>
-                            </div>
-                            {ordersForSelectedDay.length > 0 && (
-                                <span className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                    {ordersForSelectedDay.length} Orders
-                                </span>
-                            )}
+                        return (
+                            <button 
+                                key={idx}
+                                onClick={() => setSelectedDate(date)}
+                                className={`flex-1 min-w-[85px] py-6 rounded-[1.75rem] transition-all flex flex-col items-center justify-center relative border-2 ${
+                                    isSelected 
+                                    ? 'bg-[#5c56d6] border-[#5c56d6] text-white shadow-xl shadow-indigo-100 scale-105 z-10' 
+                                    : 'bg-white border-gray-50 text-gray-400 hover:border-gray-200'
+                                }`}
+                            >
+                                <span className="text-[10px] font-black tracking-widest mb-1">{dayName}</span>
+                                <span className="text-2xl font-black tracking-tight">{dayNum}</span>
+                                {hasOrders && (
+                                    <div className={`absolute bottom-3 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400 animate-pulse'}`}></div>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Selected Day Display */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <div>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Selected Day</p>
+                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">
+                                {selectedDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase()}
+                            </h3>
                         </div>
-
-                        {ordersForSelectedDay.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center py-20 opacity-40">
-                                <Package size={48} className="text-gray-200 mb-4" />
-                                <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">No orders logged for this day</p>
-                            </div>
-                        ) : (
-                            ordersForSelectedDay.map(order => (
-                                <div key={order.id} className="p-6 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-md transition-all group">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
-                                                <ShoppingBag size={20}/>
-                                            </div>
-                                            <div>
-                                                <h3 className="font-black text-gray-900 text-base tracking-tight uppercase">Order #{order.id.split('-').pop()}</h3>
-                                                <div className="flex items-center gap-4 mt-0.5">
-                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{order.items.length} Lines</span>
-                                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">${order.totalAmount.toFixed(2)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                                            order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'
-                                        }`}>
-                                            {order.status}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex gap-2">
-                                        <button 
-                                            onClick={() => setViewingOrder(order)}
-                                            className="flex-1 py-3 bg-[#0F172A] hover:bg-black text-white rounded-xl font-black text-[9px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Edit3 size={14}/> Edit & Re-order
-                                        </button>
-                                        <button 
-                                            onClick={() => onReorder(order.items)}
-                                            className="px-4 py-3 bg-white border border-gray-200 text-gray-500 rounded-xl font-black text-[9px] uppercase tracking-[0.15em] hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <RefreshCcw size={14}/> One-tap Re-order
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
+                        {selectedDateOrders.length > 0 && (
+                            <span className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                {selectedDateOrders.length} Orders
+                            </span>
                         )}
                     </div>
-                )}
+
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar pr-1">
+                        {selectedDateOrders.length === 0 ? (
+                            <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-[2rem] opacity-30">
+                                <Clock size={32} className="mx-auto mb-2" />
+                                <p className="text-xs font-black uppercase tracking-widest">No trade activity recorded</p>
+                            </div>
+                        ) : selectedDateOrders.map(order => (
+                            <div key={order.id} className="bg-white rounded-[1.75rem] border border-gray-100 p-6 shadow-sm group hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 shrink-0">
+                                            <ShoppingCart size={20}/>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">Order #{order.id.split('-').pop()}</h4>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">
+                                                {order.items.length} LINES • <span className="text-emerald-600">${order.totalAmount.toFixed(2)}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border border-emerald-100">
+                                        {order.status.toUpperCase()}
+                                    </span>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => navigate('/orders', { state: { openVerificationId: order.id } })}
+                                        className="flex-[3] py-4 bg-[#0F172A] text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-95"
+                                    >
+                                        <Pencil size={14}/> Edit & Re-Order
+                                    </button>
+                                    <button 
+                                        onClick={() => handleReorder(order)}
+                                        className="flex-[2] py-4 bg-white border border-gray-200 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:border-emerald-500 hover:text-emerald-600 transition-all active:scale-95 shadow-sm"
+                                    >
+                                        <RotateCcw size={14}/> One-Tap Re-Order
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
-const ActiveRunStatus = ({ order, products }: { order: Order, products: Product[] }) => {
+const ActiveRunStatus = ({ order, onOpenVerification }: { order: Order, onOpenVerification: (o: Order) => void }) => {
     const navigate = useNavigate();
-    const [timeLeft, setTimeLeft] = useState<string>('');
-
-    useEffect(() => {
-        if (order.status !== 'Delivered' || !order.deliveredAt) return;
-        
-        const updateTimer = () => {
-            const delivered = new Date(order.deliveredAt!).getTime();
-            const now = new Date().getTime();
-            const diff = (90 * 60 * 1000) - (now - delivered);
-            
-            if (diff <= 0) {
-                setTimeLeft('00:00');
-                return;
-            }
-            
-            const mins = Math.floor(diff / 60000);
-            const secs = Math.floor((diff % 60000) / 1000);
-            setTimeLeft(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
-        };
-
-        updateTimer();
-        const interval = setInterval(updateTimer, 1000);
-        return () => clearInterval(interval);
-    }, [order.status, order.deliveredAt]);
-
     const steps = [
-        { label: 'PENDING', icon: Clock, time: order.confirmedAt, active: true },
-        { label: 'PROCESSING', icon: Package, time: order.preparedAt, active: !!order.preparedAt },
-        { label: 'TRANSIT', icon: Truck, time: order.shippedAt, active: !!order.shippedAt },
-        { label: 'DELIVERED', icon: CheckCircle, time: order.deliveredAt, active: order.status === 'Delivered' }
+        { label: 'PENDING', active: true },
+        { label: 'PROCESSING', active: !!order.preparedAt || order.status === 'Confirmed' || order.status === 'Delivered' },
+        { label: 'TRANSIT', active: !!order.shippedAt || order.status === 'Delivered' },
+        { label: 'DELIVERED', active: order.status === 'Delivered' }
     ];
 
     const currentStepIndex = steps.filter(s => s.active).length - 1;
 
     return (
-        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-left-4 h-fit">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50/20">
-                <h2 className="text-base font-black text-gray-900 uppercase tracking-tight">Active Incoming Delivery</h2>
-                <button onClick={() => navigate('/orders')} className="text-emerald-600 font-black text-[9px] uppercase tracking-widest hover:underline">TRACKING HISTORY</button>
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-left-4 h-fit">
+            <div className="p-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/20">
+                <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Active Incoming Delivery</h2>
+                <button onClick={() => navigate('/orders')} className="text-emerald-600 font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-1">LIVE TRACKING <ArrowRight size={12}/></button>
             </div>
 
-            <div className="p-8 space-y-10">
-                <div className="bg-indigo-50/40 rounded-3xl p-6 flex flex-col sm:flex-row justify-between items-center border border-indigo-100 relative group">
+            <div className="p-10 space-y-12">
+                <div className="bg-indigo-50/40 rounded-[2rem] p-8 flex flex-col sm:flex-row justify-between items-center border border-indigo-100/30">
                     <div className="text-center sm:text-left">
-                        <p className="font-black text-gray-900 text-2xl tracking-tighter mb-1 uppercase">Order #{order.id.split('-').pop()}</p>
-                        <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
-                            {order.status === 'Delivered' ? `Delivered at ${new Date(order.deliveredAt!).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : `ETA: ${order.logistics?.deliveryTime || 'Scheduling'}`}
+                        <p className="font-black text-gray-900 text-3xl tracking-tighter mb-2 uppercase leading-none">Order #{order.id.split('-').pop()}</p>
+                        <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">
+                            {order.status === 'Delivered' ? `DELIVERED AT ${order.logistics?.deliveryTime || '13:46'}` : `ETA: ${order.logistics?.deliveryTime || 'SCHEDULING'}`}
                         </p>
                     </div>
-                    <span className="mt-4 sm:mt-0 px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] bg-indigo-600 text-white shadow-lg transition-transform group-hover:scale-105">{order.status}</span>
+                    <span className="mt-6 sm:mt-0 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-600 text-white shadow-xl">{order.status.toUpperCase()}</span>
                 </div>
 
-                <div className="flex justify-between items-start w-full px-4 relative">
-                    <div className="absolute top-5 left-10 right-10 h-0.5 bg-gray-100 z-0"></div>
+                <div className="flex justify-between items-center w-full px-6 relative">
+                    <div className="absolute top-1/2 left-10 right-10 h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
                     <div 
-                        className="absolute top-5 left-10 h-0.5 bg-emerald-500 z-0 transition-all duration-1000 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                        className="absolute top-1/2 left-10 h-0.5 bg-emerald-500 -translate-y-1/2 z-0 transition-all duration-1000 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
                         style={{ width: `${(currentStepIndex / (steps.length - 1)) * 82}%` }}
                     ></div>
 
-                    {steps.map((step, idx) => {
-                        const Icon = step.icon;
-                        const isPast = idx < currentStepIndex;
-                        const isCurrent = idx === currentStepIndex;
-                        
-                        return (
-                            <div key={idx} className="flex flex-col items-center flex-1 relative z-10">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 border-2 ${
-                                    isPast || isCurrent ? 'bg-emerald-500 text-white border-white shadow-md' : 'bg-white text-gray-200 border-gray-50'
-                                }`}>
-                                    <Icon size={18} />
-                                </div>
-                                <span className={`text-[8px] font-black uppercase tracking-[0.15em] mt-3 ${isPast || isCurrent ? 'text-gray-900' : 'text-gray-300'}`}>
-                                    {step.label}
-                                </span>
+                    {steps.map((step, idx) => (
+                        <div key={idx} className="flex flex-col items-center flex-1 relative z-10">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                                idx <= currentStepIndex ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-200 border border-gray-100'
+                            }`}>
+                                {idx <= currentStepIndex ? <Check size={16} strokeWidth={4}/> : <div className="w-1.5 h-1.5 rounded-full bg-gray-200"/>}
                             </div>
-                        );
-                    })}
+                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] mt-3 ${idx <= currentStepIndex ? 'text-gray-900' : 'text-gray-300'}`}>
+                                {step.label}
+                            </span>
+                        </div>
+                    ))}
                 </div>
 
-                <div>
-                    {order.status === 'Delivered' ? (
-                        <div className="space-y-4">
-                            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-white p-2 rounded-xl shadow-sm border border-emerald-50 text-emerald-600">
-                                        <CheckCircle size={20}/>
-                                    </div>
-                                    <div>
-                                        <p className="font-black text-gray-900 text-xs uppercase tracking-tight leading-none">Drop-off Confirmed</p>
-                                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">
-                                            {order.logistics?.driverName} logged delivery
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button 
-                                onClick={() => navigate('/orders')}
-                                className="w-full py-5 bg-[#043003] hover:bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all text-xs"
-                            >
-                                <Clock size={16} className="animate-pulse text-emerald-400"/>
-                                VERIFY ITEMS ({timeLeft})
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between border border-gray-100">
-                             <div className="flex items-center gap-3 text-gray-500 text-[9px] font-black uppercase tracking-widest">
-                                <MapPin size={16} className="text-indigo-400"/>
-                                {order.logistics?.deliveryLocation || 'Location TBD'}
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Driver</p>
-                                    <p className="text-[10px] font-black text-gray-900 uppercase">{order.logistics?.driverName || 'Allocating...'}</p>
-                                </div>
-                                <button className="p-2 bg-white rounded-lg border border-gray-200 shadow-sm text-indigo-600">
-                                    <ArrowRight size={14}/>
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[1.75rem] flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
+                        <CheckCircle size={24}/>
+                    </div>
+                    <div>
+                        <p className="font-black text-gray-900 text-sm uppercase tracking-tight">Drop-off Confirmed</p>
+                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">Logged Delivery</p>
+                    </div>
                 </div>
+
+                <button 
+                    onClick={() => onOpenVerification(order)}
+                    className="w-full py-5 bg-[#043003] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+                >
+                    <Clock size={16}/> ISSUE REPORTING WINDOW (OPEN)
+                </button>
             </div>
         </div>
     );
@@ -762,14 +238,150 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
   const navigate = useNavigate();
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [checkoutItems, setCheckoutItems] = useState<OrderItem[] | null>(null);
-  
-  const [activeMobileFeature, setActiveMobileFeature] = useState<'WEEKLY' | 'AI_QUICK' | 'DELIVERIES'>('WEEKLY');
+  const [favorites, setFavorites] = useState<Product[]>([]);
 
   useEffect(() => {
-    const fetchOrders = () => {
+    const fetch = () => {
         const userOrders = mockService.getOrders(user.id).filter(o => o.buyerId === user.id);
         setAllOrders(userOrders);
-        setProducts(mockService.getAllProducts());
+        const allProds = mockService.getAllProducts();
+        setProducts(allProds);
+        setFavorites(allProds.filter(p => user.favorites?.includes(p.id)));
     };
-    fetchOrders();
+    fetch();
+    const interval = setInterval(fetch, 10000);
+    return () => clearInterval(interval);
+  }, [user.id, user.favorites]);
+
+  const stats = useMemo(() => {
+    const monthlyTotal = allOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+    const active = allOrders.filter(o => ['Pending', 'Confirmed', 'Ready for Delivery', 'Shipped'].includes(o.status)).length;
+    const unpaid = allOrders.filter(o => o.paymentStatus !== 'Paid').length;
+    let co2 = 0;
+    allOrders.forEach(o => o.items.forEach(item => {
+        const p = products.find(prod => prod.id === item.productId);
+        co2 += item.quantityKg * (p?.co2SavingsPerKg || 0.8);
+    }));
+    return { monthlyTotal, active, unpaid, co2 };
+  }, [allOrders, products]);
+
+  const activeIncoming = allOrders.find(o => ['Confirmed', 'Ready for Delivery', 'Shipped', 'Delivered'].includes(o.status));
+
+  const handleQuickAdd = (product: Product) => {
+      mockService.createFullOrder(user.id, [{ productId: product.id, quantityKg: 10, pricePerKg: product.defaultPricePerKg, unit: 'KG' }], product.defaultPricePerKg * 10);
+      alert(`10kg of ${product.name} added to your active order list!`);
+  };
+
+  const handleOpenVerification = (order: Order) => {
+      navigate('/orders', { state: { openVerificationId: order.id } });
+  };
+
+  return (
+    <div className="space-y-10 animate-in fade-in duration-500">
+      
+      {/* KPI SECTION */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-2">
+         {[
+            { label: 'MONTHLY SPEND', value: `$${stats.monthlyTotal.toLocaleString()}`, color: 'text-emerald-500', trend: '14% Optimized', icon: DollarSign },
+            { label: 'ACTIVE SHIPMENTS', value: stats.active, color: 'text-blue-500', trend: '1 Arriving Today', icon: Truck },
+            { label: 'INVOICES DUE', value: stats.unpaid, color: 'text-orange-500', trend: '$0 Outstanding', icon: Clock },
+            { label: 'CO2 DIVERTED', value: `${stats.co2.toFixed(0)}kg`, color: 'text-emerald-600', trend: 'Verified Impact', icon: Leaf }
+         ].map((kpi, i) => (
+            <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-36 hover:shadow-md transition-all">
+                <div className="flex justify-between items-start">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{kpi.label}</span>
+                    <kpi.icon size={16} className={kpi.color}/>
+                </div>
+                <div className="mt-4">
+                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{kpi.value}</h3>
+                    <p className={`text-[8px] font-black uppercase mt-2 flex items-center gap-1 ${kpi.trend.includes('Optimized') || kpi.trend.includes('Verified') ? 'text-emerald-500' : 'text-gray-400'}`}>
+                       {kpi.trend.includes('Optimized') && <TrendingDown size={10}/>}
+                       {kpi.trend.includes('Verified') && <CheckCircle size={10}/>}
+                       {kpi.trend}
+                    </p>
+                </div>
+            </div>
+         ))}
+      </div>
+
+      {/* QUICK ADD FAVORITES */}
+      <div className="space-y-4 px-2">
+         <div className="flex items-center justify-between">
+            <div>
+               <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                   <Heart size={20} className="text-red-500 fill-red-500"/> Quick Add Favorites
+               </h2>
+               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Tap to add 10kg to your daily procurement</p>
+            </div>
+            <button onClick={() => navigate('/marketplace')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">View Catalog</button>
+         </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {favorites.length === 0 ? (
+                <div className="col-span-full py-8 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest">
+                    No favorites set. Heart products in the catalog to see them here.
+                </div>
+            ) : favorites.map(p => (
+                <QuickAddCard key={p.id} product={p} onQuickAdd={handleQuickAdd} />
+            ))}
+         </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 px-2">
+        {/* LEFT COLUMN */}
+        <div className="xl:col-span-6 space-y-8">
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <h2 className="text-base font-black text-gray-900 uppercase tracking-tight">Recent Order History</h2>
+                    <button onClick={() => navigate('/orders')} className="text-emerald-600 font-black text-[9px] uppercase tracking-widest hover:underline">VIEW ALL ORDERS</button>
+                </div>
+                <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto no-scrollbar">
+                    {allOrders.length === 0 ? (
+                        <div className="py-20 text-center opacity-30">
+                            <Clock size={32} className="mx-auto mb-2" />
+                            <p className="text-xs font-black uppercase">No orders yet</p>
+                        </div>
+                    ) : allOrders.slice(0, 8).map(order => (
+                        <div 
+                            key={order.id} 
+                            onClick={() => navigate('/orders')}
+                            className="p-6 flex items-center justify-between hover:bg-gray-50/50 transition-colors group cursor-pointer"
+                        >
+                            <div className="flex items-center gap-5">
+                                <div className="w-12 h-12 bg-gray-50 rounded-[1.25rem] flex items-center justify-center text-indigo-500 group-hover:bg-indigo-50 transition-colors border border-gray-100">
+                                    <ShoppingCart size={20}/>
+                                </div>
+                                <div>
+                                    <p className="font-black text-gray-900 text-sm uppercase tracking-tight">Order #{order.id.split('-').pop()}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-widest">{new Date(order.date).toLocaleDateString()} • <span className="text-emerald-600">${order.totalAmount.toFixed(2)}</span></p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-gray-200 ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'}`}>
+                                    {order.status.toUpperCase()}
+                                </span>
+                                <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-500 transition-all group-hover:translate-x-1" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="xl:col-span-6 space-y-8">
+            {activeIncoming ? (
+                <ActiveRunStatus order={activeIncoming} onOpenVerification={handleOpenVerification} />
+            ) : (
+                <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-gray-100 opacity-60">
+                    <Truck size={48} className="mx-auto text-gray-200 mb-4" />
+                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">No active deliveries incoming</h3>
+                </div>
+            )}
+            
+            {/* Weekly Order Calendar (Requested Change 1) */}
+            <WeeklyOrderCalendar orders={allOrders} />
+        </div>
+      </div>
+    </div>
+  );
+};

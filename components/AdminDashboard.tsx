@@ -1,13 +1,17 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { InventoryItem, User, UserRole, Order, Customer, Product } from '../types';
 import { mockService } from '../services/mockDataService';
+import { WholesalerPriceRequestModal } from './WholesalerPriceRequestModal';
+import { triggerNativeSms } from '../services/smsService';
 import { 
   LayoutDashboard, ShoppingCart, DollarSign, Box, Users, 
   ArrowRight, Store, Search, MoreVertical, CheckCircle, TrendingUp,
   Leaf, Activity, Globe, Zap, Clock, Package, ChevronRight, X,
   Eye, Pencil, Percent, Settings, UserPlus, FileText, ChevronDown,
   UserCheck, AlertTriangle, Wallet, BarChart3, TrendingDown, Info, Loader2,
-  Filter, ArrowLeft, Receipt, ChevronUp, Smartphone, Link as LinkIcon
+  Filter, ArrowLeft, Receipt, ChevronUp, Smartphone, Link as LinkIcon,
+  ShieldCheck, Share2, Copy, Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -129,7 +133,45 @@ const MarkupEditorModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: bo
     );
 };
 
-const ActionDropdown = ({ customer, onEditMarkup, onAssignRep }: { customer: Customer, onEditMarkup: (c: Customer) => void, onAssignRep: (c: Customer) => void }) => {
+const DispatchCodeModal = ({ isOpen, onClose, code, businessName }: { isOpen: boolean, onClose: () => void, code: string, businessName: string }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 p-10 text-center">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner-sm">
+                    <Smartphone size={40} />
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-2">Access Dispatched</h2>
+                <p className="text-sm text-gray-500 font-medium mb-8">Generated login code for <span className="font-black text-gray-900">{businessName}</span></p>
+                
+                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-8 mb-8 relative group">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">UNIQUE LOGIN CODE</p>
+                    <div className="text-5xl font-black text-indigo-600 tracking-widest font-mono">{code}</div>
+                    <button 
+                        onClick={() => { navigator.clipboard.writeText(code); alert("Code copied!"); }}
+                        className="absolute right-4 bottom-4 p-2 bg-white rounded-lg text-gray-400 hover:text-indigo-600 shadow-sm border border-gray-100 transition-all active:scale-90"
+                    >
+                        <Copy size={16}/>
+                    </button>
+                </div>
+
+                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-start gap-3 text-left mb-8">
+                    <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-indigo-800 font-medium leading-relaxed">
+                        The user can use this code at the login screen. They will be prompted to set a secure password upon first entry.
+                    </p>
+                </div>
+
+                <button onClick={onClose} className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg hover:bg-black transition-all active:scale-95">
+                    Close Manifest
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const ActionDropdown = ({ customer, onEditMarkup, onAssignRep, onDispatch }: { customer: Customer, onEditMarkup: (c: Customer) => void, onAssignRep: (c: Customer) => void, onDispatch: (c: Customer) => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +206,7 @@ const ActionDropdown = ({ customer, onEditMarkup, onAssignRep }: { customer: Cus
     <div className="relative flex items-center gap-3" ref={dropdownRef}>
       {/* DISPATCH ACCESS BUTTON (From Screenshot) */}
       <button 
-        onClick={() => alert(`Dispatching immediate marketplace access to ${customer.businessName}`)}
+        onClick={() => onDispatch(customer)}
         className="hidden sm:flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-[#047857] transition-all active:scale-95 border border-emerald-400/20"
       >
         <Smartphone size={14}/> Dispatch Access
@@ -216,6 +258,7 @@ export const AdminDashboard: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [wholesalers, setWholesalers] = useState<User[]>([]);
   const [pzReps, setPzReps] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pendingCount, setPendingCount] = useState(0);
@@ -226,11 +269,7 @@ export const AdminDashboard: React.FC = () => {
   // Modal States
   const [editingMarkupCustomer, setEditingMarkupCustomer] = useState<Customer | null>(null);
   const [editingRepCustomer, setEditingRepCustomer] = useState<Customer | null>(null);
-
-  // Data for Drill Downs
-  const [drillDownList, setDrillDownList] = useState<Order[]>([]);
-  const [wholesalersList, setWholesalersList] = useState<User[]>([]);
-  const [revenueByEntity, setRevenueByEntity] = useState<any[]>([]);
+  const [dispatchCodeData, setDispatchCodeData] = useState<{code: string, name: string} | null>(null);
 
   const loadStats = () => {
       const orders = mockService.getOrders('u1');
@@ -239,14 +278,16 @@ export const AdminDashboard: React.FC = () => {
       const reqs = mockService.getRegistrationRequests().filter(r => r.status === 'Pending');
       const customersList = mockService.getCustomers();
       const reps = mockService.getPzRepresentatives();
+      const suppliers = users.filter(u => u.role === UserRole.WHOLESALER || u.role === UserRole.FARMER);
       
       setAllOrders(orders);
       setAllProducts(products);
       setPzReps(reps);
+      setWholesalers(suppliers);
+
       const today = new Date().toDateString();
       const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === today);
       const totalGmv = orders.reduce((sum, o) => sum + o.totalAmount, 0);
-      const wholesalers = users.filter(u => u.role === UserRole.WHOLESALER);
 
       const revMap: Record<string, number> = {};
       orders.forEach(o => {
@@ -271,13 +312,11 @@ export const AdminDashboard: React.FC = () => {
       setStats({
         gmv: totalGmv,
         ordersToday: todaysOrders.length,
-        wholesalers: wholesalers.length,
+        wholesalers: suppliers.length,
         wasteDiverted: totalWaste,
         co2Saved: totalCo2
       });
       setCustomers(customersList);
-      setWholesalersList(wholesalers);
-      setRevenueByEntity(revByEntity);
   };
 
   useEffect(() => {
@@ -285,6 +324,22 @@ export const AdminDashboard: React.FC = () => {
     const interval = setInterval(loadStats, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleAssignSupplier = (customerId: string, supplierId: string) => {
+      mockService.updateCustomerSupplier(customerId, supplierId);
+      loadStats();
+  };
+
+  const handleAssignPortal = (customerId: string, portal: UserRole) => {
+      mockService.updateCustomerPortal(customerId, portal);
+      loadStats();
+  };
+
+  const handleDispatchAccess = (customer: Customer) => {
+      const code = mockService.dispatchAccess(customer.id);
+      setDispatchCodeData({ code, name: customer.businessName });
+      loadStats();
+  };
 
   // Aggregated Customer Metrics
   const customerFinancials = useMemo(() => {
@@ -311,45 +366,10 @@ export const AdminDashboard: React.FC = () => {
   );
 
   const kpis = [
-    { 
-        id: 'ORDERS',
-        label: 'Orders Today', 
-        value: stats.ordersToday, 
-        icon: Activity, 
-        color: 'text-blue-600', 
-        bg: 'bg-blue-50',
-        live: true,
-        desc: 'Incoming live volume'
-    },
-    { 
-        id: 'WHOLESALERS',
-        label: 'Live Wholesalers', 
-        value: stats.wholesalers, 
-        icon: Globe, 
-        color: 'text-indigo-600', 
-        bg: 'bg-indigo-50',
-        live: true,
-        desc: 'Active network nodes'
-    },
-    { 
-        id: 'REVENUE',
-        label: 'Market Revenue', 
-        value: `$${stats.gmv.toLocaleString()}`, 
-        icon: DollarSign, 
-        color: 'text-emerald-600', 
-        bg: 'bg-emerald-50',
-        desc: 'Total platform GMV'
-    },
-    { 
-        id: 'IMPACT',
-        label: 'Ecological Impact', 
-        value: `${stats.wasteDiverted.toLocaleString()}kg`, 
-        icon: Leaf, 
-        color: 'text-emerald-500', 
-        bg: 'bg-emerald-50',
-        live: true,
-        desc: 'Waste diverted to buyers'
-    }
+    { id: 'ORDERS', label: 'Orders Today', value: stats.ordersToday, icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50', live: true, desc: 'Incoming live volume' },
+    { id: 'WHOLESALERS', label: 'Live Wholesalers', value: stats.wholesalers, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50', live: true, desc: 'Active network nodes' },
+    { id: 'REVENUE', label: 'Market Revenue', value: `$${stats.gmv.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', desc: 'Total platform GMV' },
+    { id: 'IMPACT', label: 'Ecological Impact', value: `${stats.wasteDiverted.toLocaleString()}kg`, icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-50', live: true, desc: 'Waste diverted to buyers' }
   ];
 
   const handleKpiClick = (id: string) => {
@@ -358,7 +378,6 @@ export const AdminDashboard: React.FC = () => {
     if (id === 'IMPACT') {
       navigate('/impact');
     } else {
-        if (id === 'ORDERS') setDrillDownList(allOrders.filter(o => new Date(o.date).toDateString() === new Date().toDateString()));
         setActiveDrillDown(id as DrillDownType);
     }
   };
@@ -376,6 +395,8 @@ export const AdminDashboard: React.FC = () => {
     setDrillDownList(allOrders.filter(o => o.buyerId === customerId && o.paymentStatus !== 'Paid'));
     setActiveDrillDown('LEDGER');
   };
+
+  const [drillDownList, setDrillDownList] = useState<Order[]>([]);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-20">
@@ -438,7 +459,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* DRILL DOWN SECTION */}
       {activeDrillDown && (
-          <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-xl animate-in slide-in-from-top-4 duration-300 overflow-hidden">
+          <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-xl animate-in slide-in-from-top-4 duration-300 overflow-hidden mx-2">
               <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                   <div className="flex items-center gap-4">
                       <div className={`p-3 bg-white rounded-2xl border border-gray-100 shadow-sm ${activeDrillDown === 'LEDGER' ? 'text-red-600' : 'text-indigo-600'}`}>
@@ -448,7 +469,7 @@ export const AdminDashboard: React.FC = () => {
                         <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">
                             {activeDrillDown === 'ORDERS' ? (drillDownCustomerId ? `${customers.find(c => c.id === drillDownCustomerId)?.businessName} - All Orders` : "Today's Order Manifest") : 
                              activeDrillDown === 'WHOLESALERS' ? 'Verified Partner Directory' : 
-                             activeDrillDown === 'REVENUE' ? 'Market Revenue by Entity' : 
+                             activeDrillDown === 'REVENUE' ? 'Market Revenue Analysis' : 
                              `${customers.find(c => c.id === drillDownCustomerId)?.businessName} - Outstanding Invoices`}
                         </h2>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Detailed Drill-down Analysis</p>
@@ -507,7 +528,6 @@ export const AdminDashboard: React.FC = () => {
                                                     </button>
                                                 </td>
                                             </tr>
-                                            {/* Itemized Manifest Expansion */}
                                             {isExpanded && (
                                                 <tr className="bg-indigo-50/20 animate-in slide-in-from-top-2">
                                                     <td colSpan={6} className="px-8 py-0">
@@ -562,7 +582,7 @@ export const AdminDashboard: React.FC = () => {
                       )}
                       {activeDrillDown === 'WHOLESALERS' && (
                           <>
-                            <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                            <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-8 py-5">Trading Entity</th>
                                     <th className="px-8 py-5">Email</th>
@@ -570,7 +590,7 @@ export const AdminDashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 bg-white">
-                                {wholesalersList.map(w => (
+                                {wholesalers.map(w => (
                                     <tr key={w.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-8 py-6 font-black text-gray-900 uppercase tracking-tight">{w.businessName}</td>
                                         <td className="px-8 py-6 font-bold text-gray-400 text-sm">{w.email}</td>
@@ -580,24 +600,6 @@ export const AdminDashboard: React.FC = () => {
                                                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active Now</span>
                                             </div>
                                         </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                          </>
-                      )}
-                      {activeDrillDown === 'REVENUE' && (
-                          <>
-                            <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                                <tr>
-                                    <th className="px-8 py-5">Business Identity</th>
-                                    <th className="px-8 py-5 text-right">Lifetime GMV contribution</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 bg-white">
-                                {revenueByEntity.map((r, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-8 py-6 font-black text-gray-900 uppercase tracking-tight">{r.entity}</td>
-                                        <td className="px-8 py-6 text-right font-black text-indigo-600 text-lg tracking-tighter">${r.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -636,10 +638,11 @@ export const AdminDashboard: React.FC = () => {
             <table className="w-full text-left border-collapse">
                 <thead className="bg-white border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">
                     <tr>
-                        <th className="px-8 py-8 min-w-[200px]">Customer Entity</th>
-                        <th className="px-8 py-8">Segment</th>
+                        <th className="px-8 py-8 min-w-[180px]">Customer Entity</th>
+                        <th className="px-8 py-8 min-w-[120px]">Segment</th>
+                        <th className="px-8 py-8 min-w-[140px]">Portal Role</th>
                         <th className="px-8 py-8">Status</th>
-                        <th className="px-8 py-8">Connected Supplier</th>
+                        <th className="px-8 py-8 min-w-[180px]">Assigned Supplier</th>
                         <th className="px-8 py-8 text-right">PZ Markup</th>
                         <th className="px-8 py-8 text-center">Orders</th>
                         <th className="px-8 py-8 text-center">Outstanding</th>
@@ -666,6 +669,21 @@ export const AdminDashboard: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="px-8 py-7">
+                                    <div className="relative group/sel">
+                                        <select 
+                                            value={customer.assignedPortal || UserRole.CONSUMER}
+                                            onChange={(e) => handleAssignPortal(customer.id, e.target.value as UserRole)}
+                                            className="w-full bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-2 font-black text-[10px] uppercase tracking-widest text-indigo-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 pr-8"
+                                        >
+                                            <option value={UserRole.CONSUMER}>Consumer</option>
+                                            <option value={UserRole.GROCERY}>Grocer</option>
+                                            <option value={UserRole.WHOLESALER}>Wholesaler</option>
+                                            <option value={UserRole.FARMER}>Farmer</option>
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none"/>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-7">
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm ${
                                         customer.connectionStatus === 'Active' 
                                         ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
@@ -675,7 +693,19 @@ export const AdminDashboard: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="px-8 py-7">
-                                    <div className="font-black text-gray-900 text-sm uppercase tracking-tight truncate max-w-[140px]">{customer.connectedSupplierName || 'Direct Connection'}</div>
+                                    <div className="relative group/sel">
+                                        <select 
+                                            value={customer.connectedSupplierId || ''}
+                                            onChange={(e) => handleAssignSupplier(customer.id, e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 font-black text-[10px] uppercase tracking-widest text-gray-600 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-gray-900 pr-8"
+                                        >
+                                            <option value="">Direct Node</option>
+                                            {wholesalers.map(w => (
+                                                <option key={w.id} value={w.id}>{w.businessName}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-7 text-right">
                                     <button 
@@ -735,6 +765,7 @@ export const AdminDashboard: React.FC = () => {
                                         customer={customer} 
                                         onEditMarkup={setEditingMarkupCustomer} 
                                         onAssignRep={setEditingRepCustomer}
+                                        onDispatch={handleDispatchAccess}
                                     />
                                 </td>
                             </tr>
@@ -759,10 +790,13 @@ export const AdminDashboard: React.FC = () => {
         reps={pzReps}
         onUpdate={loadStats}
       />
+
+      <DispatchCodeModal 
+        isOpen={!!dispatchCodeData}
+        onClose={() => setDispatchCodeData(null)}
+        code={dispatchCodeData?.code || ''}
+        businessName={dispatchCodeData?.name || ''}
+      />
     </div>
   );
 };
-
-const Info = ({ size = 24, ...props }: any) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-);
