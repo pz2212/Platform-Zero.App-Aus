@@ -67,8 +67,8 @@ class MockDataService {
   private issues: OrderIssue[] = [];
   private notifications: AppNotification[] = [];
   private customers: Customer[] = [
-    { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER },
-    { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor', assignedPortal: UserRole.GROCERY },
+    { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER, repCommissionRate: 5, commissionTotalOrders: 20, commissionStartOrder: 1 },
+    { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor', assignedPortal: UserRole.GROCERY, repCommissionRate: 8, commissionTotalOrders: 10, commissionStartOrder: 1 },
   ];
 
   private drivers: Driver[] = [];
@@ -77,7 +77,19 @@ class MockDataService {
       { id: 'reg1', businessName: 'Sunshine Cafe', name: 'John Doe', email: 'john@sunshine.com', requestedRole: UserRole.CONSUMER, status: 'Pending', submittedDate: new Date().toISOString() }
   ];
   private priceRequests: SupplierPriceRequest[] = [
-      { id: 'pr1', supplierId: 'u2', status: 'PENDING', createdAt: new Date().toISOString(), customerContext: 'New Bistro', customerLocation: 'Sydney', items: [] }
+      { 
+        id: 'pr1', 
+        supplierId: 'u2', 
+        status: 'PENDING', 
+        createdAt: new Date().toISOString(), 
+        customerContext: 'New Bistro', 
+        customerLocation: 'Sydney', 
+        items: [
+            { productId: 'p1', productName: 'Roma Tomatoes', qty: 100, invoicePrice: 5.50, targetPrice: 4.20 },
+            { productId: 'p2', productName: 'Iceberg Lettuce', qty: 50, invoicePrice: 3.20, targetPrice: 2.10 },
+            { productId: 'p4', productName: 'Black Eggplant', qty: 30, invoicePrice: 7.00, targetPrice: 5.50 }
+        ] 
+      }
   ];
 
   constructor() {
@@ -89,12 +101,17 @@ class MockDataService {
       this.orders.push({
           id: 'o-alice-101', buyerId: 'u4', sellerId: 'u2', items: [
             { productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' }
-          ], totalAmount: 325.00, status: 'Delivered', date: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), deliveredAt: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), paymentStatus: 'Unpaid', source: 'Direct', logistics: { deliveryLocation: 'Adelaide CBD', deliveryTime: '13:46' }
+          ], totalAmount: 325.00, supplierCost: 260.00, status: 'Delivered', date: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), deliveredAt: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), paymentStatus: 'Unpaid', source: 'Direct', logistics: { deliveryLocation: 'Adelaide CBD', deliveryTime: '13:46' }
       });
       this.orders.push({
         id: 'o-alice-102', buyerId: 'u4', sellerId: 'u2', items: [
           { productId: 'p2', quantityKg: 10, pricePerKg: 1.20, unit: 'KG' }
-        ], totalAmount: 185.00, status: 'Delivered', date: new Date(now.getTime() - 86400000).toISOString(), deliveredAt: new Date(now.getTime() - 86400000).toISOString(), paymentStatus: 'Paid', source: 'Direct'
+        ], totalAmount: 185.00, supplierCost: 140.00, status: 'Delivered', date: new Date(now.getTime() - 86400000).toISOString(), deliveredAt: new Date(now.getTime() - 86400000).toISOString(), paymentStatus: 'Paid', source: 'Direct'
+      });
+      this.orders.push({
+        id: 'o-gary-103', buyerId: 'u5', sellerId: 'u2', items: [
+          { productId: 'p5', quantityKg: 100, pricePerKg: 2.10, unit: 'KG' }
+        ], totalAmount: 210.00, supplierCost: 180.00, status: 'Delivered', date: new Date(now.getTime() - 86400000 * 10).toISOString(), deliveredAt: new Date(now.getTime() - 86400000 * 10).toISOString(), paymentStatus: 'Overdue', source: 'Direct', supplierInvoiceDue: new Date(now.getTime() - 86400000).toISOString()
       });
   }
 

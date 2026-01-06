@@ -12,6 +12,7 @@ import { ProductPricing } from './components/ProductPricing';
 import { Marketplace } from './components/Marketplace';
 import { SupplierMarket } from './components/SupplierMarket';
 import { AdminDashboard } from './components/AdminDashboard';
+import { AdminAccounts } from './components/AdminAccounts';
 import { Settings as SettingsComponent } from './components/Settings';
 import { LoginRequests } from './components/LoginRequests';
 import { ConsumerOnboarding } from './components/ConsumerOnboarding';
@@ -39,7 +40,7 @@ import {
   Sparkles, User as UserIcon, Building, ChevronRight,
   Sprout, Globe, Users2, Circle, LogIn, ArrowRight, Menu, Search, Calculator, BarChart3,
   Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4,
-  Smartphone, Key, Shield, Loader2
+  Smartphone, Key, Shield, Loader2, Check, Landmark
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubItem = false }: any) => (
@@ -207,6 +208,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
 
             <div className="pt-4 mt-4 border-t border-gray-100">
                 <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Management</p>
+                <SidebarLink to="/admin/accounts" icon={Landmark} label="Accounts Ledger" active={isActive('/admin/accounts')} />
                 <SidebarLink to="/rep-management" icon={Briefcase} label="Rep Management" active={isActive('/rep-management')} />
                 <SidebarLink to="/suppliers" icon={Store} label="Suppliers" active={isActive('/suppliers')} />
                 <SidebarLink to="/marketplace" icon={Layers} label="Catalog Manager" active={isActive('/marketplace')} />
@@ -251,7 +253,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
             <NavContent />
         </div>
 
-        {/* Secure Account Widget (Requested Change 2) */}
+        {/* Secure Account Widget */}
         {user.loginCode && !user.passwordSet && (
             <SecureAccountSidebarWidget onComplete={() => onPasswordSet(user.id)} />
         )}
@@ -410,6 +412,7 @@ const App = () => {
       <Route path="/pricing" element={user ? <ProductPricing user={user} /> : <Navigate to="/" />} />
       <Route path="/inventory" element={<Inventory items={mockService.getAllInventory()} />} />
       <Route path="/accounts" element={user ? <Accounts user={user} /> : <Navigate to="/" />} />
+      <Route path="/admin/accounts" element={user?.role === UserRole.ADMIN ? <AdminAccounts /> : <Navigate to="/" />} />
       <Route path="/settings" element={user ? <SettingsComponent user={user} /> : <Navigate to="/" />} />
       <Route path="/orders" element={user ? <CustomerOrders user={user} /> : <Navigate to="/" />} />
       <Route path="/contacts" element={user ? <Contacts user={user} /> : <Navigate to="/" />} />
@@ -451,7 +454,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                 </div>
                 <div className="p-10 space-y-10">
                     
-                    {/* CODE LOGIN SECTION (Requested Change 4) */}
+                    {/* CODE LOGIN SECTION */}
                     <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>

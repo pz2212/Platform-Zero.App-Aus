@@ -172,12 +172,14 @@ export interface Order {
   sellerId: string;
   items: OrderItem[];
   totalAmount: number;
+  supplierCost?: number; // Added to track what we owe the supplier
   status: 'Pending' | 'Confirmed' | 'Ready for Delivery' | 'Shipped' | 'Delivered' | 'Cancelled';
   date: string;
   confirmedAt?: string;
   preparedAt?: string;
   shippedAt?: string;
   deliveredAt?: string;
+  supplierInvoiceDue?: string; // Added for red-flag logic
   paymentStatus?: 'Paid' | 'Unpaid' | 'Overdue';
   paymentMethod?: 'pay_now' | 'invoice' | 'amex';
   priority?: 'STANDARD' | 'HIGH' | 'URGENT';
@@ -213,6 +215,12 @@ export interface Customer {
   pricingStatus?: string;
   assignedPzRepId?: string;
   assignedPzRepName?: string;
+  // Commission logic for lead generation
+  repCommissionRate?: number;
+  commissionStartOrder?: number;
+  commissionTotalOrders?: number;
+  commissionTotalWeeks?: number;
+  commissionStartDate?: string;
   commonProducts?: string;
   connectionStatus?: 'Active' | 'Pending Connection' | 'Pricing Pending' | 'Lead';
   onboardingData?: {
