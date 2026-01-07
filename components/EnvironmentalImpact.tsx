@@ -73,7 +73,7 @@ export const EnvironmentalImpact: React.FC = () => {
     <div className="space-y-10 animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">Ecological Ledger</h1>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">Enviromental Impact Ledger</h1>
           <p className="text-gray-500 font-bold mt-2 uppercase text-[10px] tracking-widest">Verified Impact & Waste Diversion Metrics</p>
         </div>
         <div className="bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3">

@@ -24,8 +24,8 @@ export const USERS: User[] = [
   { id: 'u3', name: 'Bob Farmer', businessName: 'Green Valley Farms', role: UserRole.FARMER, email: 'bob@greenvalley.com', dashboardVersion: 'v2', activeSellingInterests: ['Potatoes', 'Apples'], activeBuyingInterests: [], businessProfile: { isComplete: true } as any },
   { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true, favorites: ['p1', 'p2', 'p5'] },
   { id: 'u5', name: 'Gary Grocer', businessName: 'Local Corner Grocers', role: UserRole.GROCERY, email: 'gary@grocer.com', phone: '0411 222 333', industry: 'Grocery Store', smsNotificationsEnabled: true },
-  { id: 'rep1', name: 'Alex Johnson', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep1@pz.com', commissionRate: 5.0 },
-  { id: 'rep2', name: 'Sam Taylor', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep2@pz.com', commissionRate: 5.0 },
+  { id: 'rep1', name: 'Alex Johnson', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep1@pz.com', phone: '0400 111 222', commissionRate: 5.0 },
+  { id: 'rep2', name: 'Sam Taylor', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep2@pz.com', phone: '0400 333 444', commissionRate: 5.0 },
 ];
 
 export const INDUSTRIES: Industry[] = [
@@ -69,6 +69,9 @@ class MockDataService {
   private customers: Customer[] = [
     { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER, repCommissionRate: 5, commissionTotalOrders: 20, commissionStartOrder: 1 },
     { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor', assignedPortal: UserRole.GROCERY, repCommissionRate: 8, commissionTotalOrders: 10, commissionStartOrder: 1 },
+    { id: 'c-demo-1', businessName: 'Urban Greens Deli', contactName: 'Mark S.', category: 'Deli', industry: 'Grocery Store', location: 'Adelaide', connectedSupplierId: 'u2' },
+    { id: 'c-demo-2', businessName: 'Seaside Bistro', contactName: 'Elena V.', category: 'Restaurant', industry: 'Restaurant', location: 'Glenelg', connectedSupplierId: 'u2' },
+    { id: 'c-demo-3', businessName: 'The Salad Project', contactName: 'Tom B.', category: 'Catering', industry: 'Catering', location: 'Burnside', connectedSupplierId: 'u2' },
   ];
 
   private drivers: Driver[] = [];
@@ -98,21 +101,63 @@ class MockDataService {
 
   private generateDemoOrders() {
       const now = new Date();
+      
+      // --- 4 TRANSIT EXAMPLES ---
       this.orders.push({
-          id: 'o-alice-101', buyerId: 'u4', sellerId: 'u2', items: [
-            { productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' }
-          ], totalAmount: 325.00, supplierCost: 260.00, status: 'Delivered', date: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), deliveredAt: new Date(now.getTime() - 45 * 60 * 1000).toISOString(), paymentStatus: 'Unpaid', source: 'Direct', logistics: { deliveryLocation: 'Adelaide CBD', deliveryTime: '13:46' }
+          id: 'o-trans-1', buyerId: 'u4', sellerId: 'u2', items: [{ productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' }], 
+          totalAmount: 225.00, status: 'Shipped', date: now.toISOString(), source: 'Direct', logistics: { deliveryLocation: 'Richmond', deliveryTime: '14:30' }
       });
       this.orders.push({
-        id: 'o-alice-102', buyerId: 'u4', sellerId: 'u2', items: [
-          { productId: 'p2', quantityKg: 10, pricePerKg: 1.20, unit: 'KG' }
-        ], totalAmount: 185.00, supplierCost: 140.00, status: 'Delivered', date: new Date(now.getTime() - 86400000).toISOString(), deliveredAt: new Date(now.getTime() - 86400000).toISOString(), paymentStatus: 'Paid', source: 'Direct'
+          id: 'o-trans-2', buyerId: 'u5', sellerId: 'u2', items: [{ productId: 'p2', quantityKg: 20, pricePerKg: 1.20, unit: 'KG' }], 
+          totalAmount: 24.00, status: 'Ready for Delivery', date: now.toISOString(), source: 'Direct', logistics: { deliveryLocation: 'Fitzroy', deliveryTime: '15:15' }
       });
       this.orders.push({
-        id: 'o-gary-103', buyerId: 'u5', sellerId: 'u2', items: [
-          { productId: 'p5', quantityKg: 100, pricePerKg: 2.10, unit: 'KG' }
-        ], totalAmount: 210.00, supplierCost: 180.00, status: 'Delivered', date: new Date(now.getTime() - 86400000 * 10).toISOString(), deliveredAt: new Date(now.getTime() - 86400000 * 10).toISOString(), paymentStatus: 'Overdue', source: 'Direct', supplierInvoiceDue: new Date(now.getTime() - 86400000).toISOString()
+          id: 'o-trans-3', buyerId: 'c-demo-1', sellerId: 'u2', items: [{ productId: 'p3', quantityKg: 100, pricePerKg: 3.80, unit: 'KG' }], 
+          totalAmount: 380.00, status: 'Confirmed', date: now.toISOString(), source: 'Marketplace', logistics: { deliveryLocation: 'Adelaide', deliveryTime: '16:00' }
       });
+      this.orders.push({
+          id: 'o-trans-4', buyerId: 'c-demo-2', sellerId: 'u2', items: [{ productId: 'p4', quantityKg: 30, pricePerKg: 5.50, unit: 'KG' }], 
+          totalAmount: 165.00, status: 'Pending', date: now.toISOString(), source: 'Direct', logistics: { deliveryLocation: 'Glenelg', deliveryTime: '17:30' }
+      });
+
+      // --- 4 VERIFICATION EXAMPLES (Delivered < 90 mins ago) ---
+      const fortyMinsAgo = new Date(now.getTime() - 40 * 60000).toISOString();
+      const tenMinsAgo = new Date(now.getTime() - 10 * 60000).toISOString();
+      const sixtyMinsAgo = new Date(now.getTime() - 60 * 60000).toISOString();
+      const eightyMinsAgo = new Date(now.getTime() - 80 * 60000).toISOString();
+
+      this.orders.push({
+          id: 'o-ver-1', buyerId: 'u4', sellerId: 'u2', items: [{ productId: 'p5', quantityKg: 40, pricePerKg: 2.10, unit: 'KG' }], 
+          totalAmount: 84.00, status: 'Delivered', date: now.toISOString(), deliveredAt: fortyMinsAgo, source: 'Direct', logistics: { deliveryLocation: 'Richmond', deliveryTime: '13:00' }
+      });
+      this.orders.push({
+          id: 'o-ver-2', buyerId: 'c-demo-3', sellerId: 'u2', items: [{ productId: 'p1', quantityKg: 15, pricePerKg: 4.50, unit: 'KG' }], 
+          totalAmount: 67.50, status: 'Delivered', date: now.toISOString(), deliveredAt: tenMinsAgo, source: 'Marketplace', logistics: { deliveryLocation: 'Burnside', deliveryTime: '13:30' }
+      });
+      this.orders.push({
+          id: 'o-ver-3', buyerId: 'c-demo-1', sellerId: 'u2', items: [{ productId: 'p2', quantityKg: 200, pricePerKg: 1.10, unit: 'KG' }], 
+          totalAmount: 220.00, status: 'Delivered', date: now.toISOString(), deliveredAt: sixtyMinsAgo, source: 'Direct', logistics: { deliveryLocation: 'Adelaide', deliveryTime: '12:45' }
+      });
+      this.orders.push({
+          id: 'o-ver-4', buyerId: 'u5', sellerId: 'u2', items: [{ productId: 'p3', quantityKg: 50, pricePerKg: 3.50, unit: 'KG' }], 
+          totalAmount: 175.00, status: 'Delivered', date: now.toISOString(), deliveredAt: eightyMinsAgo, source: 'Direct', logistics: { deliveryLocation: 'Fitzroy', deliveryTime: '12:20' }
+      });
+
+      // --- 4 MARKET QUALITY DISPUTES ---
+      const createIssue = (id: string, orderId: string, desc: string, type: string) => {
+          const issue: OrderIssue = {
+              id: `iss-${id}`, orderId, type, description: desc, reportedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+              supplierStatus: 'PENDING', repStatus: 'UNSEEN', assignedRepId: 'rep1'
+          };
+          this.issues.push(issue);
+          const order = this.orders.find(o => o.id === orderId);
+          if (order) order.issue = issue;
+      };
+
+      createIssue('1', 'o-ver-1', 'Large portion of Roma Tomatoes arrived bruised and unusable for service.', 'Quality Issues');
+      createIssue('2', 'o-trans-3', 'Order manifest says 100kg Apples but only 8 bins (approx 80kg) received.', 'Missing Items');
+      createIssue('3', 'o-ver-3', 'Lettuce trays were left in the sun at loading bay, wilting present.', 'Quality Issues');
+      createIssue('4', 'o-ver-4', 'Two bags of Dutch Cream potatoes missing from delivery palette.', 'Missing Items');
   }
 
   getAllUsers() { return this.users; }
@@ -174,9 +219,7 @@ class MockDataService {
     this.issues.push(newIssue);
     order.issue = newIssue;
 
-    // Notify Rep
     this.addAppNotification(repId, 'New Dispute Logged', `${buyer?.businessName} reported an issue for Order #${orderId.split('-').pop()}`, 'ORDER');
-    // Notify Supplier
     this.addAppNotification(order.sellerId, 'Buyer Dispute Received', `A quality issue was reported for Order #${orderId.split('-').pop()}. Action required.`, 'ORDER');
   }
 
@@ -203,7 +246,6 @@ class MockDataService {
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
       customer.loginCode = code;
       
-      // Create user entry for this customer so they can log in
       if (!this.users.find(u => u.id === customer.id)) {
           this.users.push({
               id: customer.id,
@@ -236,8 +278,6 @@ class MockDataService {
           user.passwordSet = true;
       }
   }
-
-  /* Missing methods implementation starts here */
 
   updateProductPrice(id: string, price: number) {
       const p = this.products.find(p => p.id === id);
@@ -480,7 +520,7 @@ class MockDataService {
   }
 
   sendOnboardingComms(customerId: string) {
-      console.log(`Sending onboarding comms to ${customerId}`);
+      console.log('Sending onboarding comms to ' + customerId);
   }
 
   updateInventoryStatus(id: string, status: string) {
@@ -489,7 +529,7 @@ class MockDataService {
   }
 
   sendChatMessage(senderId: string, receiverId: string, text: string) {
-      console.log(`Chat from ${senderId} to ${receiverId}: ${text}`);
+      console.log('Chat from ' + senderId + ' to ' + receiverId + ': ' + text);
   }
 
   markNotificationAsRead(id: string) {
@@ -519,7 +559,7 @@ class MockDataService {
   }
 
   uploadToDeli(data: any, businessName: string) {
-      console.log(`Uploading to Deli storefront for ${businessName}:`, data);
+      console.log('Uploading to Deli storefront for ' + businessName + ':', data);
   }
 
   updateUserInterests(userId: string, selling: string[], buying: string[]) {

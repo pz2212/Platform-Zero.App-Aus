@@ -2,8 +2,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { InventoryItem, User, UserRole, Order, Customer, Product } from '../types';
 import { mockService } from '../services/mockDataService';
-import { WholesalerPriceRequestModal } from './WholesalerPriceRequestModal';
-import { triggerNativeSms } from '../services/smsService';
 import { 
   LayoutDashboard, ShoppingCart, DollarSign, Box, Users, 
   ArrowRight, Store, Search, MoreVertical, CheckCircle, TrendingUp,
@@ -11,11 +9,79 @@ import {
   Eye, Pencil, Percent, Settings, UserPlus, FileText, ChevronDown,
   UserCheck, AlertTriangle, Wallet, BarChart3, TrendingDown, Info, Loader2,
   Filter, ArrowLeft, Receipt, ChevronUp, Smartphone, Link as LinkIcon,
-  ShieldCheck, Share2, Copy, Check
+  ShieldCheck, Share2, Copy, Check, Calendar
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type DrillDownType = 'ORDERS' | 'WHOLESALERS' | 'REVENUE' | 'LEDGER' | null;
+
+const VestingModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: boolean, onClose: () => void, customer: Customer | null, onUpdate: () => void }) => {
+    const [start, setStart] = useState(1);
+    const [total, setTotal] = useState(20);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (customer) {
+            setStart(customer.commissionStartOrder || 1);
+            setTotal(customer.commissionTotalOrders || 20);
+        }
+    }, [customer]);
+
+    if (!isOpen || !customer) return null;
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        // Simulate updating the mock service
+        const c = mockService.getCustomers().find(c => c.id === customer.id);
+        if (c) {
+            c.commissionStartOrder = start;
+            c.commissionTotalOrders = total;
+        }
+        await new Promise(r => setTimeout(r, 600));
+        setIsSaving(false);
+        onUpdate();
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95">
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight leading-none">Commission Vesting</h2>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">{customer.businessName}</p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20}/></button>
+                </div>
+                <div className="p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Start Order #</label>
+                            <input type="number" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-bold" value={start} onChange={e => setStart(parseInt(e.target.value))} />
+                        </div>
+                        <div>
+                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Orders</label>
+                            <input type="number" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-bold" value={total} onChange={e => setTotal(parseInt(e.target.value))} />
+                        </div>
+                    </div>
+                    <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3">
+                        <Info size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-indigo-700 font-medium leading-relaxed">
+                            Commission will be calculated for {total} orders starting from order #{start}.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2"
+                    >
+                        {isSaving ? <Loader2 className="animate-spin" size={16}/> : 'Lock Vesting Schedule'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const RepAssignmentModal = ({ isOpen, onClose, customer, reps, onUpdate }: { isOpen: boolean, onClose: () => void, customer: Customer | null, reps: User[], onUpdate: () => void }) => {
     const [isSaving, setIsSaving] = useState(false);
@@ -241,12 +307,10 @@ export const AdminDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Drill-down UI State
-  const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(null);
-
   // Modal States
   const [editingMarkupCustomer, setEditingMarkupCustomer] = useState<Customer | null>(null);
   const [editingRepCustomer, setEditingRepCustomer] = useState<Customer | null>(null);
+  const [editingVestingCustomer, setEditingVestingCustomer] = useState<Customer | null>(null);
   const [dispatchCodeData, setDispatchCodeData] = useState<{code: string, name: string} | null>(null);
 
   const loadStats = () => {
@@ -304,6 +368,12 @@ export const AdminDashboard: React.FC = () => {
       loadStats();
   };
 
+  const handleUpdateCommission = (customerId: string, rate: number) => {
+      const c = customers.find(c => c.id === customerId);
+      if (c) c.repCommissionRate = rate;
+      loadStats();
+  };
+
   const handleDispatchAccess = (customer: Customer) => {
       const code = mockService.dispatchAccess(customer.id);
       setDispatchCodeData({ code, name: customer.businessName });
@@ -311,10 +381,10 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const customerFinancials = useMemo(() => {
-    const map: Record<string, { orders: number, outstanding: number, ltv: number, profit: number }> = {};
+    const map: Record<string, { orders: number, outstanding: number, ltv: number, profit: number, commissionEarned: number }> = {};
     
     allOrders.forEach(o => {
-        if (!map[o.buyerId]) map[o.buyerId] = { orders: 0, outstanding: 0, ltv: 0, profit: 0 };
+        if (!map[o.buyerId]) map[o.buyerId] = { orders: 0, outstanding: 0, ltv: 0, profit: 0, commissionEarned: 0 };
         const m = map[o.buyerId];
         m.orders += 1;
         m.ltv += o.totalAmount;
@@ -322,8 +392,20 @@ export const AdminDashboard: React.FC = () => {
             m.outstanding += o.totalAmount;
         }
         const customer = customers.find(c => c.id === o.buyerId);
+        
+        // Markup (Admin Profit)
         const markup = customer?.pzMarkup || 15; 
         m.profit += o.totalAmount * (markup / 100);
+
+        // Rep Commission
+        if (customer?.assignedPzRepId) {
+            const start = customer.commissionStartOrder || 1;
+            const total = customer.commissionTotalOrders || 20;
+            if (m.orders >= start && m.orders < (start + total)) {
+                const rate = customer.repCommissionRate || 5;
+                m.commissionEarned += o.totalAmount * (rate / 100);
+            }
+        }
     });
 
     return map;
@@ -341,13 +423,9 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   const handleKpiClick = (id: string) => {
-    setDrillDownCustomerId(null);
-    setExpandedInvoiceId(null);
     if (id === 'IMPACT') navigate('/impact');
     else setActiveDrillDown(id as DrillDownType);
   };
-
-  const [drillDownList, setDrillDownList] = useState<Order[]>([]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-20 max-w-[1600px] mx-auto">
@@ -372,7 +450,6 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI METRICS - COMPACT */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
         {kpis.map((kpi, idx) => (
             <button 
@@ -389,22 +466,6 @@ export const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* DRILL DOWN SECTION - COMPACT */}
-      {activeDrillDown && (
-          <div className="bg-white rounded-[2rem] border border-gray-200 shadow-xl animate-in slide-in-from-top-4 duration-300 overflow-hidden mx-2">
-              <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                      <h2 className="text-sm font-black text-gray-900 uppercase tracking-tight">Drill-down: {activeDrillDown}</h2>
-                  </div>
-                  <button onClick={() => { setActiveDrillDown(null); }} className="p-1.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-all">
-                      <X size={16} strokeWidth={3}/>
-                  </button>
-              </div>
-              <div className="p-6 text-gray-400 italic text-xs text-center font-medium">Drill-down content area condensed</div>
-          </div>
-      )}
-
-      {/* MARKETPLACE MANAGEMENT - HIGH DENSITY TABLE */}
       <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-visible mx-2">
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-gray-50/30">
             <div className="flex items-center gap-4">
@@ -430,36 +491,25 @@ export const AdminDashboard: React.FC = () => {
                 <thead className="bg-white border-b border-gray-100 text-[9px] font-black text-gray-400 uppercase tracking-widest">
                     <tr>
                         <th className="px-6 py-6">Customer Entity</th>
-                        <th className="px-6 py-6">Role</th>
                         <th className="px-6 py-6">Status</th>
                         <th className="px-6 py-6">Assigned Supplier</th>
+                        <th className="px-6 py-6">Assigned Rep</th>
+                        <th className="px-6 py-6 text-center">%/Order</th>
+                        <th className="px-6 py-6">Commission Scope</th>
                         <th className="px-6 py-6 text-right">Markup</th>
-                        <th className="px-6 py-6 text-center">Orders</th>
-                        <th className="px-6 py-6 text-center">Owed</th>
-                        <th className="px-6 py-6 text-right">LTV</th>
+                        <th className="px-6 py-6 text-right">Lifetime Comm.</th>
                         <th className="px-6 py-6 text-right text-emerald-600">Profit</th>
                         <th className="px-6 py-6 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                     {filteredCustomers.map(customer => {
-                        const m = customerFinancials[customer.id] || { orders: 0, outstanding: 0, ltv: 0, profit: 0 };
+                        const m = customerFinancials[customer.id] || { orders: 0, outstanding: 0, ltv: 0, profit: 0, commissionEarned: 0 };
                         return (
                             <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="font-black text-gray-900 text-[13px] uppercase tracking-tight leading-none mb-1">{customer.businessName}</div>
                                     <div className="text-[8px] text-gray-300 font-black uppercase tracking-widest">{customer.category}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <select 
-                                        value={customer.assignedPortal || UserRole.CONSUMER}
-                                        onChange={(e) => handleAssignPortal(customer.id, e.target.value as UserRole)}
-                                        className="bg-gray-50 border border-gray-100 rounded-lg px-2 py-1 font-black text-[9px] uppercase tracking-widest text-indigo-700 outline-none cursor-pointer"
-                                    >
-                                        <option value={UserRole.CONSUMER}>Buyer</option>
-                                        <option value={UserRole.GROCERY}>Grocer</option>
-                                        <option value={UserRole.WHOLESALER}>Supplier</option>
-                                    </select>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`text-[8px] font-black uppercase tracking-widest ${customer.connectionStatus === 'Active' ? 'text-emerald-600' : 'text-orange-600'}`}>
@@ -476,14 +526,40 @@ export const AdminDashboard: React.FC = () => {
                                         {wholesalers.map(w => <option key={w.id} value={w.id}>{w.businessName}</option>)}
                                     </select>
                                 </td>
+                                <td className="px-6 py-4">
+                                    <button 
+                                        onClick={() => setEditingRepCustomer(customer)}
+                                        className="flex items-center gap-2 group/rep text-[11px] font-black text-indigo-600 uppercase tracking-tight"
+                                    >
+                                        <UserCheck size={14} className="text-indigo-400 group-hover/rep:scale-110 transition-transform" />
+                                        {customer.assignedPzRepName || 'Unassigned'}
+                                    </button>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                    <input 
+                                        type="number"
+                                        className="w-12 bg-gray-50 border border-gray-100 rounded px-1 py-0.5 text-[11px] font-black text-center outline-none focus:border-indigo-400"
+                                        value={customer.repCommissionRate || 5}
+                                        onChange={(e) => handleUpdateCommission(customer.id, parseFloat(e.target.value))}
+                                    />
+                                </td>
+                                <td className="px-6 py-4">
+                                    <button 
+                                        onClick={() => setEditingVestingCustomer(customer)}
+                                        className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-lg transition-all"
+                                    >
+                                        <Calendar size={12} className="text-gray-400" />
+                                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">
+                                            {customer.commissionStartOrder || 1} to {(customer.commissionStartOrder || 1) + (customer.commissionTotalOrders || 20)}
+                                        </span>
+                                    </button>
+                                </td>
                                 <td className="px-6 py-4 text-right">
                                     <button onClick={() => setEditingMarkupCustomer(customer)} className="font-black text-gray-900 text-xs hover:text-indigo-600">{customer.pzMarkup || 15}%</button>
                                 </td>
-                                <td className="px-6 py-4 text-center font-black text-gray-900 text-xs">{m.orders}</td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className={`text-xs font-black ${m.outstanding > 0 ? 'text-red-500' : 'text-gray-300'}`}>${m.outstanding.toFixed(0)}</span>
+                                <td className="px-6 py-4 text-right">
+                                    <span className="text-indigo-600 font-black text-xs tracking-tighter">${m.commissionEarned.toFixed(2)}</span>
                                 </td>
-                                <td className="px-6 py-4 text-right font-black text-gray-900 text-xs">${m.ltv.toLocaleString()}</td>
                                 <td className="px-6 py-4 text-right font-black text-emerald-600 text-sm">${m.profit.toLocaleString()}</td>
                                 <td className="px-6 py-4 text-right">
                                     <ActionDropdown 
@@ -500,6 +576,13 @@ export const AdminDashboard: React.FC = () => {
             </table>
         </div>
       </div>
+
+      <VestingModal 
+        isOpen={!!editingVestingCustomer}
+        onClose={() => setEditingVestingCustomer(null)}
+        customer={editingVestingCustomer}
+        onUpdate={loadStats}
+      />
 
       <MarkupEditorModal 
         isOpen={!!editingMarkupCustomer} 

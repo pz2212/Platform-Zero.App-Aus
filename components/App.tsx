@@ -12,6 +12,7 @@ import { ProductPricing } from './ProductPricing';
 import { Marketplace } from './Marketplace';
 import { SupplierMarket } from './SupplierMarket';
 import { AdminDashboard } from './AdminDashboard';
+import { AdminAccounts } from './AdminAccounts';
 import { Settings as SettingsComponent } from './Settings';
 import { LoginRequests } from './LoginRequests';
 import { ConsumerOnboarding } from './ConsumerOnboarding';
@@ -39,8 +40,7 @@ import {
   Sparkles, User as UserIcon, Building, ChevronRight,
   Sprout, Globe, Users2, Circle, LogIn, ArrowRight, Menu, Search, Calculator, BarChart3,
   Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4,
-  // Added missing Check icon import to fix the error on line 122
-  Smartphone, Key, Shield, Loader2, Check
+  Smartphone, Key, Shield, Loader2, Check, Landmark
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubItem = false }: any) => (
@@ -208,6 +208,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
 
             <div className="pt-4 mt-4 border-t border-gray-100">
                 <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Management</p>
+                <SidebarLink to="/admin/accounts" icon={Landmark} label="Accounts Ledger" active={isActive('/admin/accounts')} />
                 <SidebarLink to="/rep-management" icon={Briefcase} label="Rep Management" active={isActive('/rep-management')} />
                 <SidebarLink to="/suppliers" icon={Store} label="Suppliers" active={isActive('/suppliers')} />
                 <SidebarLink to="/marketplace" icon={Layers} label="Catalog Manager" active={isActive('/marketplace')} />
@@ -252,7 +253,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
             <NavContent />
         </div>
 
-        {/* Secure Account Widget (Requested Change 2) */}
+        {/* Secure Account Widget */}
         {user.loginCode && !user.passwordSet && (
             <SecureAccountSidebarWidget onComplete={() => onPasswordSet(user.id)} />
         )}
@@ -375,9 +376,6 @@ const App = () => {
                         <AuthModal 
                             isOpen={showAuthModal} 
                             onClose={() => setShowAuthModal(false)} 
-                            step={authStep} 
-                            setStep={setAuthStep} 
-                            onLogin={(e: any) => {e.preventDefault();}} 
                             onAutoLogin={handleAutoLogin} 
                             onCodeLogin={handleCodeLogin}
                         />
@@ -411,6 +409,7 @@ const App = () => {
       <Route path="/pricing" element={user ? <ProductPricing user={user} /> : <Navigate to="/" />} />
       <Route path="/inventory" element={<Inventory items={mockService.getAllInventory()} />} />
       <Route path="/accounts" element={user ? <Accounts user={user} /> : <Navigate to="/" />} />
+      <Route path="/admin/accounts" element={user?.role === UserRole.ADMIN ? <AdminAccounts /> : <Navigate to="/" />} />
       <Route path="/settings" element={user ? <SettingsComponent user={user} /> : <Navigate to="/" />} />
       <Route path="/orders" element={user ? <CustomerOrders user={user} /> : <Navigate to="/" />} />
       <Route path="/contacts" element={user ? <Contacts user={user} /> : <Navigate to="/" />} />
@@ -420,7 +419,7 @@ const App = () => {
   );
 };
 
-const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }: any) => {
+const AuthModal = ({ isOpen, onClose, onAutoLogin, onCodeLogin }: any) => {
     const [accessCode, setAccessCode] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -430,72 +429,89 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
         e.preventDefault();
         if (!accessCode) return;
         setIsProcessing(true);
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 800));
         onCodeLogin(accessCode);
         setIsProcessing(false);
     };
 
     const demoLogins = [
-        { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-50 border-slate-100 hover:bg-slate-100' },
-        { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
-        { label: 'FARMER', email: 'bob@greenvalley.com', color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100' },
-        { label: 'BUYER (CAFÉ)', email: 'alice@cafe.com', color: 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100' },
-        { label: 'BUYER (GROCERY)', email: 'gary@grocer.com', color: 'bg-orange-50 border-orange-100 hover:bg-orange-100' },
+        { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-white border-gray-100 hover:border-gray-300' },
+        { label: 'SALES REP', email: 'mark@rep.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
+        { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100' },
     ];
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
-                    <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all"><X size={28} /></button>
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-[420px] overflow-hidden animate-in zoom-in-95 flex flex-col max-h-[92vh]">
+                
+                {/* Header */}
+                <div className="px-8 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-10">
+                    <h2 className="text-lg font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
+                    <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all p-1 bg-gray-50 rounded-full">
+                        <X size={22} strokeWidth={2.5} />
+                    </button>
                 </div>
-                <div className="p-10 space-y-10">
+
+                <div className="p-8 pt-1 space-y-10 flex-1 overflow-y-auto no-scrollbar pb-10">
                     
-                    {/* CODE LOGIN SECTION (Requested Change 4) */}
-                    <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
-                            <div>
-                                <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
-                            </div>
+                    {/* CENTERED ACCESS CODE SECTION - Matches new visual reference */}
+                    <div className="flex flex-col items-center text-center space-y-6 pt-6">
+                        <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 shadow-inner-sm border border-indigo-100">
+                            <ShieldCheck size={40} />
                         </div>
-                        <form onSubmit={handleCodeSubmit} className="flex gap-2">
-                            <input 
-                                placeholder="ABCDEF" 
-                                className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
-                                maxLength={6}
-                                value={accessCode}
-                                onChange={e => setAccessCode(e.target.value)}
-                            />
+                        
+                        <div className="space-y-1.5">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Enter Access Code</h3>
+                            <p className="text-xs text-gray-400 font-medium">Found in your PZ invitation text message</p>
+                        </div>
+
+                        <form onSubmit={handleCodeSubmit} className="w-full space-y-6">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-none opacity-20">
+                                    {[1,2,3,4,5,6].map(i => <div key={i} className="w-2.5 h-2.5 rounded-full bg-indigo-900"/>)}
+                                </div>
+                                <input 
+                                    placeholder="" 
+                                    className="w-full bg-white border-2 border-indigo-600 rounded-full py-6 px-10 font-black tracking-[0.4em] uppercase text-2xl text-center focus:ring-4 focus:ring-indigo-100 outline-none transition-all text-indigo-900 shadow-xl"
+                                    maxLength={6}
+                                    value={accessCode}
+                                    onChange={e => setAccessCode(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+
                             <button 
                                 type="submit"
                                 disabled={isProcessing || !accessCode}
-                                className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-[#A5B4FC] hover:bg-indigo-400 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
                             >
-                                {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                                {isProcessing ? (
+                                    <Loader2 size={20} className="animate-spin" />
+                                ) : (
+                                    <><LogIn size={20} /> Unlock Portal</>
+                                )}
                             </button>
                         </form>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative pt-4">
                         <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
+                        <div className="relative flex justify-center text-[8px] font-black uppercase tracking-[0.4em]"><span className="px-4 bg-white text-gray-300">Or use demo accounts</span></div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3">
+                    {/* DEMO BUTTONS LIST */}
+                    <div className="grid grid-cols-1 gap-2">
                         {demoLogins.map(demo => (
                             <button 
                                 key={demo.label} 
                                 onClick={() => onAutoLogin(demo.email)} 
-                                className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${demo.color}`}
+                                className={`flex items-center justify-between px-6 py-4 rounded-xl border transition-all group active:scale-[0.98] ${demo.color}`}
                             >
                                 <div className="text-left">
-                                    <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
-                                    <span className="block text-xs text-gray-400 font-medium">{demo.email}</span>
+                                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
+                                    <span className="block text-[11px] text-gray-400 font-bold leading-none mt-1">{demo.email}</span>
                                 </div>
-                                <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
+                                <ArrowRight size={16} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
                             </button>
                         ))}
                     </div>
