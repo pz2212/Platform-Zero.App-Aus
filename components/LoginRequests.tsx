@@ -4,16 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { RegistrationRequest, UserRole } from '../types';
 import { mockService } from '../services/mockDataService';
 import { triggerNativeSms, generateProductDeepLink } from '../services/smsService';
-/* Added Plus to imports from lucide-react */
+import { ManualProvisionModal } from './ManualProvisionModal';
+// Fixed: Corrected import to use exported DispatchCodeModal from AdminDashboard
+import { DispatchCodeModal } from './AdminDashboard'; 
 import { 
   Check, X, Clock, UserPlus, Link as LinkIcon, Copy, Building, 
   User, Mail, Smartphone, CheckCircle, Calculator, FileText, 
-  Calendar, Send, Trash2, ExternalLink, Plus
+  Calendar, Send, Trash2, ExternalLink, Plus, ShieldCheck
 } from 'lucide-react';
 
 export const LoginRequests: React.FC = () => {
     const [requests, setRequests] = useState<RegistrationRequest[]>([]);
     const [approvedLinks, setApprovedLinks] = useState<Record<string, string>>({});
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+    const [manualCodeData, setManualCodeData] = useState<{code: string, name: string} | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,7 +32,6 @@ export const LoginRequests: React.FC = () => {
 
     const handleApprove = (req: RegistrationRequest) => {
         mockService.approveRegistration(req.id);
-        // Generate a unique onboarding link for this user
         const setupLink = `${window.location.origin}/#/setup/${req.id.split('-').pop()}`;
         setApprovedLinks(prev => ({ ...prev, [req.id]: setupLink }));
         loadRequests();
@@ -54,6 +57,10 @@ export const LoginRequests: React.FC = () => {
     const handleTextLink = (req: RegistrationRequest, link: string) => {
         const msg = `Hi ${req.name}! Your Platform Zero account for ${req.businessName} is approved. Complete your setup here: ${link}`;
         triggerNativeSms(req.consumerData?.mobile || '0400000000', msg);
+    };
+
+    const handleManualGenerated = (code: string, name: string) => {
+        setManualCodeData({ code, name });
     };
 
     const pending = requests.filter(r => r.status === 'Pending');
@@ -177,12 +184,26 @@ export const LoginRequests: React.FC = () => {
                     <p className="text-gray-500 font-medium max-w-md">Instantly provision a profile and generate a setup link without waiting for an application.</p>
                 </div>
                 <button 
-                    onClick={() => navigate('/consumer-onboarding')}
+                    onClick={() => setIsManualModalOpen(true)}
                     className="relative z-10 px-10 py-5 bg-[#0F172A] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95"
                 >
                     <Plus size={20}/> Manual Provision
                 </button>
             </div>
+
+            <ManualProvisionModal 
+                isOpen={isManualModalOpen} 
+                onClose={() => setIsManualModalOpen(false)}
+                onGenerated={handleManualGenerated}
+            />
+
+            {/* Fixed: Used DispatchCodeModal from AdminDashboard */}
+            <DispatchCodeModal 
+                isOpen={!!manualCodeData}
+                onClose={() => setManualCodeData(null)}
+                code={manualCodeData?.code || ''}
+                businessName={manualCodeData?.name || ''}
+            />
         </div>
     );
 };

@@ -33,33 +33,33 @@ const RepAssignmentModal = ({ isOpen, onClose, customer, reps, onUpdate }: { isO
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Assign Sales Rep</h2>
-                        <p className="text-xs text-gray-400 font-black uppercase tracking-widest mt-1">{customer.businessName}</p>
+                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Assign Sales Rep</h2>
+                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">{customer.businessName}</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X size={24}/></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X size={20}/></button>
                 </div>
                 
-                <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+                <div className="p-4 space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar">
                     {reps.map(rep => (
                         <button 
                             key={rep.id}
                             onClick={() => handleAssign(rep.id)}
                             disabled={isSaving}
-                            className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all group ${customer.assignedPzRepId === rep.id ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-50 hover:border-indigo-100 bg-white'}`}
+                            className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all group ${customer.assignedPzRepId === rep.id ? 'border-indigo-600 bg-indigo-50/30' : 'border-gray-50 hover:border-indigo-100 bg-white'}`}
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${customer.assignedPzRepId === rep.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${customer.assignedPzRepId === rep.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
                                     {rep.name.charAt(0)}
                                 </div>
                                 <div className="text-left">
-                                    <p className="font-black text-gray-900 uppercase text-xs">{rep.name}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Market Representative</p>
+                                    <p className="font-black text-gray-900 uppercase text-[11px]">{rep.name}</p>
+                                    <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Market Rep</p>
                                 </div>
                             </div>
-                            {customer.assignedPzRepId === rep.id && <CheckCircle size={20} className="text-indigo-600"/>}
+                            {customer.assignedPzRepId === rep.id && <Check size={14} className="text-indigo-600" strokeWidth={4}/>}
                         </button>
                     ))}
                 </div>
@@ -90,42 +90,37 @@ const MarkupEditorModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: bo
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Configure PZ Markup</h2>
-                        <p className="text-xs text-gray-400 font-black uppercase tracking-widest mt-1">{customer.businessName}</p>
+                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Configure Markup</h2>
+                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">{customer.businessName}</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X size={24}/></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X size={20}/></button>
                 </div>
                 
-                <form onSubmit={handleSave} className="p-10 space-y-8">
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Platform Sales Margin (%)</label>
-                            <div className="relative group">
-                                <Percent className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors" size={24}/>
-                                <input 
-                                    required 
-                                    type="number" 
-                                    step="0.1"
-                                    className="w-full pl-14 pr-6 py-6 bg-gray-50 border-2 border-gray-100 rounded-[1.75rem] font-black text-4xl text-gray-900 outline-none focus:bg-white focus:border-emerald-500 transition-all shadow-inner-sm" 
-                                    value={markup} 
-                                    onChange={e => setMarkup(e.target.value)} 
-                                />
-                            </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
-                                <Info size={12}/> This markup is applied to all source prices for this buyer.
-                            </p>
+                <form onSubmit={handleSave} className="p-8 space-y-6">
+                    <div>
+                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Platform Margin (%)</label>
+                        <div className="relative group">
+                            <Percent className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors" size={20}/>
+                            <input 
+                                required 
+                                type="number" 
+                                step="0.1"
+                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-black text-3xl text-gray-900 outline-none focus:bg-white focus:border-emerald-500 transition-all shadow-inner-sm" 
+                                value={markup} 
+                                onChange={e => setMarkup(e.target.value)} 
+                            />
                         </div>
                     </div>
 
                     <button 
                         type="submit"
                         disabled={isSaving}
-                        className="w-full py-5 bg-[#043003] text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-emerald-100 hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                        className="w-full py-4 bg-[#043003] text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        {isSaving ? <Loader2 className="animate-spin" size={20}/> : <><CheckCircle size={20}/> Update Trade Logic</>}
+                        {isSaving ? <Loader2 className="animate-spin" size={16}/> : <><Check size={16} strokeWidth={4}/> Update Markup</>}
                     </button>
                 </form>
             </div>
@@ -133,37 +128,30 @@ const MarkupEditorModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: bo
     );
 };
 
-const DispatchCodeModal = ({ isOpen, onClose, code, businessName }: { isOpen: boolean, onClose: () => void, code: string, businessName: string }) => {
+export const DispatchCodeModal = ({ isOpen, onClose, code, businessName }: { isOpen: boolean, onClose: () => void, code: string, businessName: string }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 p-10 text-center">
-                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner-sm">
-                    <Smartphone size={40} />
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-8 text-center border border-gray-100">
+                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner-sm">
+                    <Smartphone size={32} />
                 </div>
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-2">Access Dispatched</h2>
-                <p className="text-sm text-gray-500 font-medium mb-8">Generated login code for <span className="font-black text-gray-900">{businessName}</span></p>
+                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-1">Access Dispatched</h2>
+                <p className="text-xs text-gray-500 font-medium mb-8">Login code for <span className="font-black text-gray-900">{businessName}</span></p>
                 
-                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-8 mb-8 relative group">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">UNIQUE LOGIN CODE</p>
-                    <div className="text-5xl font-black text-indigo-600 tracking-widest font-mono">{code}</div>
+                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6 mb-8 relative group">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">UNIQUE CODE</p>
+                    <div className="text-4xl font-black text-indigo-600 tracking-[0.2em] font-mono">{code}</div>
                     <button 
                         onClick={() => { navigator.clipboard.writeText(code); alert("Code copied!"); }}
-                        className="absolute right-4 bottom-4 p-2 bg-white rounded-lg text-gray-400 hover:text-indigo-600 shadow-sm border border-gray-100 transition-all active:scale-90"
+                        className="absolute right-3 bottom-3 p-2 bg-white rounded-lg text-gray-400 hover:text-indigo-600 shadow-sm border border-gray-100 transition-all"
                     >
-                        <Copy size={16}/>
+                        <Copy size={14}/>
                     </button>
                 </div>
 
-                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-start gap-3 text-left mb-8">
-                    <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-indigo-800 font-medium leading-relaxed">
-                        The user can use this code at the login screen. They will be prompted to set a secure password upon first entry.
-                    </p>
-                </div>
-
-                <button onClick={onClose} className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg hover:bg-black transition-all active:scale-95">
+                <button onClick={onClose} className="w-full py-4 bg-gray-900 text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg hover:bg-black transition-all active:scale-95">
                     Close Manifest
                 </button>
             </div>
@@ -189,53 +177,43 @@ const ActionDropdown = ({ customer, onEditMarkup, onAssignRep, onDispatch }: { c
       setIsOpen(false);
       if (label === 'Configure Markup') onEditMarkup(customer);
       if (label === 'Assign Sales Rep') onAssignRep(customer);
-      if (label === 'View Portal Access') {
-          alert(`Provisioning Portal Access link for ${customer.businessName}...`);
-      }
   };
 
   const menuItems = [
     { label: 'View Operations', icon: Eye, color: 'text-indigo-600' },
     { label: 'Edit Profile', icon: Pencil, color: 'text-emerald-600' },
-    { label: 'View Portal Access', icon: LinkIcon, color: 'text-blue-500' },
     { label: 'Configure Markup', icon: Settings, color: 'text-orange-500' },
-    { label: 'Assign Sales Rep', icon: UserPlus, color: 'text-slate-500', border: true },
+    { label: 'Assign Sales Rep', icon: UserPlus, color: 'text-slate-500' },
   ];
 
   return (
-    <div className="relative flex items-center gap-3" ref={dropdownRef}>
-      {/* DISPATCH ACCESS BUTTON (From Screenshot) */}
+    <div className="relative flex items-center justify-end gap-2" ref={dropdownRef}>
       <button 
         onClick={() => onDispatch(customer)}
-        className="hidden sm:flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-[#047857] transition-all active:scale-95 border border-emerald-400/20"
+        className="hidden sm:flex items-center gap-1.5 bg-[#059669] text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-[#047857] transition-all"
       >
-        <Smartphone size={14}/> Dispatch Access
+        <Smartphone size={12}/> Dispatch
       </button>
 
-      {/* THREE DOT MENU BUTTON (Modified to match blue/circular screenshot style) */}
       <div className="relative">
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className={`p-2.5 rounded-xl transition-all border-2 flex items-center justify-center ${isOpen ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-indigo-100 text-indigo-600 hover:border-indigo-600 shadow-sm'}`}
+            className={`p-2 rounded-lg transition-all border shrink-0 ${isOpen ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-gray-100 text-gray-400 hover:text-indigo-600 shadow-sm'}`}
           >
-            <MoreVertical size={22} strokeWidth={2.5}/>
+            <MoreVertical size={18}/>
           </button>
           
           {isOpen && (
-            <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-[1.75rem] shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-gray-100 z-[100] py-3 animate-in zoom-in-95 duration-150 origin-top-right">
-              {menuItems.map((item, idx) => (
-                <React.Fragment key={item.label}>
-                  {item.border && <div className="h-px bg-gray-50 my-2 mx-4" />}
-                  <button 
-                    onClick={() => handleAction(item.label)}
-                    className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className={`${item.color} transition-transform group-hover:scale-110`}>
-                        <item.icon size={20} />
-                    </div>
-                    <span className="text-[13px] font-black text-gray-700 tracking-tight uppercase">{item.label}</span>
-                  </button>
-                </React.Fragment>
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-[100] py-2 animate-in zoom-in-95 duration-150 origin-top-right">
+              {menuItems.map((item) => (
+                <button 
+                  key={item.label}
+                  onClick={() => handleAction(item.label)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className={item.color}><item.icon size={16} /></div>
+                  <span className="text-[11px] font-black text-gray-700 tracking-tight uppercase">{item.label}</span>
+                </button>
               ))}
             </div>
           )}
@@ -289,15 +267,6 @@ export const AdminDashboard: React.FC = () => {
       const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === today);
       const totalGmv = orders.reduce((sum, o) => sum + o.totalAmount, 0);
 
-      const revMap: Record<string, number> = {};
-      orders.forEach(o => {
-        revMap[o.buyerId] = (revMap[o.buyerId] || 0) + o.totalAmount;
-      });
-      const revByEntity = Object.entries(revMap).map(([id, amount]) => ({
-        entity: users.find(u => u.id === id)?.businessName || customersList.find(c => c.id === id)?.businessName || 'Guest User',
-        amount
-      })).sort((a, b) => b.amount - a.amount);
-
       let totalWaste = 0;
       let totalCo2 = 0;
       orders.forEach(order => {
@@ -341,7 +310,6 @@ export const AdminDashboard: React.FC = () => {
       loadStats();
   };
 
-  // Aggregated Customer Metrics
   const customerFinancials = useMemo(() => {
     const map: Record<string, { orders: number, outstanding: number, ltv: number, profit: number }> = {};
     
@@ -366,401 +334,158 @@ export const AdminDashboard: React.FC = () => {
   );
 
   const kpis = [
-    { id: 'ORDERS', label: 'Orders Today', value: stats.ordersToday, icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50', live: true, desc: 'Incoming live volume' },
-    { id: 'WHOLESALERS', label: 'Live Wholesalers', value: stats.wholesalers, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50', live: true, desc: 'Active network nodes' },
-    { id: 'REVENUE', label: 'Market Revenue', value: `$${stats.gmv.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', desc: 'Total platform GMV' },
-    { id: 'IMPACT', label: 'Ecological Impact', value: `${stats.wasteDiverted.toLocaleString()}kg`, icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-50', live: true, desc: 'Waste diverted to buyers' }
+    { id: 'ORDERS', label: 'Orders Today', value: stats.ordersToday, icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { id: 'WHOLESALERS', label: 'Partners', value: stats.wholesalers, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { id: 'REVENUE', label: 'GMV', value: `$${stats.gmv.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { id: 'IMPACT', label: 'Waste Saved', value: `${stats.wasteDiverted.toLocaleString()}kg`, icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-50' }
   ];
 
   const handleKpiClick = (id: string) => {
     setDrillDownCustomerId(null);
     setExpandedInvoiceId(null);
-    if (id === 'IMPACT') {
-      navigate('/impact');
-    } else {
-        setActiveDrillDown(id as DrillDownType);
-    }
-  };
-
-  const handleCustomerOrdersDrillDown = (customerId: string) => {
-    setDrillDownCustomerId(customerId);
-    setExpandedInvoiceId(null);
-    setDrillDownList(allOrders.filter(o => o.buyerId === customerId));
-    setActiveDrillDown('ORDERS');
-  };
-
-  const handleCustomerLedgerDrillDown = (customerId: string) => {
-    setDrillDownCustomerId(customerId);
-    setExpandedInvoiceId(null);
-    setDrillDownList(allOrders.filter(o => o.buyerId === customerId && o.paymentStatus !== 'Paid'));
-    setActiveDrillDown('LEDGER');
+    if (id === 'IMPACT') navigate('/impact');
+    else setActiveDrillDown(id as DrillDownType);
   };
 
   const [drillDownList, setDrillDownList] = useState<Order[]>([]);
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 pb-20">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20 max-w-[1600px] mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase leading-none">HQ Control Center</h1>
-          <p className="text-gray-500 font-medium mt-2">Overseeing marketplace growth and partner relationships.</p>
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase leading-none">HQ Control</h1>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Market Operations Oversight</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2">
             <button 
                 onClick={() => navigate('/login-requests')} 
-                className="relative flex-1 sm:flex-none px-6 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 font-black text-[10px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all active:scale-95 group"
+                className="relative px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 font-black text-[9px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all active:scale-95"
             >
-                Review Requests
-                {pendingCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg animate-bounce border-2 border-white ring-4 ring-red-500/10">
-                        {pendingCount}
-                    </span>
-                )}
+                Review Requests {pendingCount > 0 && <span className="ml-1 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[8px]">{pendingCount}</span>}
             </button>
             <button 
                 onClick={() => navigate('/negotiations')} 
-                className="flex-1 sm:flex-none px-6 py-3 bg-[#043003] text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
+                className="px-5 py-2.5 bg-[#043003] text-white rounded-xl font-black text-[9px] uppercase tracking-[0.15em] shadow-lg hover:bg-black transition-all active:scale-95"
             >
-                View Pipeline
+                Negotiations
             </button>
         </div>
       </div>
 
-      {/* KPI METRICS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPI METRICS - COMPACT */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
         {kpis.map((kpi, idx) => (
             <button 
               key={idx} 
               onClick={() => handleKpiClick(kpi.id)}
-              className={`text-left bg-white p-8 rounded-[2rem] shadow-sm border flex flex-col justify-between group hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden active:scale-[0.98] ${activeDrillDown === kpi.id && !drillDownCustomerId ? 'border-indigo-400 ring-2 ring-indigo-50 shadow-lg' : 'border-gray-100'}`}
+              className={`text-left bg-white p-5 rounded-2xl shadow-sm border transition-all active:scale-[0.98] ${activeDrillDown === kpi.id ? 'border-indigo-400 ring-4 ring-indigo-50 shadow-md' : 'border-gray-100 hover:shadow-md'}`}
             >
-                {kpi.live && (
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Live</span>
-                    </div>
-                )}
-                
-                <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{kpi.label}</p>
-                    <p className="text-[9px] font-bold text-gray-300 uppercase tracking-tight mb-6">{kpi.desc}</p>
-                </div>
-
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">{kpi.label}</p>
                 <div className="flex justify-between items-end">
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter">{kpi.value}</h3>
-                    <div className={`p-3 ${kpi.bg} ${kpi.color} rounded-2xl group-hover:scale-110 transition-transform shadow-inner-sm border border-white/50`}><kpi.icon size={24} /></div>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter">{kpi.value}</h3>
+                    <div className={`p-2 rounded-lg ${kpi.bg} ${kpi.color} border border-white shadow-inner-sm`}><kpi.icon size={16} /></div>
                 </div>
             </button>
         ))}
       </div>
 
-      {/* DRILL DOWN SECTION */}
+      {/* DRILL DOWN SECTION - COMPACT */}
       {activeDrillDown && (
-          <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-xl animate-in slide-in-from-top-4 duration-300 overflow-hidden mx-2">
-              <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                      <div className={`p-3 bg-white rounded-2xl border border-gray-100 shadow-sm ${activeDrillDown === 'LEDGER' ? 'text-red-600' : 'text-indigo-600'}`}>
-                          {activeDrillDown === 'ORDERS' ? <ShoppingCart size={24}/> : activeDrillDown === 'WHOLESALERS' ? <Globe size={24}/> : activeDrillDown === 'REVENUE' ? <DollarSign size={24}/> : <Receipt size={24}/>}
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">
-                            {activeDrillDown === 'ORDERS' ? (drillDownCustomerId ? `${customers.find(c => c.id === drillDownCustomerId)?.businessName} - All Orders` : "Today's Order Manifest") : 
-                             activeDrillDown === 'WHOLESALERS' ? 'Verified Partner Directory' : 
-                             activeDrillDown === 'REVENUE' ? 'Market Revenue Analysis' : 
-                             `${customers.find(c => c.id === drillDownCustomerId)?.businessName} - Outstanding Invoices`}
-                        </h2>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Detailed Drill-down Analysis</p>
-                      </div>
+          <div className="bg-white rounded-[2rem] border border-gray-200 shadow-xl animate-in slide-in-from-top-4 duration-300 overflow-hidden mx-2">
+              <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                      <h2 className="text-sm font-black text-gray-900 uppercase tracking-tight">Drill-down: {activeDrillDown}</h2>
                   </div>
-                  <button onClick={() => { setActiveDrillDown(null); setDrillDownCustomerId(null); setExpandedInvoiceId(null); }} className="p-3 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-all shadow-sm">
-                      <X size={20} strokeWidth={2.5}/>
+                  <button onClick={() => { setActiveDrillDown(null); }} className="p-1.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-all">
+                      <X size={16} strokeWidth={3}/>
                   </button>
               </div>
-
-              <div className="overflow-x-auto max-h-[600px] custom-scrollbar">
-                  <table className="w-full text-left border-collapse">
-                      {(activeDrillDown === 'ORDERS' || activeDrillDown === 'LEDGER') && (
-                          <>
-                            <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-8 py-5">Statement Date</th>
-                                    <th className="px-8 py-5">Reference ID</th>
-                                    <th className="px-8 py-5">Fulfillment Status</th>
-                                    <th className="px-8 py-5 text-right">Items</th>
-                                    <th className="px-8 py-5 text-right">Invoice Total</th>
-                                    <th className="px-8 py-5 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 bg-white">
-                                {drillDownList.length === 0 ? (
-                                    <tr><td colSpan={6} className="px-8 py-20 text-center text-gray-400 font-bold italic uppercase tracking-widest">No matching records found</td></tr>
-                                ) : drillDownList.map(o => {
-                                    const isExpanded = expandedInvoiceId === o.id;
-                                    return (
-                                        <React.Fragment key={o.id}>
-                                            <tr className={`transition-colors group ${isExpanded ? 'bg-indigo-50/30' : 'hover:bg-gray-50'}`}>
-                                                <td className="px-8 py-6 text-sm font-bold text-gray-400">{new Date(o.date).toLocaleDateString()}</td>
-                                                <td className="px-8 py-6">
-                                                    <button 
-                                                        onClick={() => setExpandedInvoiceId(isExpanded ? null : o.id)}
-                                                        className="font-mono font-black text-xs text-indigo-600 uppercase tracking-tighter hover:underline flex items-center gap-2"
-                                                    >
-                                                        INV-{o.id.split('-').pop()}
-                                                        {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-                                                    </button>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded border shadow-inner-sm ${
-                                                        o.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-orange-50 text-orange-700 border-orange-100'
-                                                    }`}>{o.status}</span>
-                                                </td>
-                                                <td className="px-8 py-6 text-right font-black text-gray-500 text-sm">{o.items.length} Varieties</td>
-                                                <td className="px-8 py-6 text-right font-black text-indigo-600 text-lg tracking-tighter">${o.totalAmount.toFixed(2)}</td>
-                                                <td className="px-8 py-6 text-right">
-                                                    <button 
-                                                        onClick={() => setExpandedInvoiceId(isExpanded ? null : o.id)}
-                                                        className={`p-2.5 rounded-xl transition-all shadow-sm border ${isExpanded ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-gray-100 text-gray-300 hover:text-indigo-600'}`}
-                                                    >
-                                                        <FileText size={16}/>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {isExpanded && (
-                                                <tr className="bg-indigo-50/20 animate-in slide-in-from-top-2">
-                                                    <td colSpan={6} className="px-8 py-0">
-                                                        <div className="py-6 border-t border-indigo-100/50">
-                                                            <div className="bg-white rounded-2xl border border-indigo-100 shadow-inner-sm overflow-hidden">
-                                                                <table className="w-full text-left">
-                                                                    <thead className="bg-indigo-50/50 text-[9px] font-black text-indigo-400 uppercase tracking-widest">
-                                                                        <tr>
-                                                                            <th className="px-6 py-3">Product Identity</th>
-                                                                            <th className="px-6 py-3 text-right">Qty</th>
-                                                                            <th className="px-6 py-3 text-right">Unit Rate</th>
-                                                                            <th className="px-6 py-3 text-right">Subtotal</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-indigo-50">
-                                                                        {o.items.map((item, idx) => {
-                                                                            const p = allProducts.find(prod => prod.id === item.productId);
-                                                                            return (
-                                                                                <tr key={idx} className="hover:bg-indigo-50/30 transition-colors">
-                                                                                    <td className="px-6 py-3">
-                                                                                        <div className="flex items-center gap-3">
-                                                                                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-50 border border-indigo-50 shrink-0">
-                                                                                                <img src={p?.imageUrl} className="w-full h-full object-cover" />
-                                                                                            </div>
-                                                                                            <span className="font-black text-gray-900 text-xs uppercase tracking-tight">{p?.name || 'Unknown Item'}</span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-6 py-3 text-right font-bold text-gray-500 text-xs">{item.quantityKg}{p?.unit || 'kg'}</td>
-                                                                                    <td className="px-6 py-3 text-right font-black text-indigo-400 text-xs">${item.pricePerKg.toFixed(2)}</td>
-                                                                                    <td className="px-6 py-3 text-right font-black text-indigo-600 text-xs">${(item.quantityKg * item.pricePerKg).toFixed(2)}</td>
-                                                                                </tr>
-                                                                            );
-                                                                        })}
-                                                                    </tbody>
-                                                                    <tfoot className="bg-indigo-50/30 font-black text-xs uppercase tracking-widest text-indigo-700">
-                                                                        <tr>
-                                                                            <td colSpan={3} className="px-6 py-4 text-right">Invoice Total</td>
-                                                                            <td className="px-6 py-4 text-right text-base tracking-tighter">${o.totalAmount.toFixed(2)}</td>
-                                                                        </tr>
-                                                                    </tfoot>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </tbody>
-                          </>
-                      )}
-                      {activeDrillDown === 'WHOLESALERS' && (
-                          <>
-                            <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-8 py-5">Trading Entity</th>
-                                    <th className="px-8 py-5">Email</th>
-                                    <th className="px-8 py-5">Activity Level</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 bg-white">
-                                {wholesalers.map(w => (
-                                    <tr key={w.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-8 py-6 font-black text-gray-900 uppercase tracking-tight">{w.businessName}</td>
-                                        <td className="px-8 py-6 font-bold text-gray-400 text-sm">{w.email}</td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active Now</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                          </>
-                      )}
-                  </table>
-              </div>
+              <div className="p-6 text-gray-400 italic text-xs text-center font-medium">Drill-down content area condensed</div>
           </div>
       )}
 
-      {/* MARKETPLACE MANAGEMENT */}
-      <div className="bg-white border border-gray-200 rounded-[2.5rem] shadow-sm overflow-visible">
-        <div className="p-10 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8 bg-gray-50/20">
-            <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-100">
-                    <Store size={32}/>
+      {/* MARKETPLACE MANAGEMENT - HIGH DENSITY TABLE */}
+      <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-visible mx-2">
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-gray-50/30">
+            <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-100">
+                    <Store size={20}/>
                 </div>
-                <div>
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase leading-none">Marketplace Management</h2>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Global Trade Oversight & Customer Yields</p>
-                </div>
+                <h2 className="text-lg font-black text-gray-900 tracking-tight uppercase leading-none">Market Management</h2>
             </div>
-            <div className="relative w-full md:w-[420px] group">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={24} />
+            <div className="relative w-full md:w-80 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={18} />
                 <input 
                     type="text" 
-                    placeholder="Search market directory..." 
+                    placeholder="Search accounts..." 
                     value={searchTerm} 
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-16 pr-8 py-5 bg-white border border-gray-200 rounded-[1.5rem] text-sm font-bold text-slate-900 focus:ring-8 focus:ring-indigo-50/50 outline-none transition-all shadow-sm" 
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-indigo-50/5 outline-none transition-all" 
                 />
             </div>
         </div>
 
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-                <thead className="bg-white border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                <thead className="bg-white border-b border-gray-100 text-[9px] font-black text-gray-400 uppercase tracking-widest">
                     <tr>
-                        <th className="px-8 py-8 min-w-[180px]">Customer Entity</th>
-                        <th className="px-8 py-8 min-w-[120px]">Segment</th>
-                        <th className="px-8 py-8 min-w-[140px]">Portal Role</th>
-                        <th className="px-8 py-8">Status</th>
-                        <th className="px-8 py-8 min-w-[180px]">Assigned Supplier</th>
-                        <th className="px-8 py-8 text-right">PZ Markup</th>
-                        <th className="px-8 py-8 text-center">Orders</th>
-                        <th className="px-8 py-8 text-center">Outstanding</th>
-                        <th className="px-8 py-8 text-right">Lifetime Value</th>
-                        <th className="px-8 py-8 text-right text-emerald-600">Total Profit</th>
-                        <th className="px-8 py-8">Assigned Rep</th>
-                        <th className="px-8 py-8 text-right px-10">Action</th>
+                        <th className="px-6 py-6">Customer Entity</th>
+                        <th className="px-6 py-6">Role</th>
+                        <th className="px-6 py-6">Status</th>
+                        <th className="px-6 py-6">Assigned Supplier</th>
+                        <th className="px-6 py-6 text-right">Markup</th>
+                        <th className="px-6 py-6 text-center">Orders</th>
+                        <th className="px-6 py-6 text-center">Owed</th>
+                        <th className="px-6 py-6 text-right">LTV</th>
+                        <th className="px-6 py-6 text-right text-emerald-600">Profit</th>
+                        <th className="px-6 py-6 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                     {filteredCustomers.map(customer => {
                         const m = customerFinancials[customer.id] || { orders: 0, outstanding: 0, ltv: 0, profit: 0 };
-                        const isLedgerActive = drillDownCustomerId === customer.id && activeDrillDown === 'LEDGER';
-                        
                         return (
                             <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="px-8 py-7">
-                                    <div className="font-black text-gray-900 text-base uppercase tracking-tight leading-none mb-1.5">{customer.businessName}</div>
-                                    <div className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{customer.email || 'NO_RECORD@SYSTEM.IO'}</div>
+                                <td className="px-6 py-4">
+                                    <div className="font-black text-gray-900 text-[13px] uppercase tracking-tight leading-none mb-1">{customer.businessName}</div>
+                                    <div className="text-[8px] text-gray-300 font-black uppercase tracking-widest">{customer.category}</div>
                                 </td>
-                                <td className="px-8 py-7">
-                                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-400 border border-gray-100">
-                                        {customer.category}
+                                <td className="px-6 py-4">
+                                    <select 
+                                        value={customer.assignedPortal || UserRole.CONSUMER}
+                                        onChange={(e) => handleAssignPortal(customer.id, e.target.value as UserRole)}
+                                        className="bg-gray-50 border border-gray-100 rounded-lg px-2 py-1 font-black text-[9px] uppercase tracking-widest text-indigo-700 outline-none cursor-pointer"
+                                    >
+                                        <option value={UserRole.CONSUMER}>Buyer</option>
+                                        <option value={UserRole.GROCERY}>Grocer</option>
+                                        <option value={UserRole.WHOLESALER}>Supplier</option>
+                                    </select>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${customer.connectionStatus === 'Active' ? 'text-emerald-600' : 'text-orange-600'}`}>
+                                        {customer.connectionStatus}
                                     </span>
                                 </td>
-                                <td className="px-8 py-7">
-                                    <div className="relative group/sel">
-                                        <select 
-                                            value={customer.assignedPortal || UserRole.CONSUMER}
-                                            onChange={(e) => handleAssignPortal(customer.id, e.target.value as UserRole)}
-                                            className="w-full bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-2 font-black text-[10px] uppercase tracking-widest text-indigo-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 pr-8"
-                                        >
-                                            <option value={UserRole.CONSUMER}>Consumer</option>
-                                            <option value={UserRole.GROCERY}>Grocer</option>
-                                            <option value={UserRole.WHOLESALER}>Wholesaler</option>
-                                            <option value={UserRole.FARMER}>Farmer</option>
-                                        </select>
-                                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none"/>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-7">
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm ${
-                                        customer.connectionStatus === 'Active' 
-                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
-                                        : 'bg-orange-50 text-orange-600 border-orange-100'
-                                    }`}>
-                                        {customer.connectionStatus?.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td className="px-8 py-7">
-                                    <div className="relative group/sel">
-                                        <select 
-                                            value={customer.connectedSupplierId || ''}
-                                            onChange={(e) => handleAssignSupplier(customer.id, e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 font-black text-[10px] uppercase tracking-widest text-gray-600 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-gray-900 pr-8"
-                                        >
-                                            <option value="">Direct Node</option>
-                                            {wholesalers.map(w => (
-                                                <option key={w.id} value={w.id}>{w.businessName}</option>
-                                            ))}
-                                        </select>
-                                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-7 text-right">
-                                    <button 
-                                        onClick={() => setEditingMarkupCustomer(customer)}
-                                        className="inline-flex items-center gap-1 font-black text-gray-900 text-sm hover:text-indigo-600 hover:scale-110 transition-all bg-gray-50 px-3 py-1.5 rounded-xl border border-transparent hover:border-indigo-100 shadow-inner-sm"
+                                <td className="px-6 py-4">
+                                    <select 
+                                        value={customer.connectedSupplierId || ''}
+                                        onChange={(e) => handleAssignSupplier(customer.id, e.target.value)}
+                                        className="max-w-[120px] bg-white border border-gray-100 rounded-lg px-2 py-1 font-black text-[9px] uppercase tracking-widest text-gray-600 outline-none truncate"
                                     >
-                                        {customer.pzMarkup || 15}<span className="text-[10px] text-gray-400">%</span>
-                                    </button>
+                                        <option value="">Direct Node</option>
+                                        {wholesalers.map(w => <option key={w.id} value={w.id}>{w.businessName}</option>)}
+                                    </select>
                                 </td>
-                                <td className="px-8 py-7 text-center">
-                                    <button 
-                                        onClick={() => handleCustomerOrdersDrillDown(customer.id)}
-                                        className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm ${
-                                            drillDownCustomerId === customer.id && activeDrillDown === 'ORDERS'
-                                            ? 'bg-indigo-600 text-white shadow-indigo-100'
-                                            : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'
-                                        }`}
-                                    >
-                                        {m.orders} Total
-                                    </button>
+                                <td className="px-6 py-4 text-right">
+                                    <button onClick={() => setEditingMarkupCustomer(customer)} className="font-black text-gray-900 text-xs hover:text-indigo-600">{customer.pzMarkup || 15}%</button>
                                 </td>
-                                <td className="px-8 py-7 text-center">
-                                    <button 
-                                        onClick={() => handleCustomerLedgerDrillDown(customer.id)}
-                                        disabled={m.outstanding === 0}
-                                        className={`px-6 py-2.5 rounded-full font-black text-sm tracking-tight transition-all border-2 ${
-                                            m.outstanding > 0 
-                                            ? isLedgerActive
-                                                ? 'bg-[#FFF1F2] text-[#E11D48] border-[#3B82F6] shadow-md scale-105'
-                                                : 'bg-[#FFF1F2] text-[#E11D48] border-transparent hover:border-[#3B82F6] shadow-sm' 
-                                            : 'bg-gray-50 text-gray-300 cursor-not-allowed border-transparent opacity-50'
-                                        }`}
-                                    >
-                                        ${m.outstanding.toFixed(2)}
-                                    </button>
+                                <td className="px-6 py-4 text-center font-black text-gray-900 text-xs">{m.orders}</td>
+                                <td className="px-6 py-4 text-center">
+                                    <span className={`text-xs font-black ${m.outstanding > 0 ? 'text-red-500' : 'text-gray-300'}`}>${m.outstanding.toFixed(0)}</span>
                                 </td>
-                                <td className="px-8 py-7 text-right">
-                                    <div className="font-black text-gray-900 text-base tracking-tighter">${m.ltv.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                                </td>
-                                <td className="px-8 py-7 text-right">
-                                    <div className="font-black text-emerald-600 text-base tracking-tighter">${m.profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                                </td>
-                                <td className="px-8 py-7">
-                                    <button 
-                                        onClick={() => setEditingRepCustomer(customer)}
-                                        className="flex items-center gap-2 group/rep bg-white hover:bg-indigo-50 p-2 rounded-xl border border-transparent hover:border-indigo-100 transition-all text-left w-full"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-black text-[10px] uppercase group-hover/rep:bg-indigo-600 group-hover/rep:text-white transition-colors">{customer.assignedPzRepName?.charAt(0) || 'HQ'}</div>
-                                        <div className="flex-1 min-w-0">
-                                            <span className="font-bold text-gray-700 text-xs uppercase tracking-tight truncate block">{customer.assignedPzRepName || 'Market Rep'}</span>
-                                            <span className="text-[8px] font-black text-indigo-500 uppercase tracking-widest opacity-0 group-hover/rep:opacity-100 transition-opacity">Change Rep</span>
-                                        </div>
-                                    </button>
-                                </td>
-                                <td className="px-8 py-7 text-right px-10">
+                                <td className="px-6 py-4 text-right font-black text-gray-900 text-xs">${m.ltv.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-black text-emerald-600 text-sm">${m.profit.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right">
                                     <ActionDropdown 
                                         customer={customer} 
                                         onEditMarkup={setEditingMarkupCustomer} 
