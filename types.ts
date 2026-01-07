@@ -81,7 +81,8 @@ export interface User {
   activeBuyingInterests?: string[];
   commissionRate?: number;
   smsNotificationsEnabled?: boolean;
-  favorites?: string[];
+  favorites?: string[]; // HEARTED -> Dashboard
+  catalogProducts?: string[]; // TICKED -> Marketplace Catalog
   loginCode?: string;
   passwordSet?: boolean;
 }

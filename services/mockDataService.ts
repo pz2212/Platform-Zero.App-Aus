@@ -18,11 +18,20 @@ export interface RoleIncentive {
   referrerBonusAmount: number;
 }
 
+export interface MockCartItem {
+    productId: string;
+    productName: string;
+    price: number;
+    qty: number;
+    imageUrl: string;
+    unit: string;
+}
+
 export const USERS: User[] = [
   { id: 'u1', name: 'Admin User', businessName: 'Platform Zero', role: UserRole.ADMIN, email: 'admin@pz.com' },
   { id: 'u2', name: 'Sarah Wholesaler', businessName: 'Fresh Wholesalers', role: UserRole.WHOLESALER, email: 'sarah@fresh.com', dashboardVersion: 'v2', activeSellingInterests: ['Tomatoes', 'Lettuce', 'Eggplants'], activeBuyingInterests: ['Potatoes', 'Apples'], businessProfile: { isComplete: true } as any },
   { id: 'u3', name: 'Bob Farmer', businessName: 'Green Valley Farms', role: UserRole.FARMER, email: 'bob@greenvalley.com', dashboardVersion: 'v2', activeSellingInterests: ['Potatoes', 'Apples'], activeBuyingInterests: [], businessProfile: { isComplete: true } as any },
-  { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true, favorites: ['p1', 'p2', 'p5'] },
+  { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true, favorites: ['p1', 'p2'], catalogProducts: ['p1', 'p2', 'p3', 'p4', 'p5'] },
   { id: 'u5', name: 'Gary Grocer', businessName: 'Local Corner Grocers', role: UserRole.GROCERY, email: 'gary@grocer.com', phone: '0411 222 333', industry: 'Grocery Store', smsNotificationsEnabled: true },
   { id: 'rep1', name: 'Alex Johnson', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep1@pz.com', phone: '0400 111 222', commissionRate: 5.0 },
   { id: 'rep2', name: 'Sam Taylor', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep2@pz.com', phone: '0400 333 444', commissionRate: 5.0 },
@@ -35,6 +44,9 @@ export const INDUSTRIES: Industry[] = [
 
 class MockDataService {
   private users: User[] = [...USERS];
+  private cart: MockCartItem[] = [];
+  private cartListeners: ((cart: MockCartItem[]) => void)[] = [];
+
   private industryIncentives: Record<Industry, number> = {
     'Cafe': 10, 'Restaurant': 12, 'Pub': 8, 'Hotel': 15, 'Sporting Club': 5,
     'RSL': 7, 'Casino': 20, 'Catering': 10, 'Grocery Store': 10, 'Airlines': 25,
@@ -160,6 +172,46 @@ class MockDataService {
       createIssue('4', 'o-ver-4', 'Two bags of Dutch Cream potatoes missing from delivery palette.', 'Missing Items');
   }
 
+  /* Cart Management */
+  getCart() { return this.cart; }
+  
+  addToCart(item: MockCartItem) {
+      const existing = this.cart.find(i => i.productId === item.productId && i.unit === item.unit);
+      if (existing) {
+          existing.qty += item.qty;
+      } else {
+          this.cart.push(item);
+      }
+      this.notifyCartListeners();
+  }
+
+  updateCart(productId: string, qty: number) {
+      if (qty <= 0) {
+          this.cart = this.cart.filter(i => i.productId !== productId);
+      } else {
+          const item = this.cart.find(i => i.productId === productId);
+          if (item) item.qty = qty;
+      }
+      this.notifyCartListeners();
+  }
+
+  clearCart() {
+      this.cart = [];
+      this.notifyCartListeners();
+  }
+
+  subscribeToCart(listener: (cart: MockCartItem[]) => void) {
+      this.cartListeners.push(listener);
+      listener(this.cart);
+      return () => {
+          this.cartListeners = this.cartListeners.filter(l => l !== listener);
+      };
+  }
+
+  private notifyCartListeners() {
+      this.cartListeners.forEach(l => l([...this.cart]));
+  }
+
   getAllUsers() { return this.users; }
   getCustomers() { return this.customers; }
   getAllProducts() { return this.products; }
@@ -183,6 +235,18 @@ class MockDataService {
               user.favorites = user.favorites.filter(id => id !== productId);
           } else {
               user.favorites.push(productId);
+          }
+      }
+  }
+
+  toggleCatalogProduct(userId: string, productId: string) {
+      const user = this.users.find(u => u.id === userId);
+      if (user) {
+          if (!user.catalogProducts) user.catalogProducts = [];
+          if (user.catalogProducts.includes(productId)) {
+              user.catalogProducts = user.catalogProducts.filter(id => id !== productId);
+          } else {
+              user.catalogProducts.push(productId);
           }
       }
   }
@@ -595,6 +659,15 @@ class MockDataService {
   updateBusinessProfile(userId: string, profile: BusinessProfile) {
       const u = this.users.find(u => u.id === userId);
       if (u) u.businessProfile = profile;
+  }
+
+  updateOrderItems(orderId: string, items: OrderItem[]) {
+      const o = this.orders.find(o => o.id === orderId);
+      if (o) {
+          o.items = items;
+          o.totalAmount = items.reduce((sum, item) => sum + (item.quantityKg * (item.pricePerKg || 0)), 0);
+          o.supplierCost = o.totalAmount * 0.85; // Simplified vendor billing logic for audit simulation
+      }
   }
 }
 

@@ -4,33 +4,78 @@ import { User, Order, Product, OrderItem } from '../types';
 import { mockService } from '../services/mockDataService';
 import { 
   DollarSign, ShoppingBag, Truck, CheckCircle, Clock, Package, 
-  Leaf, ArrowRight, ShoppingCart, Heart, Plus, TrendingDown,
+  Leaf, ArrowRight, ShoppingCart, Heart, Plus, Minus, TrendingDown,
   ChevronRight, Calendar, Search, X, Loader2, Check, RotateCcw, Pencil
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { OrderManifestModal } from './CustomerOrders';
 
 interface ConsumerDashboardProps {
   user: User;
 }
 
-const QuickAddCard = ({ product, onQuickAdd }: { product: Product, onQuickAdd: (p: Product) => void, key?: React.Key }) => (
-    <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all">
-        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
-            <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
+// Define the props interface for QuickAddCard
+interface QuickAddCardProps {
+  product: Product;
+  onQuickAdd: (p: Product, q: number) => void;
+}
+
+/**
+ * QuickAddCard component for adding products to orders from the dashboard.
+ * Uses React.FC to include standard React props like 'key' in its type definition.
+ */
+const QuickAddCard: React.FC<QuickAddCardProps> = ({ product, onQuickAdd }) => {
+    const [qty, setQty] = useState(1);
+    const [isAdded, setIsAdded] = useState(false);
+
+    const handleAddClick = () => {
+        onQuickAdd(product, qty);
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000);
+    };
+
+    return (
+        <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all relative">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+                <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
+            </div>
+            <div className="flex-1 min-w-0">
+                <h4 className="font-black text-gray-900 uppercase text-[11px] truncate tracking-tight">{product.name}</h4>
+                <p className="text-[10px] font-bold text-gray-400 mt-0.5">${product.defaultPricePerKg.toFixed(2)} <span className="text-[8px]">/ KG</span></p>
+            </div>
+            
+            <div className="flex items-center bg-gray-50 rounded-xl px-1 py-1 border border-gray-100 shadow-inner-sm">
+                <button 
+                    onClick={() => setQty(Math.max(1, qty - 1))}
+                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                    <Minus size={14} strokeWidth={3}/>
+                </button>
+                <span className="w-8 text-center font-black text-xs text-gray-900">{qty}</span>
+                <button 
+                    onClick={() => setQty(qty + 1)}
+                    className="p-1.5 text-gray-400 hover:text-emerald-500 transition-colors"
+                >
+                    <Plus size={14} strokeWidth={3}/>
+                </button>
+            </div>
+
+            <button 
+                onClick={handleAddClick}
+                className={`p-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center border ${isAdded ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-[#043003] text-white border-emerald-900/10 hover:bg-black'}`}
+                title={`Add ${qty}kg to cart`}
+            >
+                {isAdded ? <Check size={18} strokeWidth={4}/> : <ShoppingCart size={18} strokeWidth={2.5}/>}
+            </button>
+
+            {isAdded && (
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-bottom-1">
+                    Added to cart
+                </div>
+            )}
         </div>
-        <div className="flex-1 min-w-0">
-            <h4 className="font-black text-gray-900 uppercase text-[11px] truncate tracking-tight">{product.name}</h4>
-            <p className="text-[10px] font-bold text-gray-400 mt-0.5">${product.defaultPricePerKg.toFixed(2)} <span className="text-[8px]">/ KG</span></p>
-        </div>
-        <button 
-            onClick={() => onQuickAdd(product)}
-            className="p-3 bg-gray-50 hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 rounded-xl transition-all border border-transparent hover:border-emerald-100 active:scale-95"
-            title="Quick Add 10kg"
-        >
-            <Plus size={18} strokeWidth={3}/>
-        </button>
-    </div>
-);
+    );
+};
 
 const WeeklyOrderCalendar = ({ orders }: { orders: Order[] }) => {
     const navigate = useNavigate();
@@ -52,7 +97,20 @@ const WeeklyOrderCalendar = ({ orders }: { orders: Order[] }) => {
     }, [orders, selectedDate]);
 
     const handleReorder = (order: Order) => {
-        alert(`Initiating one-tap re-order for Order #${order.id.split('-').pop()}. Items added to cart.`);
+        order.items.forEach(item => {
+            const p = mockService.getProduct(item.productId);
+            if (p) {
+                mockService.addToCart({
+                    productId: p.id,
+                    productName: p.name,
+                    price: p.defaultPricePerKg,
+                    qty: item.quantityKg,
+                    imageUrl: p.imageUrl,
+                    unit: p.unit || 'KG'
+                });
+            }
+        });
+        alert(`Items from Order #${order.id.split('-').pop()} added to your cart.`);
         navigate('/marketplace');
     };
 
@@ -239,6 +297,7 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [favorites, setFavorites] = useState<Product[]>([]);
+  const [viewingOrderDetails, setViewingOrderDetails] = useState<Order | null>(null);
 
   useEffect(() => {
     const fetch = () => {
@@ -246,12 +305,15 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
         setAllOrders(userOrders);
         const allProds = mockService.getAllProducts();
         setProducts(allProds);
-        setFavorites(allProds.filter(p => user.favorites?.includes(p.id)));
+        
+        // STRICTLY FILTER BY FAVORITES (HEARTS) FOR DASHBOARD
+        const userFavorites = mockService.getAllUsers().find(u => u.id === user.id)?.favorites || [];
+        setFavorites(allProds.filter(p => userFavorites.includes(p.id)));
     };
     fetch();
     const interval = setInterval(fetch, 10000);
     return () => clearInterval(interval);
-  }, [user.id, user.favorites]);
+  }, [user.id]);
 
   const stats = useMemo(() => {
     const monthlyTotal = allOrders.reduce((sum, o) => sum + o.totalAmount, 0);
@@ -267,12 +329,23 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
 
   const activeIncoming = allOrders.find(o => ['Confirmed', 'Ready for Delivery', 'Shipped', 'Delivered'].includes(o.status));
 
-  const handleQuickAdd = (product: Product) => {
-      mockService.createFullOrder(user.id, [{ productId: product.id, quantityKg: 10, pricePerKg: product.defaultPricePerKg, unit: 'KG' }], product.defaultPricePerKg * 10);
-      alert(`10kg of ${product.name} added to your active order list!`);
+  const handleQuickAdd = (product: Product, quantity: number) => {
+      mockService.addToCart({
+          productId: product.id,
+          productName: product.name,
+          price: product.defaultPricePerKg,
+          qty: quantity,
+          imageUrl: product.imageUrl,
+          unit: product.unit || 'KG'
+      });
   };
 
   const handleOpenVerification = (order: Order) => {
+      navigate('/orders', { state: { openVerificationId: order.id } });
+  };
+
+  const handleManifestReport = (order: Order) => {
+      setViewingOrderDetails(null);
       navigate('/orders', { state: { openVerificationId: order.id } });
   };
 
@@ -282,19 +355,19 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
       {/* KPI SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-2">
          {[
-            { label: 'MONTHLY SPEND', value: `$${stats.monthlyTotal.toLocaleString()}`, color: 'text-emerald-500', trend: '14% Optimized', icon: DollarSign },
-            { label: 'ACTIVE SHIPMENTS', value: stats.active, color: 'text-blue-500', trend: '1 Arriving Today', icon: Truck },
-            { label: 'INVOICES DUE', value: stats.unpaid, color: 'text-orange-500', trend: '$0 Outstanding', icon: Clock },
-            { label: 'CO2 DIVERTED', value: `${stats.co2.toFixed(0)}kg`, color: 'text-emerald-600', trend: 'Verified Impact', icon: Leaf }
+            { label: 'MONTHLY SPEND', value: `$${stats.monthlyTotal.toLocaleString()}`, color: 'text-emerald-50', trend: '14% Optimized', icon: DollarSign, bg: 'bg-emerald-500' },
+            { label: 'ACTIVE SHIPMENTS', value: stats.active, color: 'text-blue-500', trend: '1 Arriving Today', icon: Truck, bg: 'bg-blue-50' },
+            { label: 'INVOICES DUE', value: stats.unpaid, color: 'text-orange-500', trend: '$0 Outstanding', icon: Clock, bg: 'bg-orange-50' },
+            { label: 'CO2 DIVERTED', value: `${stats.co2.toFixed(0)}kg`, color: 'text-emerald-600', trend: 'Verified Impact', icon: Leaf, bg: 'bg-emerald-50' }
          ].map((kpi, i) => (
-            <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-36 hover:shadow-md transition-all">
+            <div key={i} className={`p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-36 hover:shadow-md transition-all ${kpi.bg === 'bg-emerald-500' ? 'bg-emerald-500 text-white' : 'bg-white'}`}>
                 <div className="flex justify-between items-start">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{kpi.label}</span>
-                    <kpi.icon size={16} className={kpi.color}/>
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${kpi.bg === 'bg-emerald-500' ? 'text-emerald-100' : 'text-gray-400'}`}>{kpi.label}</span>
+                    <kpi.icon size={16} className={kpi.bg === 'bg-emerald-500' ? 'text-white' : kpi.color}/>
                 </div>
                 <div className="mt-4">
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{kpi.value}</h3>
-                    <p className={`text-[8px] font-black uppercase mt-2 flex items-center gap-1 ${kpi.trend.includes('Optimized') || kpi.trend.includes('Verified') ? 'text-emerald-500' : 'text-gray-400'}`}>
+                    <h3 className="text-3xl font-black tracking-tighter leading-none">{kpi.value}</h3>
+                    <p className={`text-[8px] font-black uppercase mt-2 flex items-center gap-1 ${kpi.bg === 'bg-emerald-500' ? 'text-emerald-100' : 'text-gray-400'}`}>
                        {kpi.trend.includes('Optimized') && <TrendingDown size={10}/>}
                        {kpi.trend.includes('Verified') && <CheckCircle size={10}/>}
                        {kpi.trend}
@@ -304,21 +377,24 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
          ))}
       </div>
 
-      {/* QUICK ADD FAVORITES */}
+      {/* QUICK ADD FAVORITES (HEARTED ITEMS ONLY) */}
       <div className="space-y-4 px-2">
          <div className="flex items-center justify-between">
             <div>
                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
-                   <Heart size={20} className="text-red-500 fill-red-500"/> Quick Add Favorites
+                   <Heart size={20} className="text-red-500 fill-red-500"/> Quick Add Dashboard Favorites
                </h2>
-               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Tap to add 10kg to your daily procurement</p>
+               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Items hearted in the market appear here for high-frequency ordering</p>
             </div>
-            <button onClick={() => navigate('/marketplace')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">View Catalog</button>
+            <button onClick={() => navigate('/marketplace')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">Manage Daily Catalog</button>
          </div>
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {favorites.length === 0 ? (
-                <div className="col-span-full py-8 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest">
-                    No favorites set. Heart products in the catalog to see them here.
+                <div className="col-span-full py-12 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest">
+                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                        <Heart size={24} className="text-gray-200" />
+                    </div>
+                    Heart your daily essential items in the Fresh Market to see them here.
                 </div>
             ) : favorites.map(p => (
                 <QuickAddCard key={p.id} product={p} onQuickAdd={handleQuickAdd} />
@@ -343,7 +419,7 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
                     ) : allOrders.slice(0, 8).map(order => (
                         <div 
                             key={order.id} 
-                            onClick={() => navigate('/orders')}
+                            onClick={() => setViewingOrderDetails(order)}
                             className="p-6 flex items-center justify-between hover:bg-gray-50/50 transition-colors group cursor-pointer"
                         >
                             <div className="flex items-center gap-5">
@@ -382,6 +458,15 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
             <WeeklyOrderCalendar orders={allOrders} />
         </div>
       </div>
+
+      {/* POPUP MODAL FOR ORDER DETAILS */}
+      <OrderManifestModal 
+        isOpen={!!viewingOrderDetails}
+        onClose={() => setViewingOrderDetails(null)}
+        order={viewingOrderDetails}
+        products={products}
+        onReportIssue={handleManifestReport}
+      />
     </div>
   );
 };

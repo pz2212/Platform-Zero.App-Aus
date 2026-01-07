@@ -8,8 +8,7 @@ import {
   DollarSign, ChevronRight, AlertTriangle, MessageSquare, 
   Leaf, Info, FileText, Share2, Download, Timer, ShieldCheck, 
   ChevronDown, ArrowRight, Check, History, Camera, Loader2,
-  AlertCircle,
-  ThumbsUp
+  AlertCircle, ThumbsUp
 } from 'lucide-react';
 import { ChatDialog } from './ChatDialog';
 
@@ -229,7 +228,7 @@ const DeliveryVerificationModal = ({ isOpen, onClose, order, products, onSubmitI
     );
 };
 
-const OrderManifestModal = ({ isOpen, onClose, order, products, onReportIssue }: { 
+export const OrderManifestModal = ({ isOpen, onClose, order, products, onReportIssue }: { 
     isOpen: boolean, 
     onClose: () => void, 
     order: Order | null, 
@@ -426,7 +425,7 @@ const OrderManifestModal = ({ isOpen, onClose, order, products, onReportIssue }:
 
                 <div className="p-8 border-t border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Platform Zero Official Trade Manifest</p>
-                    <button onClick={onClose} className="px-10 py-3.5 bg-white border-2 border-gray-200 text-gray-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 shadow-sm">Close</button>
+                    <button onClick={onClose} className="px-10 py-3.5 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 shadow-sm">Close</button>
                 </div>
             </div>
         </div>

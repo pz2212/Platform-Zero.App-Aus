@@ -1,30 +1,18 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Product, OrderItem, ProductUnit, UserRole } from '../types';
-import { mockService } from '../services/mockDataService';
+import { mockService, MockCartItem } from '../services/mockDataService';
 import { generateEnvironmentalImpact } from '../services/geminiService';
 import { 
   ShoppingCart, Search, Plus, X, Leaf, Minus, 
   ArrowRight, ShoppingBag, Trash2, Truck, Calendar, Clock, 
   User as UserIcon, DollarSign, Check, CheckCircle, ChevronDown, Package,
-  Sparkles, Loader2, ImagePlus, Wind, Droplets, Recycle, Heart
+  Sparkles, Loader2, ImagePlus, Wind, Droplets, Recycle, Heart, Globe, LayoutGrid
 } from 'lucide-react';
-import { useNavigate } from 'recharts';
-
-// Correcting the navigate import as it was incorrectly imported from recharts or intended for react-router-dom
-import { useNavigate as useRouterNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface MarketplaceProps {
   user: User | null;
-}
-
-interface CartItem {
-    productId: string;
-    productName: string;
-    price: number;
-    qty: number;
-    imageUrl: string;
-    unit: string;
 }
 
 const AddProductModal = ({ isOpen, onClose, onComplete }: { 
@@ -151,10 +139,11 @@ const AddProductModal = ({ isOpen, onClose, onComplete }: {
     );
 };
 
-const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: { 
+const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: { 
     isOpen: boolean, 
     onClose: () => void, 
-    cart: CartItem[], 
+    cart: MockCartItem[], 
+    onUpdateCart: (id: string, qty: number) => void,
     onPlaceOrder: (details: any) => void
 }) => {
     const [deliveryDate, setDeliveryDate] = useState('');
@@ -165,8 +154,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
     if (!isOpen) return null;
 
     const subtotal = cart.reduce((sum, i) => sum + (i.qty * i.price), 0);
-    const discount = paymentMethod === 'pay_now' ? subtotal * 0.1 : 0;
-    const total = subtotal - discount;
+    const total = subtotal - (paymentMethod === 'pay_now' ? subtotal * 0.1 : 0);
 
     const handleSubmit = () => {
         if (!deliveryDate || !contactName) {
@@ -200,33 +188,46 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
                             <p className="font-black uppercase tracking-widest text-xs">Cart Empty</p>
                           </div>
                         ) : cart.map((item, idx) => (
-                            <div key={`${item.productId}-${idx}`} className="flex justify-between items-start py-2">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-black text-gray-900 uppercase text-[13px] leading-tight truncate pr-2">{item.productName}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                                        {item.qty} X {item.unit}
-                                    </p>
+                            <div key={`${item.productId}-${idx}`} className="flex flex-col py-4 border-b border-gray-100 last:border-0 group">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-black text-gray-900 uppercase text-[14px] leading-tight tracking-tight mb-1">{item.productName}</p>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                                            {item.qty} X {item.unit}
+                                        </p>
+                                    </div>
+                                    <button 
+                                        onClick={() => onUpdateCart(item.productId, 0)}
+                                        className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
-                                <span className="font-black text-gray-900 text-sm shrink-0">${(item.qty * item.price).toFixed(2)}</span>
+                                <div className="flex items-center gap-3 mt-4">
+                                    <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                        <button 
+                                            onClick={() => onUpdateCart(item.productId, item.qty - 1)}
+                                            className="px-3 py-1.5 hover:bg-gray-50 text-gray-500 transition-colors"
+                                        >
+                                            <Minus size={14} strokeWidth={3} />
+                                        </button>
+                                        <div className="px-3 text-xs font-black text-gray-900 border-x border-gray-100 min-w-[32px] text-center">
+                                            {item.qty}
+                                        </div>
+                                        <button 
+                                            onClick={() => onUpdateCart(item.productId, item.qty + 1)}
+                                            className="px-3 py-1.5 hover:bg-gray-50 text-gray-500 transition-colors"
+                                        >
+                                            <Plus size={14} strokeWidth={3} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="space-y-4 pt-8 border-t border-gray-200">
-                        <div className="flex justify-between items-center text-gray-500 font-bold text-sm">
-                            <span className="uppercase tracking-widest text-[11px]">Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
-                        </div>
-                        {discount > 0 && (
-                            <div className="flex justify-between items-center text-emerald-600 font-bold text-sm">
-                                <span className="uppercase tracking-widest text-[11px]">Instant Discount (10%)</span>
-                                <span>-${discount.toFixed(2)}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-end pt-2">
-                            <span className="font-black text-gray-900 text-xl uppercase tracking-tighter leading-none">Total</span>
-                            <span className="font-black text-gray-900 text-4xl tracking-tighter leading-none">${total.toFixed(2)}</span>
-                        </div>
+                    <div className="pt-8 border-t border-gray-200">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] text-center italic">Financials hidden for manifest review</p>
                     </div>
                 </div>
 
@@ -274,7 +275,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Who made the order?</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Who made the order?</label>
                                 <div className="relative">
                                     <UserIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
                                     <input 
@@ -349,7 +350,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
     );
 };
 
-const ProductCard: React.FC<any> = ({ product, onAdd, isOutOfStock, isFavorited, onToggleFavorite }) => {
+const ProductCard: React.FC<any> = ({ product, onAdd, isOutOfStock, isFavorited, isInCatalog, onToggleFavorite, onToggleCatalog }) => {
     const [qty, setQty] = useState(1);
     const [unit, setUnit] = useState('KG');
     
@@ -357,15 +358,27 @@ const ProductCard: React.FC<any> = ({ product, onAdd, isOutOfStock, isFavorited,
 
     return (
         <div className={`bg-white rounded-[2.5rem] border border-gray-100 p-10 flex flex-col h-full shadow-sm hover:shadow-xl transition-all group relative ${isOutOfStock ? 'opacity-75 grayscale-[0.5]' : ''}`}>
-            {/* Favorite Button */}
-            <button 
-                onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
-                className="absolute top-8 right-8 p-3 rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all group-hover:shadow-md active:scale-90"
-            >
-                <Heart size={20} className={isFavorited ? "fill-red-500 text-red-500" : ""} />
-            </button>
+            {/* Tagging Buttons (Top Right) */}
+            <div className="absolute top-8 right-8 flex gap-2">
+                {/* Heart -> Dashboard Favorites */}
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
+                    className={`p-3 rounded-2xl border transition-all active:scale-90 ${isFavorited ? 'bg-red-50 border-red-200 text-red-500 shadow-md' : 'bg-gray-50 border-gray-100 text-gray-300 hover:text-red-500'}`}
+                    title={isFavorited ? "Remove from Dashboard" : "Heart to Dashboard"}
+                >
+                    <Heart size={20} className={isFavorited ? "fill-red-500" : ""} />
+                </button>
+                {/* Tick -> Marketplace My Catalog */}
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onToggleCatalog(product.id); }}
+                    className={`p-3 rounded-2xl border transition-all active:scale-90 ${isInCatalog ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-md' : 'bg-gray-50 border-gray-100 text-gray-300 hover:text-emerald-500'}`}
+                    title={isInCatalog ? "Remove from My Catalog" : "Tick into My Catalog"}
+                >
+                    <Check size={20} strokeWidth={isInCatalog ? 4 : 2} />
+                </button>
+            </div>
 
-            <div className="mb-8 pr-8">
+            <div className="mb-8 pr-20">
                 <h3 className="text-2xl text-gray-900 font-black uppercase tracking-tight leading-none mb-1">{product.name}</h3>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">{product.variety}</p>
                 <div className="flex flex-col gap-2 mt-4">
@@ -418,60 +431,70 @@ const ProductCard: React.FC<any> = ({ product, onAdd, isOutOfStock, isFavorited,
 };
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
-  const navigate = useRouterNavigate();
+  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<'MY_CATALOG' | 'GLOBAL'>('MY_CATALOG');
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<MockCartItem[]>(mockService.getCart());
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  
+  // Tracking states local to view for fast UI updates
   const [favorites, setFavorites] = useState<string[]>(user?.favorites || []);
+  const [catalogItems, setCatalogItems] = useState<string[]>(user?.catalogProducts || []);
 
   const canAddProducts = user?.role === UserRole.ADMIN || user?.role === UserRole.WHOLESALER || user?.role === UserRole.FARMER;
 
   useEffect(() => {
     const load = () => {
         setProducts(mockService.getAllProducts());
-        if (user) setFavorites(mockService.getAllUsers().find(u => u.id === user.id)?.favorites || []);
+        if (user) {
+            const userData = mockService.getAllUsers().find(u => u.id === user.id);
+            setFavorites(userData?.favorites || []);
+            setCatalogItems(userData?.catalogProducts || []);
+        }
     };
     load();
-    const interval = setInterval(load, 5000);
-    return () => clearInterval(interval);
+    
+    // Subscribe to global cart
+    const unsubscribe = mockService.subscribeToCart(setCart);
+    return () => unsubscribe();
   }, [user]);
 
-  // Fix: Corrected syntax for updating cart items and fixed parameter mapping in addToCart
   const addToCart = (product: Product, qty: number, unit: string) => {
-      setCart(prev => {
-          const existing = prev.find(i => i.productId === product.id && i.unit === unit);
-          if (existing) {
-              return prev.map(item => item.productId === product.id && item.unit === unit 
-                  ? { ...item, qty: item.qty + qty } 
-                  : item
-              );
-          }
-          
-          return [...prev, { 
-              productId: product.id, 
-              productName: product.name, 
-              price: product.defaultPricePerKg, 
-              qty, 
-              imageUrl: product.imageUrl,
-              unit: unit
-          }];
+      mockService.addToCart({ 
+          productId: product.id, 
+          productName: product.name, 
+          price: product.defaultPricePerKg, 
+          qty, 
+          imageUrl: product.imageUrl,
+          unit: unit
       });
   };
 
-  // Fix: Ensured favorited status is correctly toggled and state refreshed
+  const updateCartItem = (productId: string, newQty: number) => {
+      mockService.updateCart(productId, newQty);
+  };
+
   const handleToggleFavorite = (productId: string) => {
       if (!user) {
-          alert("Please log in to favorite products.");
+          alert("Please log in to heart items for your Dashboard.");
           return;
       }
       mockService.toggleFavorite(user.id, productId);
       setFavorites(mockService.getAllUsers().find(u => u.id === user.id)?.favorites || []);
   };
 
-  // Fix: correctly typed and scope-safe order placement handler
+  const handleToggleCatalog = (productId: string) => {
+      if (!user) {
+          alert("Please log in to tick items for your Catalog.");
+          return;
+      }
+      mockService.toggleCatalogProduct(user.id, productId);
+      setCatalogItems(mockService.getAllUsers().find(u => u.id === user.id)?.catalogProducts || []);
+  };
+
   const handlePlaceOrder = (details: any) => {
       if (!user) return alert("Please sign in.");
       const newOrder = mockService.createFullOrder(user.id, details.items, details.total);
@@ -483,33 +506,68 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
       };
       newOrder.paymentMethod = details.paymentMethod;
       
-      setCart([]); 
+      mockService.clearCart();
       setIsCheckoutOpen(false); 
       alert("Order Placed Successfully!"); 
       navigate('/orders');
   };
 
   const CATEGORIES = ['ALL', 'VEGETABLES', 'FRUIT'];
-  // Fix: Resolved variable scoping issues for filter functionality
-  const filtered = products.filter(p => (activeCategory === 'ALL' || p.category.toString().toUpperCase() === activeCategory) && p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  const filtered = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = activeCategory === 'ALL' || p.category.toString().toUpperCase() === activeCategory;
+    const matchesView = viewMode === 'GLOBAL' || catalogItems.includes(p.id);
+    return matchesSearch && matchesCategory && matchesView;
+  });
 
   return (
     <div className="space-y-12 relative pb-24 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        {/* Header and Toggle */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 px-2">
             <div className="flex items-center gap-6">
                 <div className="w-16 h-16 bg-white rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-center text-[#043003]"><ShoppingBag size={36} /></div>
                 <div>
                     <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">Fresh Market</h1>
-                    <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mt-2">Source Direct • No Markup</p>
+                    <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mt-2">Personalized Procurement Console</p>
                 </div>
             </div>
-            <div className="flex gap-4 w-full md:w-auto">
-                <div className="relative flex-1 md:w-96 group">
+
+            <div className="bg-gray-100/50 p-1.5 rounded-[1.5rem] flex border border-gray-200 shadow-inner-sm min-w-[340px]">
+                <button 
+                    onClick={() => setViewMode('MY_CATALOG')}
+                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all ${viewMode === 'MY_CATALOG' ? 'bg-white text-[#043003] shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    <Check size={16} strokeWidth={4} className={viewMode === 'MY_CATALOG' ? 'text-emerald-500' : ''} /> My Catalog
+                </button>
+                <button 
+                    onClick={() => setViewMode('GLOBAL')}
+                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all ${viewMode === 'GLOBAL' ? 'bg-white text-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    <Globe size={16} /> Directory
+                </button>
+            </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 w-full px-2">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 flex-1">
+                {CATEGORIES.map(cat => (
+                    <button 
+                        key={cat} 
+                        onClick={() => setActiveCategory(cat)} 
+                        className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all border ${activeCategory === cat ? 'bg-[#043003] text-white border-[#043003] shadow-lg scale-105 z-10' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
+            <div className="flex gap-4">
+                <div className="relative w-full md:w-80 group">
                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors" size={20} />
                     <input 
                         type="text" 
                         placeholder="Search varieties..." 
-                        className="w-full pl-14 pr-8 py-5 bg-white border border-gray-100 rounded-[1.5rem] text-sm font-bold shadow-sm outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-100 transition-all" 
+                        className="w-full pl-14 pr-8 py-5 bg-white border border-gray-100 rounded-[1.5rem] text-sm font-bold text-gray-900 shadow-sm outline-none focus:ring-4 focus:ring-indigo-50/5 focus:border-emerald-100 transition-all" 
                         value={searchTerm} 
                         onChange={(e) => setSearchTerm(e.target.value)} 
                     />
@@ -519,7 +577,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
                         onClick={() => setIsAddProductModalOpen(true)}
                         className="px-6 bg-white text-emerald-600 border-2 border-emerald-600 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 active:scale-95"
                     >
-                        <Plus size={20}/> ADD PRODUCT
+                        <Plus size={20}/>
                     </button>
                 )}
                 <button 
@@ -537,34 +595,47 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
             </div>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            {CATEGORIES.map(cat => (
-                <button 
-                    key={cat} 
-                    onClick={() => setActiveCategory(cat)} 
-                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all border ${activeCategory === cat ? 'bg-[#043003] text-white border-[#043003] shadow-lg scale-105 z-10' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}
-                >
-                    {cat}
-                </button>
-            ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {/* Catalog Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-2">
             {filtered.map(p => (
                 <ProductCard 
                     key={p.id} 
                     product={p} 
                     onAdd={(qty: number, unit: string) => addToCart(p, qty, unit)} 
                     isFavorited={favorites.includes(p.id)}
+                    isInCatalog={catalogItems.includes(p.id)}
                     onToggleFavorite={handleToggleFavorite}
+                    onToggleCatalog={handleToggleCatalog}
                 />
             ))}
+            
+            {/* Empty States */}
+            {filtered.length === 0 && viewMode === 'MY_CATALOG' && (
+                <div className="col-span-full py-32 text-center bg-white rounded-[3rem] border-2 border-dashed border-gray-100 group transition-all">
+                    <CheckCircle size={64} className="mx-auto text-gray-100 mb-6 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Your ordering catalog is empty</h3>
+                    <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mt-4 mb-8">Tick items in the Directory to add them to your personalized daily catalog.</p>
+                    <button 
+                        onClick={() => setViewMode('GLOBAL')}
+                        className="px-10 py-4 bg-[#043003] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all"
+                    >
+                        Browse All Produce
+                    </button>
+                </div>
+            )}
+            {filtered.length === 0 && viewMode === 'GLOBAL' && (
+                <div className="col-span-full py-40 text-center text-gray-300">
+                    <Search size={64} className="mx-auto mb-4 opacity-10" />
+                    <p className="font-black uppercase tracking-widest text-xs">No matching products found in the directory.</p>
+                </div>
+            )}
         </div>
 
         <CheckoutModal 
             isOpen={isCheckoutOpen}
             onClose={() => setIsCheckoutOpen(false)}
             cart={cart}
+            onUpdateCart={updateCartItem}
             onPlaceOrder={handlePlaceOrder}
         />
 
@@ -576,7 +647,3 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
     </div>
   );
 };
-
-const ArrowLeft = ({ size = 24, ...props }: any) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-);

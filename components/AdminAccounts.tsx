@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { mockService } from '../services/mockDataService';
-import { Customer, Order, User, UserRole, Product } from '../types';
+import { Customer, Order, User, UserRole, Product, OrderItem } from '../types';
 import { 
   Building, DollarSign, FileText, ChevronRight, X, 
   AlertTriangle, CheckCircle, Clock, ShieldAlert,
@@ -10,14 +10,184 @@ import {
   Package, Leaf, Droplets, Wind, Upload, Download, Eye,
   Check, Loader2, ShoppingCart, TreePine, FileSpreadsheet,
   FileSearch, Printer, Share2, ShieldCheck, Calendar,
-  Filter, FileDown
+  Filter, FileDown, Plus, Minus, Trash2, Edit3, Sparkles
 } from 'lucide-react';
+
+// Order Manifest Editor Modal
+const OrderManifestEditor = ({ order, products, onClose, onSave }: { 
+  order: Order, 
+  products: Product[], 
+  onClose: () => void, 
+  onSave: (items: OrderItem[]) => void 
+}) => {
+    const [editedItems, setEditedItems] = useState<OrderItem[]>([...order.items]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showProductSearch, setShowProductSearch] = useState(false);
+    const [pSearch, setPSearch] = useState('');
+
+    const handleQtyChange = (productId: string, delta: number) => {
+        setEditedItems(prev => prev.map(i => {
+            if (i.productId === productId) {
+                return { ...i, quantityKg: Math.max(0.5, i.quantityKg + delta) };
+            }
+            return i;
+        }));
+    };
+
+    const handleRemoveItem = (productId: string) => {
+        setEditedItems(prev => prev.filter(i => i.productId !== productId));
+    };
+
+    const handleAddItem = (p: Product) => {
+        if (editedItems.find(i => i.productId === p.id)) {
+            handleQtyChange(p.id, 1);
+        } else {
+            setEditedItems(prev => [...prev, {
+                productId: p.id,
+                quantityKg: 1,
+                pricePerKg: p.defaultPricePerKg,
+                unit: p.unit || 'KG'
+            }]);
+        }
+        setShowProductSearch(false);
+        setPSearch('');
+    };
+
+    const handleFinalSave = async () => {
+        setIsSaving(true);
+        await new Promise(r => setTimeout(r, 800));
+        onSave(editedItems);
+        setIsSaving(false);
+    };
+
+    const filteredProducts = products.filter(p => 
+        p.name.toLowerCase().includes(pSearch.toLowerCase())
+    );
+
+    return (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-gray-100 max-h-[90vh]">
+                
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Edit Manifest</h3>
+                        <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Audit Mode • Order #{order.id.split('-').pop()}</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 bg-white rounded-full border border-gray-100 text-gray-400 hover:text-gray-900 transition-all shadow-sm"><X size={24}/></button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-8 space-y-6 no-scrollbar bg-white">
+                    <div className="space-y-4">
+                        {editedItems.map((item, idx) => {
+                            const p = products.find(prod => prod.id === item.productId);
+                            return (
+                                <div key={item.productId} className="flex flex-col space-y-4 p-6 rounded-[2rem] bg-gray-50/50 border border-gray-100 group transition-all hover:bg-white hover:shadow-xl hover:border-indigo-100">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-200 bg-white">
+                                                <img src={p?.imageUrl} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-gray-900 text-lg uppercase leading-none tracking-tight">{p?.name}</h4>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">{p?.variety}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100/50">
+                                        <div className="flex items-center bg-white p-1.5 rounded-2xl border border-gray-200 shadow-inner-sm">
+                                            <button onClick={() => handleQtyChange(item.productId, -1)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Minus size={18}/></button>
+                                            <div className="px-6 text-center">
+                                                <p className="font-black text-gray-900 text-lg leading-none">{item.quantityKg}</p>
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">X {item.unit || 'KG'}</p>
+                                            </div>
+                                            <button onClick={() => handleQtyChange(item.productId, 1)} className="p-2 text-gray-400 hover:text-emerald-500 transition-colors"><Plus size={18}/></button>
+                                        </div>
+                                        <button onClick={() => handleRemoveItem(item.productId)} className="p-3.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl transition-all active:scale-90 shadow-sm">
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {!showProductSearch ? (
+                        <button 
+                            onClick={() => setShowProductSearch(true)}
+                            className="w-full py-5 border-2 border-dashed border-gray-200 rounded-[2rem] text-gray-400 font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all active:scale-95"
+                        >
+                            <Plus size={20}/> Add Product to Manifest
+                        </button>
+                    ) : (
+                        <div className="bg-indigo-50/50 p-6 rounded-[2.5rem] border-2 border-indigo-100 animate-in slide-in-from-top-4 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Search Market Catalog</h4>
+                                <button onClick={() => setShowProductSearch(false)} className="text-gray-400 hover:text-gray-900"><X size={20}/></button>
+                            </div>
+                            <div className="relative mb-6">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300" size={18}/>
+                                <input 
+                                    autoFocus
+                                    placeholder="Search varieties..." 
+                                    className="w-full pl-11 pr-4 py-4 bg-white border border-indigo-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+                                    value={pSearch}
+                                    onChange={e => setPSearch(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
+                                {filteredProducts.map(p => (
+                                    <button 
+                                        key={p.id}
+                                        onClick={() => handleAddItem(p)}
+                                        className="w-full p-4 bg-white border border-gray-100 rounded-2xl flex justify-between items-center hover:border-indigo-300 hover:shadow-md transition-all active:scale-[0.98]"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl overflow-hidden"><img src={p.imageUrl} className="w-full h-full object-cover"/></div>
+                                            <div className="text-left">
+                                                <p className="font-black text-gray-900 text-xs uppercase tracking-tight">{p.name}</p>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{p.variety}</p>
+                                            </div>
+                                        </div>
+                                        <ArrowUpRight size={18} className="text-indigo-400"/>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-8 bg-gray-900 text-white border-t border-white/5 shrink-0 flex flex-col gap-6">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Manifest Integrity Checked</p>
+                            <h3 className="text-2xl font-black tracking-tight leading-none uppercase">Ready for Settle</h3>
+                        </div>
+                        <div className="bg-emerald-500 p-4 rounded-2xl text-white shadow-xl shadow-emerald-500/20">
+                            <Sparkles size={24} strokeWidth={2.5}/>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <button onClick={onClose} className="flex-1 py-5 bg-white/5 border border-white/10 text-gray-400 rounded-[1.75rem] font-black text-[10px] uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all">Cancel</button>
+                        <button 
+                            onClick={handleFinalSave}
+                            disabled={isSaving}
+                            className="flex-[2] py-5 bg-emerald-600 text-white rounded-[1.75rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl hover:bg-emerald-50 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                        >
+                            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <><Check size={18} strokeWidth={3}/> Commit manifest Update</>}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // Simulated Document Viewer Component
 const DocumentViewer = ({ title, type, order, onClose }: { title: string, type: 'BILL' | 'INVOICE', order: Order, onClose: () => void }) => {
     const products = mockService.getAllProducts();
     return (
-        <div className="fixed inset-0 z-[350] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[350] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
                 <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
@@ -105,6 +275,9 @@ export const AdminAccounts: React.FC = () => {
   const [viewingInvoice, setViewingInvoice] = useState<Order | null>(null);
   const [showEcoAudit, setShowEcoAudit] = useState(false);
   
+  // Manifest Editor State
+  const [editingManifestOrder, setEditingManifestOrder] = useState<Order | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -191,6 +364,15 @@ export const AdminAccounts: React.FC = () => {
               setIsUploading(null);
               alert(`Success: Settlement document uploaded and verified for Order #${orderId.split('-').pop()}`);
           }, 1500);
+      }
+  };
+
+  const handleUpdateManifest = (items: OrderItem[]) => {
+      if (editingManifestOrder) {
+          mockService.updateOrderItems(editingManifestOrder.id, items);
+          setAllOrders([...mockService.getOrders('u1')]); // Refresh list
+          setEditingManifestOrder(null);
+          alert("Trade Manifest updated and verified. Impact and ledger values recalculated.");
       }
   };
 
@@ -445,7 +627,7 @@ export const AdminAccounts: React.FC = () => {
                                         const netProfit = o.totalAmount - supplierOwe - commission;
                                         const isSupplierDue = o.supplierInvoiceDue && new Date(o.supplierInvoiceDue) < new Date();
                                         
-                                        // Mock Impact calculation
+                                        // Impact calculation
                                         const kgDiverted = o.items.reduce((sum, i) => sum + i.quantityKg, 0);
                                         const waterSaved = kgDiverted * 50;
                                         const co2Diverted = kgDiverted * 0.8;
@@ -501,6 +683,13 @@ export const AdminAccounts: React.FC = () => {
                                                 </td>
                                                 <td className="px-4 py-5 text-right">
                                                     <div className="flex justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => setEditingManifestOrder(o)}
+                                                            className="p-2 bg-white border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm"
+                                                            title="Edit Trade Manifest"
+                                                        >
+                                                            <Edit3 size={14}/>
+                                                        </button>
                                                         <button 
                                                             className={`p-2 rounded-lg border transition-all ${o.paymentStatus === 'Paid' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-gray-100 text-gray-300'}`}
                                                             title="Customer Receipt"
@@ -603,7 +792,7 @@ export const AdminAccounts: React.FC = () => {
                                       <tr key={i} className="hover:bg-gray-50/80 transition-all group">
                                           <td className="px-8 py-6">
                                               <div className="font-black text-gray-900 uppercase text-sm tracking-tight">{item.name}</div>
-                                              <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-0.5">{item.variety}</p>
+                                              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.variety}</p>
                                           </td>
                                           <td className="px-8 py-6 text-right font-black text-gray-900">{item.qty}kg</td>
                                           <td className="px-8 py-6 text-right font-black text-emerald-600">-{item.co2.toFixed(1)}kg</td>
@@ -645,6 +834,16 @@ export const AdminAccounts: React.FC = () => {
             type="INVOICE" 
             order={viewingInvoice} 
             onClose={() => setViewingInvoice(null)} 
+          />
+      )}
+
+      {/* Manifest Editor */}
+      {editingManifestOrder && (
+          <OrderManifestEditor 
+            order={editingManifestOrder}
+            products={mockService.getAllProducts()}
+            onClose={() => setEditingManifestOrder(null)}
+            onSave={handleUpdateManifest}
           />
       )}
     </div>

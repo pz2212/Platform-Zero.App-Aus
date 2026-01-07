@@ -87,10 +87,11 @@ const ProductCard: React.FC<any> = ({ product, item, onAdd, isFavorited, onToggl
     );
 };
 
-const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: { 
+const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: { 
     isOpen: boolean, 
     onClose: () => void, 
     cart: CartItem[], 
+    onUpdateCart: (lotId: string, qty: number) => void,
     onPlaceOrder: (details: any) => void
 }) => {
     const [deliveryDate, setDeliveryDate] = useState('');
@@ -101,8 +102,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
     if (!isOpen) return null;
 
     const subtotal = cart.reduce((sum, i) => sum + (i.qty * i.price), 0);
-    const discount = paymentMethod === 'pay_now' ? subtotal * 0.1 : 0;
-    const total = subtotal - discount;
+    const total = subtotal - (paymentMethod === 'pay_now' ? subtotal * 0.1 : 0);
 
     const handleSubmit = () => {
         if (!deliveryDate || !contactName) {
@@ -135,33 +135,46 @@ const CheckoutModal = ({ isOpen, onClose, cart, onPlaceOrder }: {
                                 <p className="font-black uppercase tracking-widest text-xs">Cart Empty</p>
                             </div>
                         ) : cart.map((item, idx) => (
-                            <div key={`${item.productId}-${idx}`} className="flex justify-between items-start py-2">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-black text-gray-900 uppercase text-[13px] leading-tight truncate pr-2">{item.productName}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                                        {item.qty} X {item.unit}
-                                    </p>
+                            <div key={`${item.productId}-${idx}`} className="flex flex-col py-4 border-b border-gray-100 last:border-0 group">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-black text-gray-900 uppercase text-[14px] leading-tight tracking-tight mb-1">{item.productName}</p>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                                            {item.qty} X {item.unit}
+                                        </p>
+                                    </div>
+                                    <button 
+                                        onClick={() => onUpdateCart(item.lotId!, 0)}
+                                        className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
-                                <span className="font-black text-gray-900 text-sm shrink-0">${(item.qty * item.price).toFixed(2)}</span>
+                                <div className="flex items-center gap-3 mt-4">
+                                    <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                        <button 
+                                            onClick={() => onUpdateCart(item.lotId!, item.qty - 1)}
+                                            className="px-3 py-1.5 hover:bg-gray-50 text-gray-500 transition-colors"
+                                        >
+                                            <Minus size={14} strokeWidth={3} />
+                                        </button>
+                                        <div className="px-3 text-xs font-black text-gray-900 border-x border-gray-100 min-w-[32px] text-center">
+                                            {item.qty}
+                                        </div>
+                                        <button 
+                                            onClick={() => onUpdateCart(item.lotId!, item.qty + 1)}
+                                            className="px-3 py-1.5 hover:bg-gray-50 text-gray-500 transition-colors"
+                                        >
+                                            <Plus size={14} strokeWidth={3} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="space-y-4 pt-8 border-t border-gray-200">
-                        <div className="flex justify-between items-center text-gray-500 font-bold text-sm">
-                            <span className="uppercase tracking-widest text-[11px]">Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
-                        </div>
-                        {discount > 0 && (
-                            <div className="flex justify-between items-center text-emerald-600 font-bold text-sm">
-                                <span className="uppercase tracking-widest text-[11px]">Cash Discount (10%)</span>
-                                <span>-${discount.toFixed(2)}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-end pt-2">
-                            <span className="font-black text-gray-900 text-xl uppercase tracking-tighter leading-none">Total</span>
-                            <span className="font-black text-gray-900 text-4xl tracking-tighter leading-none">${total.toFixed(2)}</span>
-                        </div>
+                    <div className="pt-8 border-t border-gray-200">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] text-center italic">Financials hidden for manifest review</p>
                     </div>
                 </div>
 
@@ -328,6 +341,15 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
       alert(`${product.name} added to cart!`);
   };
 
+  const updateCartItem = (lotId: string, newQty: number) => {
+      setCart(prev => {
+          if (newQty <= 0) {
+              return prev.filter(item => item.lotId !== lotId);
+          }
+          return prev.map(item => item.lotId === lotId ? { ...item, qty: newQty } : item);
+      });
+  };
+
   const handleToggleFavorite = (productId: string) => {
       if (!user) return;
       mockService.toggleFavorite(user.id, productId);
@@ -419,6 +441,7 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
             isOpen={isCheckoutOpen}
             onClose={() => setIsCheckoutOpen(false)}
             cart={cart}
+            onUpdateCart={updateCartItem}
             onPlaceOrder={handlePlaceOrder}
         />
     </div>
