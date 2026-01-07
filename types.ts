@@ -29,7 +29,7 @@ export interface AppNotification {
   userId: string;
   title: string;
   message: string;
-  type: 'ORDER' | 'LEAD' | 'SYSTEM' | 'APPLICATION' | 'PRICE_REQUEST';
+  type: 'ORDER' | 'LEAD' | 'SYSTEM' | 'APPLICATION' | 'PRICE_REQUEST' | 'DEMAND_PING';
   timestamp: string;
   isRead: boolean;
   link?: string;

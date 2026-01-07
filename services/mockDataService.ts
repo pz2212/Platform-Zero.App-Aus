@@ -73,6 +73,7 @@ class MockDataService {
   private inventory: InventoryItem[] = [
     { id: 'i1', lotNumber: 'PZ-LOT-1001', productId: 'p1', ownerId: 'u2', quantityKg: 30, expiryDate: new Date(Date.now() + 86400000 * 5).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Green Valley Farms', harvestLocation: 'Yarra Valley', warehouseLocation: 'Zone A-4', discountAfterDays: 3, discountPricePerKg: 3.00, logisticsPrice: 15.00 },
     { id: 'i2', lotNumber: 'PZ-LOT-1002', productId: 'p2', ownerId: 'u2', quantityKg: 80, expiryDate: new Date(Date.now() + 86400000 * 14).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Bob\'s Spuds', harvestLocation: 'Gippsland', warehouseLocation: 'Cold Room 1', logisticsPrice: 20.00 },
+    { id: 'i3', lotNumber: 'PZ-LOT-1003', productId: 'p1', ownerId: 'u3', quantityKg: 500, expiryDate: new Date(Date.now() + 86400000 * 10).toISOString(), harvestDate: new Date().toISOString(), uploadedAt: new Date().toISOString(), status: 'Available', originalFarmerName: 'Green Valley Farms', harvestLocation: 'Yarra Valley', logisticsPrice: 40.00 },
   ];
 
   private orders: Order[] = [];
@@ -673,6 +674,20 @@ class MockDataService {
           o.totalAmount = items.reduce((sum, item) => sum + (item.quantityKg * (item.pricePerKg || 0)), 0);
           o.supplierCost = o.totalAmount * 0.85; // Simplified vendor billing logic for audit simulation
       }
+  }
+
+  sendDemandPing(senderId: string, receiverId: string, productId: string, qty: number, neededBy?: string) {
+      const product = this.products.find(p => p.id === productId);
+      const sender = this.users.find(u => u.id === senderId);
+      
+      const neededByText = neededBy ? ` by ${new Date(neededBy).toLocaleDateString()}` : '';
+
+      this.addAppNotification(
+          receiverId,
+          'URGENT STOCK INQUIRY',
+          `${sender?.businessName} urgently needs ${qty}kg of ${product?.name}${neededByText}. Fulfill now?`,
+          'DEMAND_PING'
+      );
   }
 }
 

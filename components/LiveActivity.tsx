@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Truck, Package, CheckCircle2, X, MapPin, Sprout, Building2, Bell, ShieldCheck, ShoppingCart, Info, Check } from 'lucide-react';
+import { Truck, Package, CheckCircle2, X, MapPin, Sprout, Building2, Bell, ShieldCheck, ShoppingCart, Info, Check, Zap, AlertTriangle } from 'lucide-react';
 import { AppNotification, User, UserRole } from '../types';
 
 interface LiveActivityProps {
@@ -10,7 +10,6 @@ interface LiveActivityProps {
 }
 
 export const LiveActivity: React.FC<LiveActivityProps> = ({ notification, user, onClose }) => {
-  const [timer, setTimer] = useState("15:00");
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -26,65 +25,53 @@ export const LiveActivity: React.FC<LiveActivityProps> = ({ notification, user, 
   if (!notification || !isVisible) return null;
 
   const isPriceRequest = notification.type === 'PRICE_REQUEST';
+  const isDemandPing = notification.type === 'DEMAND_PING';
   
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] w-[95%] max-w-[420px] animate-in slide-in-from-top-20 duration-700 ease-out">
-      <div className="bg-[#0B1221] text-white rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] border-4 border-white/10 p-8 overflow-hidden relative group">
+      <div className={`rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] border-4 p-8 overflow-hidden relative group transition-all ${
+        isDemandPing ? 'bg-[#EEF2FF] border-indigo-200 text-indigo-900' : 'bg-[#0B1221] border-white/10 text-white'
+      }`}>
         <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform duration-700">
-           <TrendingUp size={240} className="text-emerald-500"/>
+           {isDemandPing ? <Zap size={240} className="text-indigo-500"/> : <TrendingUp size={240} className="text-emerald-500"/>}
         </div>
 
         {/* Status Header */}
         <div className="flex justify-between items-center mb-8 relative z-10">
           <div className="flex items-center gap-4">
-             <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-2xl shadow-emerald-500/40 border-2 border-white/20">
+             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs shadow-2xl border-2 border-white/20 ${
+                 isDemandPing ? 'bg-indigo-600 text-white' : 'bg-emerald-500 text-white'
+             }`}>
                 PZ
              </div>
              <div>
-                <span className="block text-[11px] font-black text-emerald-400 uppercase tracking-[0.3em] leading-none">
-                    {isPriceRequest ? 'Procurement Lead' : 'Live Update'}
+                <span className={`block text-[11px] font-black uppercase tracking-[0.3em] leading-none ${
+                    isDemandPing ? 'text-indigo-500' : 'text-emerald-400'
+                }`}>
+                    {isDemandPing ? 'Priority Demand' : isPriceRequest ? 'Procurement Lead' : 'Live Update'}
                 </span>
-                <span className="block text-xl font-black text-white tracking-tight mt-1">
-                    Market Intelligence
+                <span className={`block text-xl font-black tracking-tight mt-1 ${isDemandPing ? 'text-[#1E1B4B]' : 'text-white'}`}>
+                    {isDemandPing ? 'Stock Deficit Alert' : 'Market Intelligence'}
                 </span>
              </div>
           </div>
-          <button onClick={() => setIsVisible(false)} className="text-slate-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full border border-white/5">
+          <button onClick={() => setIsVisible(false)} className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-full">
             <X size={20}/>
           </button>
         </div>
 
-        {/* Progress Visualization */}
-        <div className="flex items-center justify-between px-2 mb-8 relative z-10">
-            <div className="text-center">
-                <p className="text-3xl font-black tracking-tighter text-white">PZ</p>
-                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Source</p>
-            </div>
-
-            <div className="flex-1 flex flex-col items-center px-6 relative">
-                 <div className="w-full h-1 bg-slate-800 rounded-full relative overflow-hidden">
-                    <div className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-500 to-indigo-500 w-1/2 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
-                 </div>
-                 <div className="absolute top-[-10px] left-[45%] animate-bounce duration-1000">
-                    <Truck size={18} className="text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-                 </div>
-                 <span className="text-[10px] font-black text-indigo-400 mt-4 uppercase tracking-[0.2em] animate-pulse">Dispatched</span>
-            </div>
-
-            <div className="text-center">
-                <p className="text-3xl font-black tracking-tighter text-white">ETA 12m</p>
-                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Arrival</p>
-            </div>
-        </div>
-
         {/* Content Box */}
-        <div className="bg-white/5 backdrop-blur-md rounded-[1.75rem] p-6 border-2 border-white/5 mb-8 flex items-center justify-between relative z-10 group/box hover:bg-white/10 transition-all">
+        <div className={`rounded-[1.75rem] p-6 border-2 mb-8 flex items-center justify-between relative z-10 group/box transition-all ${
+            isDemandPing ? 'bg-white border-indigo-100' : 'bg-white/5 border-white/5 hover:bg-white/10'
+        }`}>
             <div className="flex flex-col flex-1 mr-4">
-                <p className="text-lg font-black text-white tracking-tight leading-tight group-hover/box:text-emerald-400 transition-colors">{notification.title}</p>
-                <p className="text-xs text-slate-400 font-medium mt-2 leading-relaxed">{notification.message}</p>
+                <p className={`text-lg font-black tracking-tight leading-tight group-hover/box:text-indigo-600 transition-colors ${isDemandPing ? 'text-gray-900' : 'text-white'}`}>{notification.title}</p>
+                <p className={`text-xs font-medium mt-2 leading-relaxed ${isDemandPing ? 'text-gray-500' : 'text-slate-400'}`}>{notification.message}</p>
             </div>
-            <div className="bg-emerald-500 w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 border-2 border-white/20 shrink-0 transform group-hover/box:rotate-12 transition-transform">
-                <Check size={24} strokeWidth={4} className="text-white" />
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-white/20 shrink-0 transform group-hover/box:rotate-12 transition-transform ${
+                isDemandPing ? 'bg-indigo-600 text-white shadow-indigo-100' : 'bg-emerald-500 text-white shadow-emerald-500/20'
+            }`}>
+                {isDemandPing ? <Zap size={24} strokeWidth={4} /> : <Check size={24} strokeWidth={4} />}
             </div>
         </div>
 
@@ -92,15 +79,19 @@ export const LiveActivity: React.FC<LiveActivityProps> = ({ notification, user, 
         <div className="flex gap-3 relative z-10">
             <button 
               onClick={() => setIsVisible(false)}
-              className="flex-1 py-5 bg-white/5 hover:bg-white/10 text-white rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all border-2 border-white/5"
+              className={`flex-1 py-5 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all border-2 ${
+                  isDemandPing ? 'bg-white border-indigo-100 text-gray-400' : 'bg-white/5 border-white/5 text-white hover:bg-white/10'
+              }`}
             >
                 Dismiss
             </button>
             <button 
-              onClick={() => setIsVisible(false)}
-              className="flex-[2] py-5 bg-white text-slate-950 hover:bg-emerald-400 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl active:scale-95 group/btn"
+              onClick={() => { setIsVisible(false); isDemandPing && window.location.hash === '#/' }}
+              className={`flex-[2] rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl active:scale-95 group/btn py-5 ${
+                  isDemandPing ? 'bg-[#1E1B4B] text-white hover:bg-black' : 'bg-white text-slate-950 hover:bg-emerald-400'
+              }`}
             >
-                View Dashboard <ArrowRight size={14} className="inline ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                Fulfill Request <ArrowRight size={14} className="inline ml-2 group-hover/btn:translate-x-1 transition-transform" />
             </button>
         </div>
 
