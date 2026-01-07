@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { UserRole, User, AppNotification, RegistrationRequest } from '../types';
@@ -33,6 +32,7 @@ import { Inventory } from './Inventory';
 import { SharedProductLanding } from './SharedProductLanding';
 import { AdminMarketOps } from './AdminMarketOps';
 import { EnvironmentalImpact } from './EnvironmentalImpact';
+import { CompleteProfileModal } from './CompleteProfileModal';
 import { 
   LayoutDashboard, ShoppingCart, Users, Settings, LogOut, Tags, ChevronDown, UserPlus, 
   DollarSign, X, Lock, ArrowLeft, Bell, 
@@ -40,7 +40,7 @@ import {
   Sparkles, User as UserIcon, Building, ChevronRight,
   Sprout, Globe, Users2, Circle, LogIn, ArrowRight, Menu, Search, Calculator, BarChart3,
   Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4,
-  Smartphone, Key, Shield, Loader2, Check, Landmark
+  Smartphone, Key, Shield, Loader2, Check, Landmark, ShieldAlert, FilePlus, FileWarning
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubItem = false }: any) => (
@@ -128,11 +128,40 @@ const SecureAccountSidebarWidget = ({ onComplete }: { onComplete: () => void }) 
     );
 };
 
-const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
+// Fix: FilePlus is now imported from lucide-react and accessible in scope
+const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () => void }) => {
+    return (
+        <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in duration-500">
+            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-xl p-12 text-center border-4 border-white/20 animate-in zoom-in-95 duration-300">
+                <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner-sm">
+                    <ShieldAlert size={48} strokeWidth={2.5}/>
+                </div>
+                <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none mb-6">Trade Verification Required</h2>
+                <p className="text-lg text-gray-500 font-medium leading-relaxed mb-10">
+                    To maintain market integrity and security, <span className="font-black text-gray-900">{user.businessName}</span> must complete the official trade setup and sign the Platform Zero NDA before accessing the marketplace.
+                </p>
+                <div className="space-y-4">
+                    <button 
+                        onClick={onStart}
+                        className="w-full py-6 bg-[#043003] hover:bg-black text-white rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl shadow-emerald-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    >
+                        <FilePlus size={24}/> Complete Trade Setup
+                    </button>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                        <Lock size={12}/> Secure B2B Onboarding Protocol
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCustomerActivityOpen, setIsCustomerActivityOpen] = useState(
     location.pathname === '/login-requests' || 
     location.pathname === '/customer-portal' || 
@@ -146,6 +175,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
   };
   
   const isPartner = user.role === UserRole.WHOLESALER || user.role === UserRole.FARMER;
+  const isProfileIncomplete = !user.businessProfile?.isComplete && user.role !== UserRole.ADMIN;
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -252,6 +282,8 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
   
   return (
     <div className="flex min-h-screen bg-white">
+      {isProfileIncomplete && <BlockingOnboardingOverlay user={user} onStart={() => setIsProfileModalOpen(true)} />}
+      
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-100 fixed inset-y-0 z-30">
         <div className="p-8 flex items-center gap-3">
           <div className="w-8 h-8 bg-[#043003] rounded-lg flex items-center justify-center text-white font-bold text-lg">P</div>
@@ -355,7 +387,193 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet }: any) => {
         </header>
         <div className="flex-1 p-6 md:p-8">{children}</div>
       </main>
+
+      <CompleteProfileModal 
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        onComplete={() => onProfileRefresh()}
+      />
     </div>
   );
 };
-// ... rest of the file remains unchanged
+
+const App = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authStep, setAuthStep] = useState<'category' | 'credentials'>('category');
+
+  const handleAutoLogin = (email: string) => {
+    const foundUser = mockService.getAllUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (foundUser) { setUser(foundUser); setShowAuthModal(false); } else { alert("Account not found."); }
+  };
+
+  const handleCodeLogin = (code: string) => {
+      const foundUser = mockService.loginWithCode(code);
+      if (foundUser) {
+          setUser(foundUser);
+          setShowAuthModal(false);
+      } else {
+          alert("Invalid Access Code.");
+      }
+  };
+
+  const handlePasswordSet = (userId: string) => {
+      mockService.setUserPassword(userId, true);
+      setUser(prev => prev ? { ...prev, passwordSet: true } : null);
+  };
+
+  const handleProfileRefresh = () => {
+      if (user) {
+          const updated = mockService.getAllUsers().find(u => u.id === user.id);
+          if (updated) setUser({...updated});
+      }
+  };
+
+  const wrapLayout = (element: React.ReactElement) => (
+    <Router>
+        <Routes>
+            <Route path="/l/:itemId" element={<SharedProductLanding user={user} onLogin={() => { setAuthStep('category'); setShowAuthModal(true); }} />} />
+            <Route path="/*" element={
+                user ? (
+                    <AppLayout user={user} onLogout={() => setUser(null)} onPasswordSet={handlePasswordSet} onProfileRefresh={handleProfileRefresh}>
+                        {element}
+                    </AppLayout>
+                ) : (
+                    <>
+                        <ConsumerLanding onLogin={() => { setAuthStep('category'); setShowAuthModal(true); }} />
+                        <AuthModal 
+                            isOpen={showAuthModal} 
+                            onClose={() => setShowAuthModal(false)} 
+                            step={authStep} 
+                            setStep={setAuthStep} 
+                            onLogin={(e: any) => {e.preventDefault();}} 
+                            onAutoLogin={handleAutoLogin} 
+                            onCodeLogin={handleCodeLogin}
+                        />
+                    </>
+                )
+            } />
+        </Routes>
+    </Router>
+  );
+
+  return wrapLayout(
+    <Routes>
+      <Route path="/" element={
+        user?.role === UserRole.ADMIN ? <AdminDashboard /> : 
+        user?.role === UserRole.CONSUMER ? <ConsumerDashboard user={user} /> : 
+        user?.role === UserRole.GROCERY ? <GrocerDashboard user={user} /> :
+        user ? <Dashboard user={user} /> : <Navigate to="/" />
+      } />
+      <Route path="/grocer/marketplace" element={user ? <GrocerMarketplace user={user} /> : <Navigate to="/" />} />
+      <Route path="/login-requests" element={<LoginRequests />} />
+      <Route path="/consumer-onboarding" element={<ConsumerOnboarding />} />
+      <Route path="/customer-portal" element={<CustomerPortals />} />
+      <Route path="/impact" element={<EnvironmentalImpact />} />
+      <Route path="/live-ops" element={<AdminMarketOps />} />
+      <Route path="/pricing-requests" element={user ? <PricingRequests user={user} /> : <Navigate to="/" />} />
+      <Route path="/negotiations" element={user ? <AdminPriceRequests /> : <Navigate to="/" />} />
+      <Route path="/rep-management" element={<AdminRepManagement />} />
+      <Route path="/suppliers" element={<AdminSuppliers />} />
+      <Route path="/marketplace" element={user ? <Marketplace user={user} /> : <Navigate to="/" />} />
+      <Route path="/market" element={user ? <SupplierMarket user={user} /> : <Navigate to="/" />} />
+      <Route path="/pricing" element={user ? <ProductPricing user={user} /> : <Navigate to="/" />} />
+      <Route path="/inventory" element={<Inventory items={mockService.getAllInventory()} />} />
+      <Route path="/accounts" element={user ? <Accounts user={user} /> : <Navigate to="/" />} />
+      <Route path="/admin/accounts" element={user?.role === UserRole.ADMIN ? <AdminAccounts /> : <Navigate to="/" />} />
+      <Route path="/settings" element={user ? <SettingsComponent user={user} onRefreshUser={handleProfileRefresh} /> : <Navigate to="/" />} />
+      <Route path="/orders" element={user ? <CustomerOrders user={user} /> : <Navigate to="/" />} />
+      <Route path="/contacts" element={user ? <Contacts user={user} /> : <Navigate to="/" />} />
+      <Route path="/farmers" element={user ? <FarmerNetwork user={user} /> : <Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
+const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }: any) => {
+    const [accessCode, setAccessCode] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleCodeSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!accessCode) return;
+        setIsProcessing(true);
+        await new Promise(r => setTimeout(r, 600));
+        onCodeLogin(accessCode);
+        setIsProcessing(false);
+    };
+
+    const demoLogins = [
+        { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-50 border-slate-100 hover:bg-slate-100' },
+        { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
+        { label: 'FARMER', email: 'bob@greenvalley.com', color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100' },
+        { label: 'BUYER (CAFÉ)', email: 'alice@cafe.com', color: 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100' },
+        { label: 'BUYER (GROCERY)', email: 'gary@grocer.com', color: 'bg-orange-50 border-orange-100 hover:bg-orange-100' },
+    ];
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
+                    <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all"><X size={28} /></button>
+                </div>
+                <div className="p-10 space-y-10">
+                    
+                    {/* CODE LOGIN SECTION */}
+                    <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
+                            <div>
+                                <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
+                            </div>
+                        </div>
+                        <form onSubmit={handleCodeSubmit} className="flex gap-2">
+                            <input 
+                                placeholder="ABCDEF" 
+                                className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                maxLength={6}
+                                value={accessCode}
+                                onChange={e => setAccessCode(e.target.value)}
+                            />
+                            <button 
+                                type="submit"
+                                disabled={isProcessing || !accessCode}
+                                className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                            </button>
+                        </form>
+                    </div>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                        {demoLogins.map(demo => (
+                            <button 
+                                key={demo.label} 
+                                onClick={() => onAutoLogin(demo.email)} 
+                                className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${demo.color}`}
+                            >
+                                <div className="text-left">
+                                    <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
+                                    <span className="block text-xs text-gray-400 font-medium">{demo.email}</span>
+                                </div>
+                                <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default App;

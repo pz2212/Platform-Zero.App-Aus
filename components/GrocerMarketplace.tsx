@@ -121,7 +121,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: {
 
     return (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-200">
                 <div className="w-full md:w-[360px] bg-[#F8FAFC] border-r border-gray-100 p-10 flex flex-col">
                     <div className="flex items-center gap-3 mb-10">
                         <ShoppingCart size={24} className="text-gray-900" />
@@ -196,7 +196,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: {
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Delivery Date</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Delivery Date</label>
                                     <div className="relative">
                                         <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
                                         <input 
@@ -208,7 +208,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Delivery Time</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Delivery Time</label>
                                     <div className="relative">
                                         <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
                                         <input 
@@ -221,7 +221,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest mb-2 ml-1">Authorized Receiver</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Authorized Receiver</label>
                                 <div className="relative">
                                     <UserIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
                                     <input 
@@ -241,7 +241,7 @@ const CheckoutModal = ({ isOpen, onClose, cart, onUpdateCart, onPlaceOrder }: {
                             <div className="space-y-4">
                                 <button 
                                     onClick={() => setPaymentMethod('pay_now')}
-                                    className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center justify-between group ${paymentMethod === 'pay_now' ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-50 bg-[#F8FAFC] hover:border-gray-200'}`}
+                                    className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center justify-between group ${paymentMethod === 'pay_now' ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-50 bg-[#F8FAFC] hover:border-gray-300'}`}
                                 >
                                     <div className="flex items-center gap-6">
                                         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'pay_now' ? 'border-[#0F172A] bg-[#0F172A]' : 'border-gray-300 bg-white'}`}>
@@ -369,7 +369,7 @@ export const GrocerMarketplace: React.FC<{ user: User }> = ({ user }) => {
       
       setCart([]); 
       setIsCheckoutOpen(false); 
-      alert("Market Order Placed Successfully!"); 
+      alert("Wholesale Hub Order Finalized. Verification clock starts upon delivery."); 
       navigate('/orders');
   };
 

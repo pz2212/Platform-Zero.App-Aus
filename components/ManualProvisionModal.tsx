@@ -58,18 +58,15 @@ export const ManualProvisionModal: React.FC<ManualProvisionModalProps> = ({ isOp
     
     const selectedOption = ROLE_OPTIONS.find(o => o.id === selectedRoleId);
     const roleToProvision = selectedOption?.roleType || UserRole.CONSUMER;
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    mockService.submitConsumerSignup({
+    // CALL REFINED PROVISION METHOD
+    const code = mockService.manualProvision({
         businessName: formData.businessName,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         mobile: formData.mobile,
-        requestedRole: roleToProvision,
-        id: `u-manual-${Date.now()}`
+        role: roleToProvision
     });
-    
-    mockService.dispatchAccess(`manual-${Date.now()}`);
     
     setIsGenerating(false);
     onGenerated(code, formData.businessName);
@@ -80,7 +77,7 @@ export const ManualProvisionModal: React.FC<ManualProvisionModalProps> = ({ isOp
     <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-gray-100 max-h-[95vh]">
         
-        {/* Header - Compacted padding */}
+        {/* Header */}
         <div className="p-8 pb-4 flex justify-between items-start">
           <div className="flex items-center gap-5">
             <div className="w-12 h-12 bg-[#043003] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg">
@@ -96,7 +93,7 @@ export const ManualProvisionModal: React.FC<ManualProvisionModalProps> = ({ isOp
           </button>
         </div>
 
-        {/* Scrollable Content - Tighter gaps */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto p-8 pt-4 space-y-8 no-scrollbar">
           
           <div className="space-y-4">

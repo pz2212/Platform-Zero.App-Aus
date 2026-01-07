@@ -85,6 +85,10 @@ export interface User {
   catalogProducts?: string[]; // TICKED -> Marketplace Catalog
   loginCode?: string;
   passwordSet?: boolean;
+  // Incentive tracking
+  pendingBonus?: number;
+  bonusVestingWeeks?: number;
+  bonusActivated?: boolean;
 }
 
 export type ProductUnit = 'KG' | 'Tray' | 'Bin' | 'Tonne' | 'loose' | 'Each' | 'Bag';

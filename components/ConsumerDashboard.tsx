@@ -5,7 +5,8 @@ import { mockService } from '../services/mockDataService';
 import { 
   DollarSign, ShoppingBag, Truck, CheckCircle, Clock, Package, 
   Leaf, ArrowRight, ShoppingCart, Heart, Plus, Minus, TrendingDown,
-  ChevronRight, Calendar, Search, X, Loader2, Check, RotateCcw, Pencil
+  ChevronRight, Calendar, Search, X, Loader2, Check, RotateCcw, Pencil,
+  Sparkles, Gift, ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { OrderManifestModal } from './CustomerOrders';
@@ -14,16 +15,11 @@ interface ConsumerDashboardProps {
   user: User;
 }
 
-// Define the props interface for QuickAddCard
 interface QuickAddCardProps {
   product: Product;
   onQuickAdd: (p: Product, q: number) => void;
 }
 
-/**
- * QuickAddCard component for adding products to orders from the dashboard.
- * Uses React.FC to include standard React props like 'key' in its type definition.
- */
 const QuickAddCard: React.FC<QuickAddCardProps> = ({ product, onQuickAdd }) => {
     const [qty, setQty] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
@@ -45,34 +41,14 @@ const QuickAddCard: React.FC<QuickAddCardProps> = ({ product, onQuickAdd }) => {
             </div>
             
             <div className="flex items-center bg-gray-50 rounded-xl px-1 py-1 border border-gray-100 shadow-inner-sm">
-                <button 
-                    onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                >
-                    <Minus size={14} strokeWidth={3}/>
-                </button>
+                <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-1.5 text-gray-400 hover:text-red-500"><Minus size={14} strokeWidth={3}/></button>
                 <span className="w-8 text-center font-black text-xs text-gray-900">{qty}</span>
-                <button 
-                    onClick={() => setQty(qty + 1)}
-                    className="p-1.5 text-gray-400 hover:text-emerald-500 transition-colors"
-                >
-                    <Plus size={14} strokeWidth={3}/>
-                </button>
+                <button onClick={() => setQty(qty + 1)} className="p-1.5 text-gray-400 hover:text-emerald-500"><Plus size={14} strokeWidth={3}/></button>
             </div>
 
-            <button 
-                onClick={handleAddClick}
-                className={`p-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center border ${isAdded ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-[#043003] text-white border-emerald-900/10 hover:bg-black'}`}
-                title={`Add ${qty}kg to cart`}
-            >
+            <button onClick={handleAddClick} className={`p-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center border ${isAdded ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-[#043003] text-white border-emerald-900/10 hover:bg-black'}`}>
                 {isAdded ? <Check size={18} strokeWidth={4}/> : <ShoppingCart size={18} strokeWidth={2.5}/>}
             </button>
-
-            {isAdded && (
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-bottom-1">
-                    Added to cart
-                </div>
-            )}
         </div>
     );
 };
@@ -80,213 +56,49 @@ const QuickAddCard: React.FC<QuickAddCardProps> = ({ product, onQuickAdd }) => {
 const WeeklyOrderCalendar = ({ orders }: { orders: Order[] }) => {
     const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    
-    // Generate last 7 days including today
     const days = useMemo(() => {
         const result = [];
         for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            result.push(d);
+            const d = new Date(); d.setDate(d.getDate() - i); result.push(d);
         }
         return result;
     }, []);
 
-    const selectedDateOrders = useMemo(() => {
-        return orders.filter(o => new Date(o.date).toDateString() === selectedDate.toDateString());
-    }, [orders, selectedDate]);
-
-    const handleReorder = (order: Order) => {
-        order.items.forEach(item => {
-            const p = mockService.getProduct(item.productId);
-            if (p) {
-                mockService.addToCart({
-                    productId: p.id,
-                    productName: p.name,
-                    price: p.defaultPricePerKg,
-                    qty: item.quantityKg,
-                    imageUrl: p.imageUrl,
-                    unit: p.unit || 'KG'
-                });
-            }
-        });
-        alert(`Items from Order #${order.id.split('-').pop()} added to your cart.`);
-        navigate('/marketplace');
-    };
+    const selectedDateOrders = useMemo(() => orders.filter(o => new Date(o.date).toDateString() === selectedDate.toDateString()), [orders, selectedDate]);
 
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-right-4 duration-500">
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-right-4 duration-500 h-full">
+            <div className="p-8 border-b border-gray-100 bg-white shrink-0">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner-sm">
-                        <Calendar size={24} />
-                    </div>
+                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner-sm"><Calendar size={24} /></div>
                     <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Weekly Order Calendar</h2>
-                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1.5">Live History & Re-Ordering</p>
+                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Order Calendar</h2>
+                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1.5">Quick re-order from history</p>
                     </div>
                 </div>
             </div>
-
-            <div className="p-8 space-y-10">
-                {/* Day Selector */}
+            <div className="p-8 space-y-6">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
-                    {days.map((date, idx) => {
-                        const isSelected = date.toDateString() === selectedDate.toDateString();
-                        const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' }).toUpperCase();
-                        const dayNum = date.getDate();
-                        const hasOrders = orders.some(o => new Date(o.date).toDateString() === date.toDateString());
-
-                        return (
-                            <button 
-                                key={idx}
-                                onClick={() => setSelectedDate(date)}
-                                className={`flex-1 min-w-[85px] py-6 rounded-[1.75rem] transition-all flex flex-col items-center justify-center relative border-2 ${
-                                    isSelected 
-                                    ? 'bg-[#5c56d6] border-[#5c56d6] text-white shadow-xl shadow-indigo-100 scale-105 z-10' 
-                                    : 'bg-white border-gray-50 text-gray-400 hover:border-gray-200'
-                                }`}
-                            >
-                                <span className="text-[10px] font-black tracking-widest mb-1">{dayName}</span>
-                                <span className="text-2xl font-black tracking-tight">{dayNum}</span>
-                                {hasOrders && (
-                                    <div className={`absolute bottom-3 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400 animate-pulse'}`}></div>
-                                )}
-                            </button>
-                        );
-                    })}
+                    {days.map((date, idx) => (
+                        <button key={idx} onClick={() => setSelectedDate(date)} className={`flex-1 min-w-[80px] py-4 rounded-2xl transition-all flex flex-col items-center justify-center border-2 ${date.toDateString() === selectedDate.toDateString() ? 'bg-[#5c56d6] border-[#5c56d6] text-white shadow-lg' : 'bg-white border-gray-50 text-gray-400'}`}>
+                            <span className="text-[9px] font-black uppercase mb-1">{date.toLocaleDateString('en-AU', { weekday: 'short' })}</span>
+                            <span className="text-xl font-black">{date.getDate()}</span>
+                        </button>
+                    ))}
                 </div>
-
-                {/* Selected Day Display */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <div>
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Selected Day</p>
-                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">
-                                {selectedDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase()}
-                            </h3>
-                        </div>
-                        {selectedDateOrders.length > 0 && (
-                            <span className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                {selectedDateOrders.length} Orders
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar pr-1">
-                        {selectedDateOrders.length === 0 ? (
-                            <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-[2rem] opacity-30">
-                                <Clock size={32} className="mx-auto mb-2" />
-                                <p className="text-xs font-black uppercase tracking-widest">No trade activity recorded</p>
+                <div className="space-y-4">
+                    {selectedDateOrders.length === 0 ? (
+                        <div className="py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl opacity-30"><Clock size={32} className="mx-auto mb-2" /><p className="text-[10px] font-black uppercase">No trade activity</p></div>
+                    ) : selectedDateOrders.map(order => (
+                        <div key={order.id} className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex justify-between items-center">
+                            <div>
+                                <p className="font-black text-gray-900 uppercase text-xs">Order #{order.id.split('-').pop()}</p>
+                                <p className="text-[10px] font-bold text-emerald-600 mt-1">${order.totalAmount.toFixed(2)}</p>
                             </div>
-                        ) : selectedDateOrders.map(order => (
-                            <div key={order.id} className="bg-white rounded-[1.75rem] border border-gray-100 p-6 shadow-sm group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start mb-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 shrink-0">
-                                            <ShoppingCart size={20}/>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-black text-gray-900 uppercase text-sm tracking-tight">Order #{order.id.split('-').pop()}</h4>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">
-                                                {order.items.length} LINES • <span className="text-emerald-600">${order.totalAmount.toFixed(2)}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border border-emerald-100">
-                                        {order.status.toUpperCase()}
-                                    </span>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => navigate('/orders', { state: { openVerificationId: order.id } })}
-                                        className="flex-[3] py-4 bg-[#0F172A] text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-95"
-                                    >
-                                        <Pencil size={14}/> Edit & Re-Order
-                                    </button>
-                                    <button 
-                                        onClick={() => handleReorder(order)}
-                                        className="flex-[2] py-4 bg-white border border-gray-200 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:border-emerald-500 hover:text-emerald-600 transition-all active:scale-95 shadow-sm"
-                                    >
-                                        <RotateCcw size={14}/> One-Tap Re-Order
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const ActiveRunStatus = ({ order, onOpenVerification }: { order: Order, onOpenVerification: (o: Order) => void }) => {
-    const navigate = useNavigate();
-    const steps = [
-        { label: 'PENDING', active: true },
-        { label: 'PROCESSING', active: !!order.preparedAt || order.status === 'Confirmed' || order.status === 'Delivered' },
-        { label: 'TRANSIT', active: !!order.shippedAt || order.status === 'Delivered' },
-        { label: 'DELIVERED', active: order.status === 'Delivered' }
-    ];
-
-    const currentStepIndex = steps.filter(s => s.active).length - 1;
-
-    return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-left-4 h-fit">
-            <div className="p-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/20">
-                <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Active Incoming Delivery</h2>
-                <button onClick={() => navigate('/orders')} className="text-emerald-600 font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-1">LIVE TRACKING <ArrowRight size={12}/></button>
-            </div>
-
-            <div className="p-10 space-y-12">
-                <div className="bg-indigo-50/40 rounded-[2rem] p-8 flex flex-col sm:flex-row justify-between items-center border border-indigo-100/30">
-                    <div className="text-center sm:text-left">
-                        <p className="font-black text-gray-900 text-3xl tracking-tighter mb-2 uppercase leading-none">Order #{order.id.split('-').pop()}</p>
-                        <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">
-                            {order.status === 'Delivered' ? `DELIVERED AT ${order.logistics?.deliveryTime || '13:46'}` : `ETA: ${order.logistics?.deliveryTime || 'SCHEDULING'}`}
-                        </p>
-                    </div>
-                    <span className="mt-6 sm:mt-0 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-600 text-white shadow-xl">{order.status.toUpperCase()}</span>
-                </div>
-
-                <div className="flex justify-between items-center w-full px-6 relative">
-                    <div className="absolute top-1/2 left-10 right-10 h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-                    <div 
-                        className="absolute top-1/2 left-10 h-0.5 bg-emerald-500 -translate-y-1/2 z-0 transition-all duration-1000 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                        style={{ width: `${(currentStepIndex / (steps.length - 1)) * 82}%` }}
-                    ></div>
-
-                    {steps.map((step, idx) => (
-                        <div key={idx} className="flex flex-col items-center flex-1 relative z-10">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
-                                idx <= currentStepIndex ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-200 border border-gray-100'
-                            }`}>
-                                {idx <= currentStepIndex ? <Check size={16} strokeWidth={4}/> : <div className="w-1.5 h-1.5 rounded-full bg-gray-200"/>}
-                            </div>
-                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] mt-3 ${idx <= currentStepIndex ? 'text-gray-900' : 'text-gray-300'}`}>
-                                {step.label}
-                            </span>
+                            <button onClick={() => navigate('/marketplace')} className="bg-white border border-gray-200 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all">Re-order</button>
                         </div>
                     ))}
                 </div>
-
-                <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[1.75rem] flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
-                        <CheckCircle size={24}/>
-                    </div>
-                    <div>
-                        <p className="font-black text-gray-900 text-sm uppercase tracking-tight">Drop-off Confirmed</p>
-                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">Logged Delivery</p>
-                    </div>
-                </div>
-
-                <button 
-                    onClick={() => onOpenVerification(order)}
-                    className="w-full py-5 bg-[#043003] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all"
-                >
-                    <Clock size={16}/> ISSUE REPORTING WINDOW (OPEN)
-                </button>
             </div>
         </div>
     );
@@ -305,8 +117,6 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
         setAllOrders(userOrders);
         const allProds = mockService.getAllProducts();
         setProducts(allProds);
-        
-        // STRICTLY FILTER BY FAVORITES (HEARTS) FOR DASHBOARD
         const userFavorites = mockService.getAllUsers().find(u => u.id === user.id)?.favorites || [];
         setFavorites(allProds.filter(p => userFavorites.includes(p.id)));
     };
@@ -318,154 +128,108 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
   const stats = useMemo(() => {
     const monthlyTotal = allOrders.reduce((sum, o) => sum + o.totalAmount, 0);
     const active = allOrders.filter(o => ['Pending', 'Confirmed', 'Ready for Delivery', 'Shipped'].includes(o.status)).length;
-    const unpaid = allOrders.filter(o => o.paymentStatus !== 'Paid').length;
     let co2 = 0;
     allOrders.forEach(o => o.items.forEach(item => {
         const p = products.find(prod => prod.id === item.productId);
         co2 += item.quantityKg * (p?.co2SavingsPerKg || 0.8);
     }));
-    return { monthlyTotal, active, unpaid, co2 };
+    return { monthlyTotal, active, co2 };
   }, [allOrders, products]);
-
-  const activeIncoming = allOrders.find(o => ['Confirmed', 'Ready for Delivery', 'Shipped', 'Delivered'].includes(o.status));
 
   const handleQuickAdd = (product: Product, quantity: number) => {
       mockService.addToCart({
-          productId: product.id,
-          productName: product.name,
-          price: product.defaultPricePerKg,
-          qty: quantity,
-          imageUrl: product.imageUrl,
-          unit: product.unit || 'KG'
+          productId: product.id, productName: product.name,
+          price: product.defaultPricePerKg, qty: quantity,
+          imageUrl: product.imageUrl, unit: product.unit || 'KG'
       });
   };
 
-  const handleOpenVerification = (order: Order) => {
-      navigate('/orders', { state: { openVerificationId: order.id } });
-  };
-
-  const handleManifestReport = (order: Order) => {
-      setViewingOrderDetails(null);
-      navigate('/orders', { state: { openVerificationId: order.id } });
-  };
-
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-10 animate-in fade-in duration-500 pb-20">
       
+      {/* BONUS ACTIVATION WIDGET (Requested Change) */}
+      {user.bonusActivated && (
+          <div className="bg-[#043003] rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-emerald-900/50">
+              <div className="absolute top-0 right-0 p-10 opacity-5 transform rotate-12 scale-150 group-hover:rotate-0 transition-transform duration-700 pointer-events-none"><Gift size={200}/></div>
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+                  <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 bg-emerald-500/20 rounded-[2rem] border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-900/20 shrink-0">
+                          <Sparkles size={40} />
+                      </div>
+                      <div>
+                          <div className="flex items-center gap-3 mb-2">
+                             <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">Signup Bonus Activated</span>
+                             <span className="text-emerald-400 font-black text-xs uppercase tracking-widest">• Verified Profile</span>
+                          </div>
+                          <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase leading-none">Welcome to Platform Zero</h2>
+                          <p className="text-emerald-100/70 text-sm font-medium mt-3 max-w-xl">We've credited <span className="text-white font-black">${user.pendingBonus?.toLocaleString()}</span> to your trade account. This will be automatically applied to your next <span className="text-white font-black">{user.bonusVestingWeeks} weeks</span> of trade procurement.</p>
+                      </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-4 w-full md:w-auto">
+                      <div className="bg-white/10 rounded-2xl px-6 py-4 border border-white/10 text-center w-full min-w-[200px]">
+                          <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Available Credits</p>
+                          <p className="text-3xl font-black tracking-tighter">${(user.pendingBonus || 0).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => navigate('/marketplace')} className="w-full py-4 bg-white text-[#043003] rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl hover:bg-emerald-50 transition-all flex items-center justify-center gap-2">
+                          Start Procurement <ArrowRight size={16}/>
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       {/* KPI SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
          {[
-            { label: 'MONTHLY SPEND', value: `$${stats.monthlyTotal.toLocaleString()}`, color: 'text-emerald-50', trend: '14% Optimized', icon: DollarSign, bg: 'bg-emerald-500' },
-            { label: 'ACTIVE SHIPMENTS', value: stats.active, color: 'text-blue-500', trend: '1 Arriving Today', icon: Truck, bg: 'bg-blue-50' },
-            { label: 'INVOICES DUE', value: stats.unpaid, color: 'text-orange-500', trend: '$0 Outstanding', icon: Clock, bg: 'bg-orange-50' },
-            { label: 'CO2 DIVERTED', value: `${stats.co2.toFixed(0)}kg`, color: 'text-emerald-600', trend: 'Verified Impact', icon: Leaf, bg: 'bg-emerald-50' }
+            { label: 'TRADE VOLUME', value: `$${stats.monthlyTotal.toLocaleString()}`, color: 'text-emerald-50', trend: '14% Optimized', icon: DollarSign, bg: 'bg-[#5c56d6]' },
+            { label: 'ACTIVE SHIPMENTS', value: stats.active, color: 'text-blue-500', trend: 'In Transit', icon: Truck, bg: 'bg-white' },
+            { label: 'CO2 DIVERTED', value: `${stats.co2.toFixed(0)}kg`, color: 'text-emerald-600', trend: 'Impact Score', icon: Leaf, bg: 'bg-white' }
          ].map((kpi, i) => (
-            <div key={i} className={`p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-36 hover:shadow-md transition-all ${kpi.bg === 'bg-emerald-500' ? 'bg-emerald-500 text-white' : 'bg-white'}`}>
+            <div key={i} className={`p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-xl transition-all ${kpi.bg === 'bg-[#5c56d6]' ? 'bg-[#5c56d6] text-white' : 'bg-white'}`}>
                 <div className="flex justify-between items-start">
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${kpi.bg === 'bg-emerald-500' ? 'text-emerald-100' : 'text-gray-400'}`}>{kpi.label}</span>
-                    <kpi.icon size={16} className={kpi.bg === 'bg-emerald-500' ? 'text-white' : kpi.color}/>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${kpi.bg === 'bg-[#5c56d6]' ? 'text-indigo-200' : 'text-gray-400'}`}>{kpi.label}</span>
+                    <kpi.icon size={20} className={kpi.bg === 'bg-[#5c56d6]' ? 'text-white' : kpi.color}/>
                 </div>
-                <div className="mt-4">
-                    <h3 className="text-3xl font-black tracking-tighter leading-none">{kpi.value}</h3>
-                    <p className={`text-[8px] font-black uppercase mt-2 flex items-center gap-1 ${kpi.bg === 'bg-emerald-500' ? 'text-emerald-100' : 'text-gray-400'}`}>
-                       {kpi.trend.includes('Optimized') && <TrendingDown size={10}/>}
-                       {kpi.trend.includes('Verified') && <CheckCircle size={10}/>}
-                       {kpi.trend}
+                <div>
+                    <h3 className="text-4xl font-black tracking-tighter leading-none">{kpi.value}</h3>
+                    <p className={`text-[9px] font-black uppercase mt-3 flex items-center gap-1.5 ${kpi.bg === 'bg-[#5c56d6]' ? 'text-indigo-200' : 'text-gray-400'}`}>
+                       <CheckCircle size={12}/> {kpi.trend}
                     </p>
                 </div>
             </div>
          ))}
       </div>
 
-      {/* QUICK ADD FAVORITES (HEARTED ITEMS ONLY) */}
-      <div className="space-y-4 px-2">
-         <div className="flex items-center justify-between">
-            <div>
-               <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
-                   <Heart size={20} className="text-red-500 fill-red-500"/> Quick Add Dashboard Favorites
-               </h2>
-               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Items hearted in the market appear here for high-frequency ordering</p>
-            </div>
-            <button onClick={() => navigate('/marketplace')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">Manage Daily Catalog</button>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {favorites.length === 0 ? (
-                <div className="col-span-full py-12 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest">
-                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                        <Heart size={24} className="text-gray-200" />
-                    </div>
-                    Heart your daily essential items in the Fresh Market to see them here.
-                </div>
-            ) : favorites.map(p => (
-                <QuickAddCard key={p.id} product={p} onQuickAdd={handleQuickAdd} />
-            ))}
-         </div>
-      </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 px-2">
-        {/* LEFT COLUMN */}
-        <div className="xl:col-span-6 space-y-8">
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
-                    <h2 className="text-base font-black text-gray-900 uppercase tracking-tight">Recent Order History</h2>
-                    <button onClick={() => navigate('/orders')} className="text-emerald-600 font-black text-[9px] uppercase tracking-widest hover:underline">VIEW ALL ORDERS</button>
-                </div>
-                <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto no-scrollbar">
-                    {allOrders.length === 0 ? (
-                        <div className="py-20 text-center opacity-30">
-                            <Clock size={32} className="mx-auto mb-2" />
-                            <p className="text-xs font-black uppercase">No orders yet</p>
-                        </div>
-                    ) : allOrders.slice(0, 8).map(order => (
-                        <div 
-                            key={order.id} 
-                            onClick={() => setViewingOrderDetails(order)}
-                            className="p-6 flex items-center justify-between hover:bg-gray-50/50 transition-colors group cursor-pointer"
-                        >
-                            <div className="flex items-center gap-5">
-                                <div className="w-12 h-12 bg-gray-50 rounded-[1.25rem] flex items-center justify-center text-indigo-500 group-hover:bg-indigo-50 transition-colors border border-gray-100">
-                                    <ShoppingCart size={20}/>
-                                </div>
-                                <div>
-                                    <p className="font-black text-gray-900 text-sm uppercase tracking-tight">Order #{order.id.split('-').pop()}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-widest">{new Date(order.date).toLocaleDateString()} • <span className="text-emerald-600">${order.totalAmount.toFixed(2)}</span></p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-gray-200 ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'}`}>
-                                    {order.status.toUpperCase()}
-                                </span>
-                                <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-500 transition-all group-hover:translate-x-1" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
+        <div className="xl:col-span-7 space-y-8">
+            <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                    <Heart size={20} className="text-red-500 fill-red-500"/> Essentials Catalog
+                </h2>
+                <button onClick={() => navigate('/marketplace')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">Full Market <ArrowRight size={12}/></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {favorites.length === 0 ? (
+                    <div className="col-span-full py-12 text-center bg-white rounded-[2rem] border-2 border-dashed border-gray-100 text-gray-400 text-xs font-bold uppercase">
+                        Heart items in the market to see them here.
+                    </div>
+                ) : favorites.slice(0, 6).map(p => (
+                    <QuickAddCard key={p.id} product={p} onQuickAdd={handleQuickAdd} />
+                ))}
             </div>
         </div>
 
-        {/* RIGHT COLUMN */}
-        <div className="xl:col-span-6 space-y-8">
-            {activeIncoming ? (
-                <ActiveRunStatus order={activeIncoming} onOpenVerification={handleOpenVerification} />
-            ) : (
-                <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-gray-100 opacity-60">
-                    <Truck size={48} className="mx-auto text-gray-200 mb-4" />
-                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">No active deliveries incoming</h3>
-                </div>
-            )}
-            
-            {/* Weekly Order Calendar (Requested Change 1) */}
+        <div className="xl:col-span-5">
             <WeeklyOrderCalendar orders={allOrders} />
         </div>
       </div>
 
-      {/* POPUP MODAL FOR ORDER DETAILS */}
       <OrderManifestModal 
         isOpen={!!viewingOrderDetails}
         onClose={() => setViewingOrderDetails(null)}
         order={viewingOrderDetails}
         products={products}
-        onReportIssue={handleManifestReport}
+        onReportIssue={(o) => navigate('/orders', { state: { openVerificationId: o.id } })}
       />
     </div>
   );
