@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Order, Product, Customer, InventoryItem, SupplierPriceRequest, UserRole, Driver, Packer } from '../types';
+import { User, Order, Product, Customer, InventoryItem, SupplierPriceRequest, UserRole, Driver, Packer, OrderItem } from '../types';
 import { mockService } from '../services/mockDataService';
 import { WholesalerPriceRequestModal } from './WholesalerPriceRequestModal';
 import { AiOpportunityMatcher } from './AiOpportunityMatcher';
@@ -15,7 +15,7 @@ import {
   Search, Filter, Info, RefreshCw, Sparkles, ChevronRight,
   TrendingDown, Pencil, Lock, Gift, Camera, Settings, Plus,
   Layout, History as HistoryIcon, Camera as ScannerIcon,
-  UserCheck, User as UserIcon, Send, Calendar
+  UserCheck, User as UserIcon, Send, Calendar, Printer
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -112,7 +112,7 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                                 <Calendar size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors"/>
                                 <input 
                                     type="date" 
-                                    className="w-full pl-16 pr-8 py-6 bg-gray-50 border-2 border-transparent focus:border-indigo-500 rounded-[2rem] font-black text-xl text-gray-900 outline-none transition-all shadow-inner-sm appearance-none"
+                                    className="w-full pl-16 pr-8 py-6 bg-gray-50 border border-gray-100 rounded-[2rem] font-black text-xl text-gray-900 outline-none transition-all shadow-inner-sm appearance-none"
                                     value={neededByDate}
                                     onChange={e => setNeededByDate(e.target.value)}
                                 />
@@ -305,119 +305,169 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
     );
 };
 
-const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, onAssigned }: any) => {
-    const [selectedPackerId, setSelectedPackerId] = useState(order?.packedAt ? 'assigned' : '');
-    const [selectedDriverId, setSelectedDriverId] = useState(order?.logistics?.driverName ? 'assigned' : '');
+const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, customers, onAssigned }: any) => {
+    const [selectedPackerId, setSelectedPackerId] = useState('');
+    const [selectedDriverId, setSelectedDriverId] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     if (!isOpen || !order) return null;
 
+    const buyer = customers.find((c: any) => c.id === order.buyerId);
     const packers = mockService.getPackers(order.sellerId);
     const drivers = mockService.getDrivers(order.sellerId);
 
-    const handleSave = async () => {
+    const handleAccept = async () => {
+        mockService.acceptOrderV2(order.id);
+        onAssigned(order.id);
+    };
+
+    const handleFinalize = async () => {
+        if (!selectedPackerId || !selectedDriverId) {
+            alert("Please select both a packer and a driver to finalize the assignment.");
+            return;
+        }
+
         setIsSaving(true);
         await new Promise(r => setTimeout(r, 1000));
-        // In real app, we'd call mockService to update assignments
+        
+        const packerName = packers.find(p => p.id === selectedPackerId)?.name || 'Team';
+        const driverName = drivers.find(d => d.id === selectedDriverId)?.name || 'Logistics';
+        
+        mockService.assignOrderToTeam(order.id, packerName, driverName);
         onAssigned(order.id);
         setIsSaving(false);
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100">
-                <div className="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Assignment manifest</h2>
-                        <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mt-1">Order Ref: #{order.id.split('-').pop()}</p>
-                    </div>
-                    <button onClick={onClose} className="p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={24}/></button>
-                </div>
-
-                <div className="p-10 space-y-10 overflow-y-auto max-h-[60vh] custom-scrollbar">
-                    {/* Item Review */}
-                    <div className="space-y-4">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Products to pack</p>
-                        <div className="divide-y divide-gray-50 border border-gray-100 rounded-3xl overflow-hidden bg-white shadow-inner-sm">
-                            {order.items.map((item: any, i: number) => {
-                                const p = products.find((prod: any) => prod.id === item.productId);
-                                return (
-                                    <div key={i} className="p-6 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <img src={p?.imageUrl} className="w-12 h-12 rounded-xl object-cover" />
-                                            <div>
-                                                <p className="font-black text-gray-900 text-sm uppercase">{p?.name}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{p?.variety}</p>
-                                            </div>
-                                        </div>
-                                        <p className="font-black text-gray-900">{item.quantityKg}{p?.unit || 'KG'}</p>
-                                    </div>
-                                );
-                            })}
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-5xl overflow-hidden animate-in zoom-in-95 duration-200 border-2 border-indigo-100">
+                
+                {/* Header Section */}
+                <div className="p-8 md:p-10 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center bg-white gap-6">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner border border-indigo-100">
+                            {buyer?.businessName ? buyer.businessName.charAt(0) : 'T'}
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">{buyer?.businessName || 'THE MORNING CAFE'}</h2>
+                            <div className="flex items-center gap-4">
+                                <span className={`px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                                    {order.status.toUpperCase()}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                    <Clock size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="flex items-center gap-10">
+                        <div className="text-right">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">TRADE TOTAL</p>
+                            <p className="text-5xl font-black text-gray-900 tracking-tighter">${order.totalAmount.toFixed(2)}</p>
+                        </div>
+                        {order.status === 'Pending' && (
+                            <button 
+                                onClick={handleAccept}
+                                className="px-10 py-5 bg-[#043003] hover:bg-black text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95"
+                            >
+                                ACCEPT ORDER
+                            </button>
+                        )}
+                        <button onClick={onClose} className="p-2 text-gray-300 hover:text-gray-900"><X size={32}/></button>
+                    </div>
+                </div>
+
+                <div className="p-10 grid grid-cols-1 lg:grid-cols-12 gap-12 bg-white max-h-[60vh] overflow-y-auto no-scrollbar">
+                    {/* LEFT: ORDER MANIFEST */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="flex items-center gap-2 text-indigo-600">
+                            <Package size={20}/>
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ORDER MANIFEST</h3>
+                        </div>
+                        <div className="border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm bg-gray-50/30">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50/50 border-b border-gray-100">
+                                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        <th className="px-6 py-4">ITEM</th>
+                                        <th className="px-6 py-4 text-center">QTY</th>
+                                        <th className="px-6 py-4 text-right">PRICE</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {order.items.map((item: any, i: number) => {
+                                        const p = products.find((prod: any) => prod.id === item.productId);
+                                        return (
+                                            <tr key={i} className="hover:bg-gray-50/50">
+                                                <td className="px-6 py-5 font-black text-gray-900 text-xs uppercase">{p?.name}</td>
+                                                <td className="px-6 py-5 text-center font-bold text-gray-500 text-xs">{item.quantityKg}{p?.unit || 'kg'}</td>
+                                                <td className="px-6 py-5 text-right font-black text-gray-900 text-xs">${(item.quantityKg * item.pricePerKg).toFixed(2)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* RIGHT: TEAM ASSIGNMENT */}
+                    <div className="lg:col-span-7 space-y-10">
                         {/* Packer Assignment */}
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                                <Package size={14} className="text-orange-500"/> Select Packer
-                            </label>
-                            <div className="space-y-2">
-                                {packers.length === 0 ? (
-                                    <div className="p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 text-center text-[10px] font-bold text-gray-400">No Packers Registered</div>
-                                ) : packers.map((p: any) => (
-                                    <button 
-                                        key={p.id}
-                                        onClick={() => setSelectedPackerId(p.id)}
-                                        className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${selectedPackerId === p.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-100'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs uppercase">{p.name.charAt(0)}</div>
-                                            <span className="text-xs font-black uppercase">{p.name}</span>
-                                        </div>
-                                        {selectedPackerId === p.id && <Check size={16} strokeWidth={4}/>}
-                                    </button>
-                                ))}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 text-orange-600">
+                                <Boxes size={18}/>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ASSIGN PACKING</h3>
+                            </div>
+                            <div className="relative group">
+                                <select 
+                                    className="w-full pl-6 pr-12 py-5 bg-white border-4 border-[#FFEDD5] rounded-[1.75rem] font-black text-xs uppercase tracking-widest text-gray-900 outline-none shadow-sm appearance-none cursor-pointer focus:border-orange-200 transition-all"
+                                    value={selectedPackerId}
+                                    onChange={(e) => setSelectedPackerId(e.target.value)}
+                                >
+                                    <option value="">SELECT PACKER...</option>
+                                    {packers.map((m: any) => (
+                                        <option key={m.id} value={m.id}>{m.name.toUpperCase()}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-orange-400 pointer-events-none" strokeWidth={3}/>
                             </div>
                         </div>
 
                         {/* Driver Assignment */}
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                                <Truck size={14} className="text-blue-500"/> Select Driver
-                            </label>
-                            <div className="space-y-2">
-                                {drivers.length === 0 ? (
-                                    <div className="p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 text-center text-[10px] font-bold text-gray-400">No Drivers Registered</div>
-                                ) : drivers.map((d: any) => (
-                                    <button 
-                                        key={d.id}
-                                        onClick={() => setSelectedDriverId(d.id)}
-                                        className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${selectedDriverId === d.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-100'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs uppercase">{d.name.charAt(0)}</div>
-                                            <span className="text-xs font-black uppercase">{d.name}</span>
-                                        </div>
-                                        {selectedDriverId === d.id && <Check size={16} strokeWidth={4}/>}
-                                    </button>
-                                ))}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 text-blue-600">
+                                <Truck size={18}/>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ASSIGN DELIVERY</h3>
+                            </div>
+                            <div className="relative group">
+                                <select 
+                                    className="w-full pl-6 pr-12 py-5 bg-white border-4 border-[#C7DFFF] rounded-[1.75rem] font-black text-xs uppercase tracking-widest text-gray-900 outline-none shadow-sm appearance-none cursor-pointer focus:border-blue-300 transition-all"
+                                    value={selectedDriverId}
+                                    onChange={(e) => setSelectedDriverId(e.target.value)}
+                                >
+                                    <option value="">SELECT DRIVER...</option>
+                                    {drivers.map((m: any) => (
+                                        <option key={m.id} value={m.id}>{m.name.toUpperCase()} ({m.vehicleType})</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" strokeWidth={3}/>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div className="p-10 border-t border-gray-100 bg-gray-50/50 flex gap-4">
-                    <button onClick={onClose} className="flex-1 py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all">Cancel</button>
-                    <button 
-                        onClick={handleSave}
-                        disabled={isSaving || !selectedPackerId || !selectedDriverId}
-                        className="flex-[2] py-5 bg-[#043003] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
-                    >
-                        {isSaving ? <Loader2 className="animate-spin" size={20}/> : <><UserCheck size={20}/> Dispatch To Team</>}
-                    </button>
+                        <div className="grid grid-cols-2 gap-4 pt-4">
+                            <button className="py-5 bg-white border border-gray-100 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest text-gray-900 flex items-center justify-center gap-2 hover:bg-gray-50 shadow-sm">
+                                <Printer size={18}/> PRINT SLIP
+                            </button>
+                            <button 
+                                onClick={handleFinalize}
+                                disabled={isSaving || !selectedPackerId || !selectedDriverId}
+                                className="py-5 bg-[#5c56d6] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-[#4a44b8] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isSaving ? <Loader2 className="animate-spin" size={18}/> : <><CheckCircle size={18}/> FINALIZE & DISPATCH</>}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -514,7 +564,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const handleAcceptOrder = (orderId: string) => {
     mockService.acceptOrderV2(orderId);
     loadData();
-    alert("Order Accepted!");
   };
 
   const incomingQueue = orders.filter(o => o.status === 'Pending');
@@ -698,7 +747,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                         <div className="min-w-0">
                                             <h4 className="font-black text-gray-900 text-2xl uppercase tracking-tighter leading-none mb-3 truncate group-hover:text-blue-600 transition-colors">{buyer?.businessName || 'Market Buyer'}</h4>
                                             <div className="flex flex-wrap items-center gap-6">
-                                                <span className="bg-orange-50 text-orange-600 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-orange-100 shadow-sm">{order.status.toUpperCase()}</span>
+                                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{order.status.toUpperCase()}</span>
                                                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><Clock size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                                             </div>
                                         </div>
@@ -731,7 +780,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </div>
       </div>
 
-      {/* Sourcing Modal */}
+      {/* sourcing Modal */}
       <DemandSourcingModal 
         isOpen={!!sourcingProduct}
         onClose={() => setSourcingProduct(null)}
@@ -778,7 +827,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           products={products}
           users={users}
           customers={customers}
-          onAssigned={() => { loadData(); alert("Order assigned to fulfillment team."); }}
+          onAssigned={() => { loadData(); }}
       />
     </div>
   );

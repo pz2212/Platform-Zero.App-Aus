@@ -89,8 +89,14 @@ class MockDataService {
     { id: 'c-demo-3', businessName: 'The Salad Project', contactName: 'Tom B.', category: 'Catering', industry: 'Catering', location: 'Burnside', connectedSupplierId: 'u2' },
   ];
 
-  private drivers: Driver[] = [];
-  private packers: Packer[] = [];
+  private drivers: Driver[] = [
+    { id: 'dr-1', name: 'John Driver', email: 'john@fresh.com', phone: '0412 111 222', licenseNumber: 'VIC-9988', vehicleRegistration: 'PZ-VAN-1', vehicleType: 'Van', wholesalerId: 'u2', status: 'Active' },
+    { id: 'dr-2', name: 'Mike Logistics', email: 'mike@fresh.com', phone: '0412 333 444', licenseNumber: 'VIC-7766', vehicleRegistration: 'PZ-TRUCK-1', vehicleType: 'Truck', wholesalerId: 'u2', status: 'Active' }
+  ];
+  private packers: Packer[] = [
+    { id: 'pk-1', name: 'Sarah Packer', email: 'sarah.p@fresh.com', phone: '0422 555 666', wholesalerId: 'u2', status: 'Active' },
+    { id: 'pk-2', name: 'Dave Warehouse', email: 'dave.w@fresh.com', phone: '0422 777 888', wholesalerId: 'u2', status: 'Active' }
+  ];
   private registrationRequests: RegistrationRequest[] = [
       { id: 'reg1', businessName: 'Sunshine Cafe', name: 'John Doe', email: 'john@sunshine.com', requestedRole: UserRole.CONSUMER, status: 'Pending', submittedDate: new Date().toISOString() }
   ];
@@ -116,9 +122,52 @@ class MockDataService {
 
   private generateDemoOrders() {
       const now = new Date();
+      // Demo Order 1: Incoming (Pending) for The Morning Cafe
       this.orders.push({
-          id: 'o-trans-1', buyerId: 'u4', sellerId: 'u2', items: [{ productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' }], 
-          totalAmount: 225.00, status: 'Shipped', date: now.toISOString(), source: 'Direct', logistics: { deliveryLocation: 'Richmond', deliveryTime: '14:30' }
+          id: 'o-demo-pending', 
+          buyerId: 'u4', 
+          sellerId: 'u2', 
+          items: [
+            { productId: 'p1', quantityKg: 50, pricePerKg: 4.50, unit: 'KG' },
+            { productId: 'p2', quantityKg: 20, pricePerKg: 3.20, unit: 'KG' }
+          ], 
+          totalAmount: 325.00, 
+          status: 'Pending', 
+          date: now.toISOString(), 
+          source: 'Direct'
+      });
+
+      // Demo Order 2: Processing (Confirmed) for Gary Grocer
+      this.orders.push({
+          id: 'o-demo-confirmed', 
+          buyerId: 'u5', 
+          sellerId: 'u2', 
+          items: [
+            { productId: 'p5', quantityKg: 100, pricePerKg: 2.10, unit: 'KG' }
+          ], 
+          totalAmount: 210.00, 
+          status: 'Confirmed', 
+          date: new Date(Date.now() - 3600000).toISOString(), 
+          source: 'Direct'
+      });
+
+      // Demo Order 3: Active Run (Shipped) for Urban Greens Deli
+      this.orders.push({
+          id: 'o-demo-shipped', 
+          buyerId: 'c-demo-1', 
+          sellerId: 'u2', 
+          items: [
+            { productId: 'p3', quantityKg: 40, pricePerKg: 3.80, unit: 'KG' }
+          ], 
+          totalAmount: 152.00, 
+          status: 'Shipped', 
+          date: new Date(Date.now() - 7200000).toISOString(), 
+          source: 'Direct',
+          logistics: { 
+            driverName: 'John Driver',
+            deliveryLocation: 'Adelaide Central', 
+            deliveryTime: '14:30' 
+          }
       });
   }
 
@@ -339,6 +388,19 @@ class MockDataService {
       if (o) o.status = 'Confirmed';
   }
 
+  assignOrderToTeam(orderId: string, packerName: string, driverName: string) {
+    const o = this.orders.find(o => o.id === orderId);
+    if (o) {
+        o.status = 'Confirmed';
+        o.logistics = { ...o.logistics, driverName };
+        // We simulate that once assigned to a team, it moves along the status chain to make it visible
+        // However, for the 'arriving in portal' effect:
+        // Packer sees 'Confirmed' orders.
+        // Driver sees 'Ready for Delivery' or 'Shipped' usually. 
+        // We'll set it to Confirmed so Packer sees it first.
+    }
+  }
+
   packOrder(orderId: string, packerName: string) {
       const o = this.orders.find(o => o.id === orderId);
       if (o) {
@@ -400,7 +462,8 @@ class MockDataService {
   getDriverOrders(driverId: string) {
       const driver = this.drivers.find(d => d.id === driverId);
       if (!driver) return [];
-      return this.orders.filter(o => o.status === 'Shipped' && o.logistics?.driverName === driver.name);
+      // Driver sees orders assigned to them that are either Ready or Shipped
+      return this.orders.filter(o => (o.status === 'Shipped' || o.status === 'Ready for Delivery' || o.status === 'Confirmed') && o.logistics?.driverName === driver.name);
   }
 
   deliverOrder(orderId: string, driverName: string, photoUrl: string) {
@@ -664,6 +727,7 @@ class MockDataService {
   getPackerOrders(packerId: string) {
     const packer = this.packers.find(p => p.id === packerId);
     if (!packer) return [];
+    // Packers see orders assigned to their wholesaler that need packing
     return this.orders.filter(o => (o.status === 'Confirmed' || o.status === 'Pending') && o.sellerId === packer.wholesalerId);
   }
 

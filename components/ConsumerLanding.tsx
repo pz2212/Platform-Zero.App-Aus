@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { 
   Upload, ArrowRight, CheckCircle, Calendar, DollarSign, 
   TrendingUp, FileText, Loader2, MapPin, Mail, Phone, 
-  Building, User, Clock, Star, X, Table, ArrowDown, Rocket, ClipboardList, ShieldCheck, CreditCard, Truck, Users, BookOpen, FilePlus, Sprout, Store, ShoppingCart, ChevronDown, UploadCloud, Leaf, TrendingDown, Sparkles, ArrowLeft
+  Building, User, Clock, Star, X, Table, ArrowDown, Rocket, ClipboardList, ShieldCheck, CreditCard, Truck, Users, BookOpen, FilePlus, Sprout, Store, ShoppingCart, ChevronDown, UploadCloud, Leaf, TrendingDown, Sparkles, ArrowLeft, ClipboardCheck
 } from 'lucide-react';
 import { mockService, INDUSTRIES } from '../services/mockDataService';
 import { UserRole, Industry } from '../types';
@@ -357,17 +357,63 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
         )}
 
         {step === 4 && (
-          <div className="max-w-md mx-auto text-center space-y-10 animate-in zoom-in-95 duration-500 w-full">
-             <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 mb-8"><CheckCircle size={48} /></div>
-             <h2 className="text-[44px] font-black text-[#0F172A] tracking-tighter leading-none">Application Pending</h2>
-             <p className="text-[#64748B] text-lg font-medium leading-relaxed">
-                 We've received your request for {formData.businessName}. Our market reps will review your profile and activate your trade account shortly.
-             </p>
-             <div className="pt-4 space-y-4">
-                <button onClick={() => setIsProfileModalOpen(true)} className="w-full py-5 bg-[#0F172A] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all flex items-center justify-center gap-3">
-                  <FilePlus size={18}/> Complete Trade Profile
-                </button>
-                <button onClick={() => setStep(1)} className="w-full py-4 text-[10px] font-black text-gray-400 hover:text-gray-900 uppercase tracking-widest transition-colors">BACK TO START</button>
+          <div className="max-w-[500px] mx-auto text-center space-y-12 animate-in zoom-in-95 duration-500 w-full px-4">
+             <div className="inline-flex items-center gap-2 bg-[#D1FAE5] text-[#065F46] px-5 py-2.5 rounded-full font-black uppercase text-[10px] tracking-widest shadow-sm">
+                APPLICATION RECEIVED
+             </div>
+             
+             <div className="space-y-4">
+                <h2 className="text-[44px] font-black text-[#0F172A] tracking-tighter leading-tight">What's next?</h2>
+                <p className="text-[#64748B] text-base font-medium leading-relaxed max-w-[420px] mx-auto">
+                    Your request has been placed in our <span className="font-bold text-slate-900">Pending Review</span> queue. You can continue setting up your profile now to speed up the approval process.
+                </p>
+             </div>
+
+             <div className="space-y-4">
+                {/* Complete Profile Card */}
+                <div className="bg-white rounded-[2rem] border-2 border-[#10B981] p-8 text-left relative overflow-hidden group shadow-sm">
+                    <div className="absolute top-0 right-0 bg-[#10B981] text-white px-6 py-2.5 text-[9px] font-black uppercase tracking-widest rounded-bl-2xl shadow-md">
+                        FAST TRACK
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-[#F0FDF4] rounded-2xl flex items-center justify-center text-[#10B981] border border-[#DCFCE7] shadow-inner-sm">
+                            <ClipboardCheck size={32} strokeWidth={2.5}/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">COMPLETE PROFILE</h3>
+                            <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">Finalise your business and logistics details for the admin to review.</p>
+                            <button 
+                                onClick={() => setIsProfileModalOpen(true)}
+                                className="mt-4 flex items-center gap-2 text-[#10B981] font-black text-[11px] uppercase tracking-widest group-hover:gap-3 transition-all"
+                            >
+                                START SETUP <ArrowRight size={14} strokeWidth={3}/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Book Demo Card */}
+                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 text-left relative overflow-hidden group shadow-sm hover:border-blue-100 transition-all">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-[#EFF6FF] rounded-2xl flex items-center justify-center text-[#2563EB] border border-[#DBEAFE] shadow-inner-sm">
+                            <Calendar size={32} strokeWidth={2.5}/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">BOOK A DEMO</h3>
+                            <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">Schedule a 15-min call with our specialist for a guided tour.</p>
+                            <button 
+                                onClick={() => window.open('https://calendly.com/pz-onboarding', '_blank')}
+                                className="mt-4 flex items-center gap-2 text-[#2563EB] font-black text-[11px] uppercase tracking-widest group-hover:gap-3 transition-all"
+                            >
+                                SELECT TIME <ArrowRight size={14} strokeWidth={3}/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="pt-6">
+                    <button onClick={() => setStep(1)} className="text-[11px] font-black text-gray-400 hover:text-slate-900 uppercase tracking-[0.3em] transition-colors">BACK TO START</button>
+                </div>
              </div>
           </div>
         )}
