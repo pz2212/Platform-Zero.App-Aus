@@ -177,14 +177,14 @@ export interface Order {
   sellerId: string;
   items: OrderItem[];
   totalAmount: number;
-  supplierCost?: number; // Added to track what we owe the supplier
+  supplierCost?: number; 
   status: 'Pending' | 'Confirmed' | 'Ready for Delivery' | 'Shipped' | 'Delivered' | 'Cancelled';
   date: string;
   confirmedAt?: string;
   preparedAt?: string;
   shippedAt?: string;
   deliveredAt?: string;
-  supplierInvoiceDue?: string; // Added for red-flag logic
+  supplierInvoiceDue?: string; 
   paymentStatus?: 'Paid' | 'Unpaid' | 'Overdue';
   paymentMethod?: 'pay_now' | 'invoice' | 'amex';
   priority?: 'STANDARD' | 'HIGH' | 'URGENT';
@@ -199,8 +199,6 @@ export interface Order {
     instructions?: string;
   };
   issue?: OrderIssue;
-  itemIssues?: OrderIssue[];
-  isFullyVerified?: boolean;
   source?: 'Marketplace' | 'Direct';
 }
 

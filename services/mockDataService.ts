@@ -79,7 +79,6 @@ class MockDataService {
   private orders: Order[] = [];
   private issues: OrderIssue[] = [];
   private notifications: AppNotification[] = [];
-  // Added chatMessages array to store chat history and resolve missing property error in Contacts component
   private chatMessages: ChatMessage[] = [];
   private customers: Customer[] = [
     { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER, repCommissionRate: 5, commissionTotalOrders: 20, commissionStartOrder: 1 },
@@ -122,7 +121,6 @@ class MockDataService {
 
   private generateDemoOrders() {
       const now = new Date();
-      // Demo Order 1: Incoming (Pending) for The Morning Cafe
       this.orders.push({
           id: 'o-demo-pending', 
           buyerId: 'u4', 
@@ -137,7 +135,6 @@ class MockDataService {
           source: 'Direct'
       });
 
-      // Demo Order 2: Processing (Confirmed) for Gary Grocer
       this.orders.push({
           id: 'o-demo-confirmed', 
           buyerId: 'u5', 
@@ -151,7 +148,6 @@ class MockDataService {
           source: 'Direct'
       });
 
-      // Demo Order 3: Active Run (Shipped) for Urban Greens Deli
       this.orders.push({
           id: 'o-demo-shipped', 
           buyerId: 'c-demo-1', 
@@ -171,7 +167,6 @@ class MockDataService {
       });
   }
 
-  /* Cart Management */
   getCart() { return this.cart; }
   
   addToCart(item: MockCartItem) {
@@ -260,60 +255,27 @@ class MockDataService {
   submitOrderIssue(orderId: string, issueData: any) {
     const order = this.orders.find(o => o.id === orderId);
     if (!order) return;
-    order.paymentStatus = 'Unpaid'; 
-    const buyer = this.customers.find(c => c.id === order.buyerId);
-    const repId = buyer?.assignedPzRepId || 'rep1';
     const newIssue: OrderIssue = {
         id: `iss-${Date.now()}`,
         orderId: order.id,
         productId: issueData.productId,
         type: issueData.issueType,
-        description: issueData.description || `Reported ${issueData.issueType} issue.`,
+        description: issueData.description || `Reported issue.`,
         reportedAt: new Date().toISOString(),
         supplierStatus: 'PENDING',
-        repStatus: 'UNSEEN',
-        assignedRepId: repId
+        repStatus: 'UNSEEN'
     };
     this.issues.push(newIssue);
     order.issue = newIssue;
   }
 
-  // UPDATED MANUAL PROVISIONING WORKFLOW
   manualProvision(data: any): string {
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
       const userId = `u-manual-${Date.now()}`;
-      
-      // Get role incentive for new user
       const incentive = this.roleIncentives[data.role] || { amount: 0, weeks: 0 };
-
-      const newUser: User = {
-          id: userId,
-          name: data.name,
-          businessName: data.businessName,
-          role: data.role,
-          email: data.email,
-          phone: data.mobile,
-          loginCode: code,
-          passwordSet: false,
-          pendingBonus: incentive.amount,
-          bonusVestingWeeks: incentive.weeks,
-          bonusActivated: true
-      };
-
+      const newUser: User = { id: userId, name: data.name, businessName: data.businessName, role: data.role, email: data.email, phone: data.mobile, loginCode: code, passwordSet: false, pendingBonus: incentive.amount, bonusVestingWeeks: incentive.weeks, bonusActivated: true };
       this.users.push(newUser);
-
-      // Create a matching customer profile for market logic
-      this.customers.push({
-          id: userId,
-          businessName: data.businessName,
-          contactName: data.name,
-          email: data.email,
-          phone: data.mobile,
-          category: 'Manual Provision',
-          connectionStatus: 'Pending Connection',
-          assignedPortal: data.role
-      });
-
+      this.customers.push({ id: userId, businessName: data.businessName, contactName: data.name, email: data.email, phone: data.mobile, category: 'Manual Provision', connectionStatus: 'Pending Connection', assignedPortal: data.role });
       return code;
   }
 
@@ -326,7 +288,7 @@ class MockDataService {
       const user = this.users.find(u => u.id === userId);
       if (user) {
           user.passwordSet = true;
-          user.loginCode = undefined; // Remove access code after password set
+          user.loginCode = undefined;
       }
   }
 
@@ -351,30 +313,18 @@ class MockDataService {
       if (!customer) return '';
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
       customer.loginCode = code;
-      
       let user = this.users.find(u => u.id === customer.id);
       if (!user) {
-          user = {
-              id: customer.id,
-              name: customer.contactName,
-              businessName: customer.businessName,
-              role: customer.assignedPortal || UserRole.CONSUMER,
-              email: customer.email || `${customer.id}@placeholder.com`,
-              loginCode: code,
-              passwordSet: false
-          };
+          user = { id: customer.id, name: customer.contactName, businessName: customer.businessName, role: customer.assignedPortal || UserRole.CONSUMER, email: customer.email || `${customer.id}@placeholder.com`, loginCode: code, passwordSet: false };
           this.users.push(user);
       } else {
           user.loginCode = code;
           user.role = customer.assignedPortal || user.role;
       }
-
-      // Activate bonus on dispatch
       const incentive = this.roleIncentives[user.role] || { amount: 0, weeks: 0 };
       user.pendingBonus = incentive.amount;
       user.bonusVestingWeeks = incentive.weeks;
       user.bonusActivated = true;
-
       return code;
   }
 
@@ -386,19 +336,6 @@ class MockDataService {
   acceptOrderV2(orderId: string) {
       const o = this.orders.find(o => o.id === orderId);
       if (o) o.status = 'Confirmed';
-  }
-
-  assignOrderToTeam(orderId: string, packerName: string, driverName: string) {
-    const o = this.orders.find(o => o.id === orderId);
-    if (o) {
-        o.status = 'Confirmed';
-        o.logistics = { ...o.logistics, driverName };
-        // We simulate that once assigned to a team, it moves along the status chain to make it visible
-        // However, for the 'arriving in portal' effect:
-        // Packer sees 'Confirmed' orders.
-        // Driver sees 'Ready for Delivery' or 'Shipped' usually. 
-        // We'll set it to Confirmed so Packer sees it first.
-    }
   }
 
   packOrder(orderId: string, packerName: string) {
@@ -462,8 +399,7 @@ class MockDataService {
   getDriverOrders(driverId: string) {
       const driver = this.drivers.find(d => d.id === driverId);
       if (!driver) return [];
-      // Driver sees orders assigned to them that are either Ready or Shipped
-      return this.orders.filter(o => (o.status === 'Shipped' || o.status === 'Ready for Delivery' || o.status === 'Confirmed') && o.logistics?.driverName === driver.name);
+      return this.orders.filter(o => (o.status === 'Shipped' || o.status === 'Ready for Delivery') && o.logistics?.driverName === driver.name);
   }
 
   deliverOrder(orderId: string, driverName: string, photoUrl: string) {
@@ -641,7 +577,6 @@ class MockDataService {
       if (item) item.status = status as any;
   }
 
-  // Corrected sendChatMessage to actually store messages and resolve missing method error
   sendChatMessage(senderId: string, receiverId: string, text: string) {
       const newMessage: ChatMessage = {
           id: `msg-${Date.now()}`,
@@ -651,10 +586,8 @@ class MockDataService {
           timestamp: new Date().toISOString()
       };
       this.chatMessages.push(newMessage);
-      console.log('Chat from ' + senderId + ' to ' + receiverId + ': ' + text);
   }
 
-  // Added getChatMessages to resolve missing property error in Contacts component
   getChatMessages(u1: string, u2: string) {
       return this.chatMessages.filter(m => 
           (m.senderId === u1 && m.receiverId === u2) ||
@@ -708,7 +641,6 @@ class MockDataService {
       }
   }
 
-  // Fixing duplicate methods and missing property issues
   updateBusinessProfile(userId: string, profile: BusinessProfile) {
     const user = this.users.find(u => u.id === userId);
     if (user) {
@@ -727,7 +659,6 @@ class MockDataService {
   getPackerOrders(packerId: string) {
     const packer = this.packers.find(p => p.id === packerId);
     if (!packer) return [];
-    // Packers see orders assigned to their wholesaler that need packing
     return this.orders.filter(o => (o.status === 'Confirmed' || o.status === 'Pending') && o.sellerId === packer.wholesalerId);
   }
 
@@ -736,22 +667,24 @@ class MockDataService {
       if (o) {
           o.items = items;
           o.totalAmount = items.reduce((sum, item) => sum + (item.quantityKg * (item.pricePerKg || 0)), 0);
-          o.supplierCost = o.totalAmount * 0.85; // Simplified vendor billing logic for audit simulation
+          o.supplierCost = o.totalAmount * 0.85;
       }
   }
 
   sendDemandPing(senderId: string, receiverId: string, productId: string, qty: number, neededBy?: string) {
       const product = this.products.find(p => p.id === productId);
       const sender = this.users.find(u => u.id === senderId);
-      
       const neededByText = neededBy ? ` by ${new Date(neededBy).toLocaleDateString()}` : '';
+      this.addAppNotification(receiverId, 'URGENT STOCK INQUIRY', `${sender?.businessName} urgently needs ${qty}kg of ${product?.name}${neededByText}. Fulfill now?`, 'DEMAND_PING');
+  }
 
-      this.addAppNotification(
-          receiverId,
-          'URGENT STOCK INQUIRY',
-          `${sender?.businessName} urgently needs ${qty}kg of ${product?.name}${neededByText}. Fulfill now?`,
-          'DEMAND_PING'
-      );
+  assignOrderToTeam(orderId: string, packerName: string, driverName: string) {
+    const o = this.orders.find(o => o.id === orderId);
+    if (o) {
+      if (!o.logistics) o.logistics = {};
+      o.logistics.driverName = driverName;
+      if (o.status === 'Pending') o.status = 'Confirmed';
+    }
   }
 }
 
