@@ -121,6 +121,28 @@ class MockDataService {
 
   private generateDemoOrders() {
       const now = new Date();
+      
+      // Order #103 for screenshot parity
+      this.orders.push({
+          id: 'o-103', 
+          buyerId: 'u4', 
+          sellerId: 'u2', 
+          items: [
+            { productId: 'p1', quantityKg: 100, pricePerKg: 4.50, unit: 'KG' }
+          ], 
+          totalAmount: 450.00, 
+          status: 'Delivered', 
+          date: new Date(2026, 0, 7, 16, 52).toISOString(),
+          deliveredAt: new Date().toISOString(),
+          source: 'Marketplace',
+          logistics: {
+            deliveryTime: '04:52',
+            deliveryLocation: 'Adelaide CBD',
+            deliveryDate: '07/01/2026',
+            driverName: 'John Driver'
+          }
+      });
+
       this.orders.push({
           id: 'o-demo-pending', 
           buyerId: 'u4', 
@@ -259,8 +281,10 @@ class MockDataService {
         id: `iss-${Date.now()}`,
         orderId: order.id,
         productId: issueData.productId,
-        type: issueData.issueType,
+        type: issueData.type,
         description: issueData.description || `Reported issue.`,
+        images: issueData.images || [],
+        replacementRequired: issueData.replacementRequired || 'NONE',
         reportedAt: new Date().toISOString(),
         supplierStatus: 'PENDING',
         repStatus: 'UNSEEN'

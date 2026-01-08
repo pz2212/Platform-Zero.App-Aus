@@ -156,7 +156,7 @@ export interface OrderIssue {
   description: string;
   reportedAt: string;
   images?: string[];
-  replacementRequired?: 'URGENT' | 'NEXT_DELIVERY' | 'NONE';
+  replacementRequired?: string;
   supplierStatus: 'PENDING' | 'ACCEPTED' | 'FIXED' | 'DISPUTED';
   supplierAction?: 'REFUND' | 'REPLACEMENT' | 'CREDIT';
   repStatus: 'UNSEEN' | 'ACTIONING' | 'RESOLVED';

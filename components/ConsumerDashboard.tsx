@@ -5,10 +5,11 @@ import { mockService } from '../services/mockDataService';
 import { 
   DollarSign, ShoppingBag, Truck, CheckCircle, Clock, Package, 
   Leaf, ArrowRight, ShoppingCart, Heart, Plus, Minus,
-  ChevronRight, Calendar, X, Loader2, Check, RotateCcw
+  ChevronRight, Calendar, X, Loader2, Check, RotateCcw,
+  CheckCircle2, MapPin, AlertCircle, Pencil, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { OrderManifestModal } from './CustomerOrders';
+import { OrderManifestModal, LiveTrackingModal, DeliveryVerificationModal } from './CustomerOrders';
 
 interface ConsumerDashboardProps {
   user: User;
@@ -52,50 +53,207 @@ const QuickAddCard: React.FC<QuickAddCardProps> = ({ product, onQuickAdd }) => {
     );
 };
 
+const ActiveIncomingDelivery = ({ order, onTrack }: { order: Order, onTrack: () => void }) => {
+    const steps = [
+        { label: 'PENDING', icon: Clock, active: true },
+        { label: 'PROCESSING', icon: Package, active: true },
+        { label: 'TRANSIT', icon: Truck, active: order.status === 'Shipped' || order.status === 'Delivered' },
+        { label: 'DELIVERED', icon: CheckCircle2, active: order.status === 'Delivered' }
+    ];
+
+    const currentStepIndex = steps.filter(s => s.active).length - 1;
+
+    return (
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden mb-10 animate-in slide-in-from-top-4 duration-500">
+            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white">
+                <h2 className="text-[13px] font-black text-gray-900 uppercase tracking-[0.2em]">Active Incoming Delivery</h2>
+                <button onClick={onTrack} className="text-emerald-500 font-black text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:underline">
+                    LIVE TRACKING <ArrowRight size={14} strokeWidth={3}/>
+                </button>
+            </div>
+
+            <div className="p-10 space-y-12">
+                {/* Header Match */}
+                <div className="bg-[#F6F8FF] rounded-[2rem] p-10 flex justify-between items-center border border-[#E0E7FF]">
+                    <div>
+                        <h3 className="text-[32px] font-black text-gray-900 tracking-tighter uppercase leading-none mb-2">Order #{order.id.split('-').pop()}</h3>
+                        <p className="text-[12px] font-bold text-indigo-600 uppercase tracking-widest">
+                            {order.status === 'Delivered' ? `Delivered at ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}` : 'Arriving Today'}
+                        </p>
+                    </div>
+                    <div className="bg-[#4F46E5] text-white px-10 py-3.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-100">
+                        {order.status.toUpperCase()}
+                    </div>
+                </div>
+
+                {/* Progress Bar Match */}
+                <div className="flex justify-between items-center px-6 relative max-w-4xl mx-auto py-4">
+                    <div className="absolute top-1/2 left-10 right-10 h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
+                    <div 
+                        className="absolute top-1/2 left-10 h-0.5 bg-emerald-500 -translate-y-1/2 z-0 transition-all duration-1000"
+                        style={{ width: `${(currentStepIndex / (steps.length - 1)) * 94}%` }}
+                    ></div>
+
+                    {steps.map((step, idx) => (
+                        <div key={idx} className="flex flex-col items-center z-10 w-24">
+                            <div className={`w-12 h-12 rounded-[1.25rem] flex items-center justify-center border-2 transition-all duration-500 ${
+                                idx <= currentStepIndex ? 'bg-emerald-500 border-emerald-50 text-white shadow-xl' : 'bg-white border-gray-100 text-gray-200'
+                            }`}>
+                                <step.icon size={22} strokeWidth={idx <= currentStepIndex ? 3 : 2} />
+                            </div>
+                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] mt-5 ${idx <= currentStepIndex ? 'text-gray-900' : 'text-gray-300'}`}>
+                                {step.label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Drop off Confirm Match */}
+                <div className="bg-[#E6F9F1] rounded-[2rem] p-8 flex items-center gap-6 border border-[#D1FAE5]">
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm border border-[#D1FAE5]">
+                        <CheckCircle2 size={32} strokeWidth={2.5}/>
+                    </div>
+                    <div>
+                        <p className="font-black text-gray-900 text-sm uppercase tracking-tight leading-none mb-1.5">Drop-off Confirmed</p>
+                        <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Logged Delivery</p>
+                    </div>
+                </div>
+
+                {/* Reporting Window Match */}
+                <div className="bg-[#051C05] text-white p-6 rounded-[1.75rem] flex items-center justify-center gap-4">
+                    <Clock size={22} className="text-emerald-400" />
+                    <span className="font-black text-[12px] uppercase tracking-[0.3em]">Issue Reporting Window (00:00)</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const WeeklyOrderCalendar = ({ orders, onReorder }: { orders: Order[], onReorder: (order: Order) => void }) => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    
+    // Generate last 7 days including today
     const days = useMemo(() => {
         const result = [];
         for (let i = 6; i >= 0; i--) {
-            const d = new Date(); d.setDate(d.getDate() - i); result.push(d);
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() - i);
+            result.push(d);
         }
         return result;
     }, []);
 
-    const selectedDateOrders = useMemo(() => orders.filter(o => new Date(o.date).toDateString() === selectedDate.toDateString()), [orders, selectedDate]);
+    const selectedDateOrders = useMemo(() => 
+        orders.filter(o => {
+            const orderDate = new Date(o.date);
+            orderDate.setHours(0,0,0,0);
+            return orderDate.getTime() === selectedDate.getTime();
+        })
+    , [orders, selectedDate]);
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Pending': return 'bg-blue-100 text-blue-600';
+            case 'Delivered': return 'bg-emerald-100 text-emerald-600';
+            default: return 'bg-gray-100 text-gray-600';
+        }
+    };
 
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-right-4 duration-500 h-full">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-right-4 duration-500 h-full">
             <div className="p-8 border-b border-gray-100 bg-white shrink-0">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner-sm"><Calendar size={24} /></div>
+                    <div className="w-12 h-12 bg-white text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner-sm border border-gray-100">
+                        <Calendar size={24} />
+                    </div>
                     <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Order Calendar</h2>
-                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1.5">Quick re-order from history</p>
+                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Weekly Order Calendar</h2>
+                        <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1.5">Live History & Re-ordering</p>
                     </div>
                 </div>
             </div>
-            <div className="p-8 space-y-6">
-                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
-                    {days.map((date, idx) => (
-                        <button key={idx} onClick={() => setSelectedDate(date)} className={`flex-1 min-w-[80px] py-4 rounded-2xl transition-all flex flex-col items-center justify-center border-2 ${date.toDateString() === selectedDate.toDateString() ? 'bg-[#5c56d6] border-[#5c56d6] text-white shadow-lg' : 'bg-white border-gray-50 text-gray-400'}`}>
-                            <span className="text-[9px] font-black uppercase mb-1">{date.toLocaleDateString('en-AU', { weekday: 'short' })}</span>
-                            <span className="text-xl font-black">{date.getDate()}</span>
-                        </button>
-                    ))}
+            
+            <div className="p-8 space-y-10">
+                {/* Horizontal Day Selector Match */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    {days.map((date, idx) => {
+                        const isSelected = date.getTime() === selectedDate.getTime();
+                        return (
+                            <button 
+                                key={idx} 
+                                onClick={() => setSelectedDate(date)} 
+                                className={`flex-1 min-w-[90px] py-6 rounded-2xl transition-all flex flex-col items-center justify-center border-2 ${
+                                    isSelected 
+                                    ? 'bg-[#5c56d6] border-[#5c56d6] text-white shadow-xl scale-105 z-10' 
+                                    : 'bg-white border-gray-50 text-gray-400 hover:border-gray-100'
+                                }`}
+                            >
+                                <span className={`text-[10px] font-black uppercase mb-2 ${isSelected ? 'text-indigo-100' : 'text-gray-300'}`}>
+                                    {date.toLocaleDateString('en-AU', { weekday: 'short' }).toUpperCase()}
+                                </span>
+                                <span className="text-2xl font-black">{date.getDate()}</span>
+                                {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full mt-2 animate-pulse"></div>}
+                            </button>
+                        );
+                    })}
                 </div>
-                <div className="space-y-4">
-                    {selectedDateOrders.length === 0 ? (
-                        <div className="py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl opacity-30"><Clock size={32} className="mx-auto mb-2" /><p className="text-[10px] font-black uppercase">No trade activity</p></div>
-                    ) : selectedDateOrders.map(order => (
-                        <div key={order.id} className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex justify-between items-center">
-                            <div>
-                                <p className="font-black text-gray-900 uppercase text-xs">Order #{order.id.split('-').pop()}</p>
-                                <p className="text-[10px] font-bold text-emerald-600 mt-1">${order.totalAmount.toFixed(2)}</p>
-                            </div>
-                            <button onClick={() => onReorder(order)} className="bg-white border border-gray-200 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all">Re-order</button>
+
+                {/* Selected Day Info Match */}
+                <div className="space-y-6">
+                    <div className="flex justify-between items-end px-2">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Day</p>
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">
+                                {selectedDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase()}
+                            </h3>
                         </div>
-                    ))}
+                        <span className="bg-emerald-50 text-emerald-600 px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                            {selectedDateOrders.length} Orders
+                        </span>
+                    </div>
+
+                    <div className="space-y-4">
+                        {selectedDateOrders.length === 0 ? (
+                            <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-[2.5rem] bg-gray-50/50">
+                                <Clock size={40} className="mx-auto mb-3 text-gray-200" />
+                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">No trade activity recorded</p>
+                            </div>
+                        ) : selectedDateOrders.map(order => (
+                            <div key={order.id} className="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm group hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center border border-gray-100 shadow-inner-sm">
+                                            <ShoppingBag size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-gray-900 uppercase text-base tracking-tight leading-none mb-2">Order #{order.id.split('-').pop()}</h4>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                                {order.items.length} Lines • <span className="text-emerald-500">${order.totalAmount.toFixed(2)}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border ${getStatusColor(order.status)}`}>
+                                        {order.status.toUpperCase()}
+                                    </span>
+                                </div>
+                                
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <button 
+                                        onClick={() => onReorder(order)} 
+                                        className="flex-[2.5] py-4 bg-[#0F172A] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all flex items-center justify-center gap-3"
+                                    >
+                                        <Pencil size={14}/> Edit & Re-Order
+                                    </button>
+                                    <button 
+                                        className="flex-1 py-4 bg-white border border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm"
+                                    >
+                                        <RefreshCw size={14}/> One-Tap
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
@@ -198,6 +356,10 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
   const [favorites, setFavorites] = useState<Product[]>([]);
   const [viewingOrderDetails, setViewingOrderDetails] = useState<Order | null>(null);
   const [reorderingOrder, setReorderingOrder] = useState<Order | null>(null);
+  
+  // LIVE TRACKING STATES
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
+  const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const fetch = () => {
@@ -228,6 +390,11 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
     allOrders.filter(o => ['Pending', 'Confirmed', 'Ready for Delivery', 'Shipped'].includes(o.status))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   , [allOrders]);
+
+  const featuredIncomingOrder = useMemo(() => {
+      // Prioritize recently delivered or shipped orders for the hero tracking feature
+      return allOrders.find(o => ['Delivered', 'Shipped', 'Confirmed', 'Ready for Delivery'].includes(o.status));
+  }, [allOrders]);
 
   const handleQuickAdd = (product: Product, quantity: number) => {
       mockService.addToCart({
@@ -309,7 +476,7 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
             <section className="space-y-6">
                 <div className="flex items-center justify-between mb-2">
                     <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
-                        <ShoppingCart size={20} className="text-indigo-600"/> Active Orders
+                        <ShoppingCart size={20} className="text-indigo-600"/> All Active Orders
                     </h2>
                 </div>
                 
@@ -343,6 +510,16 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
                     ))}
                 </div>
             </section>
+
+            {/* FEATURED INCOMING DELIVERY - MOVED BELOW ACTIVE ORDERS PER USER REQUEST */}
+            {featuredIncomingOrder && (
+                <div className="mt-12">
+                    <ActiveIncomingDelivery 
+                        order={featuredIncomingOrder} 
+                        onTrack={() => setTrackingOrder(featuredIncomingOrder)}
+                    />
+                </div>
+            )}
         </div>
 
         <div className="xl:col-span-5">
@@ -364,6 +541,21 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
         order={reorderingOrder}
         products={products}
         onConfirm={handleConfirmReorder}
+      />
+
+      <LiveTrackingModal 
+        isOpen={!!trackingOrder}
+        onClose={() => setTrackingOrder(null)}
+        order={trackingOrder}
+        onVerify={() => { setTrackingOrder(null); setVerifyingOrder(trackingOrder); }}
+      />
+
+      <DeliveryVerificationModal 
+        isOpen={!!verifyingOrder}
+        onClose={() => setVerifyingOrder(null)}
+        order={verifyingOrder}
+        products={products}
+        onComplete={() => alert('Order verified. Transitioning to history.')}
       />
     </div>
   );

@@ -10,7 +10,8 @@ import {
   History,
   X,
   MapPin,
-  DollarSign
+  DollarSign,
+  AlertTriangle
 } from 'lucide-react';
 
 const LiveOrderDetailsModal = ({ isOpen, onClose, order, products, users, customers }: { 
