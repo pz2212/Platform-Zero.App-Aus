@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Order, InventoryItem, Product } from '../types';
 import { mockService } from '../services/mockDataService';
@@ -5,7 +6,7 @@ import {
   Sprout, Leaf, ShoppingBag, DollarSign, TrendingUp, 
   Calendar, MapPin, CheckCircle, Clock, Plus, 
   BarChart4, ArrowRight, Package, Truck, Info, Heart,
-  Edit2, CloudRain, Thermometer, Droplets, SprayCan, FileText, Camera, X, Share2, Search, ChevronDown
+  Edit2, CloudRain, Thermometer, Droplets, SprayCan, FileText, Camera, X, Share2, Search, ChevronDown, Sparkles
 } from 'lucide-react';
 import { AiOpportunityMatcher } from './AiOpportunityMatcher';
 import { InterestsModal } from './InterestsModal';
@@ -224,8 +225,8 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ user }) => {
         <p className="text-gray-500 font-medium mt-1">Managing {user.businessName} • Harvest to Market Console</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mb-12">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-emerald-100 flex flex-col justify-between min-h-[240px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-12">
+        <div className="lg:col-span-2 bg-white p-10 rounded-[2.5rem] shadow-sm border border-emerald-100 flex flex-col justify-between min-h-[240px]">
           <div>
             <p className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-2">Farm Revenue (Weekly)</p>
             <div className="flex justify-between items-end">
@@ -294,6 +295,32 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ user }) => {
                 </div>
             )}
         </div>
+      </div>
+
+      {/* Market Alignment Summary (Added) */}
+      <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-10 flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+        <div className="flex items-center gap-8">
+            <div className="w-20 h-20 bg-indigo-50 text-[#4A3AFF] rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm">
+                <Sparkles size={40}/>
+            </div>
+            <div>
+                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight leading-none mb-4">Farm Network Visibility</h3>
+                <div className="flex flex-wrap gap-2">
+                    {(user.activeSellingInterests || []).map(i => (
+                        <span key={i} className="bg-indigo-50 text-[#4A3AFF] px-4 py-1.5 rounded-xl text-[10px] font-black uppercase border border-indigo-100 shadow-sm">{i}</span>
+                    ))}
+                    {(!user.activeSellingInterests || user.activeSellingInterests.length === 0) && (
+                        <span className="text-gray-400 font-bold italic">No active selling interests configured</span>
+                    )}
+                </div>
+            </div>
+        </div>
+        <button 
+            onClick={() => setIsInterestsModalOpen(true)}
+            className="w-full md:w-auto px-10 py-5 bg-white border-2 border-[#4A3AFF] text-[#4A3AFF] rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-50 transition-all active:scale-95 flex items-center justify-center gap-3"
+        >
+            Update Alignment <ArrowRight size={18}/>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -411,7 +438,7 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ user }) => {
               <div className="bg-white rounded-[3rem] w-full max-w-6xl h-[90vh] overflow-hidden relative shadow-2xl flex flex-col border border-gray-100">
                   <div className="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h2 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-4 uppercase"><Camera size={36} className="text-indigo-600"/> Visual Market Capture</h2>
-                    <button onClick={() => setIsSellModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"><X size={32}/></button>
+                    <button onClick={() => setIsSellModalOpen(false)} className="text-gray-400 hover:text-gray-900 p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"><X size={32}/></button>
                   </div>
                   <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
                     <AiOpportunityMatcher user={user} />

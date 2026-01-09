@@ -34,6 +34,7 @@ import { SharedProductLanding } from './SharedProductLanding';
 import { AdminMarketOps } from './AdminMarketOps';
 import { EnvironmentalImpact } from './EnvironmentalImpact';
 import { CompleteProfileModal } from './CompleteProfileModal';
+import { InterestsModal } from './InterestsModal';
 import { 
   LayoutDashboard, ShoppingCart, Users, Settings, LogOut, Tags, ChevronDown, UserPlus, 
   DollarSign, X, Lock, ArrowLeft, Bell, 
@@ -65,6 +66,48 @@ const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubI
     )}
   </Link>
 );
+
+const MarketAlignmentSidebarWidget = ({ user, onUpdate }: { user: User, onUpdate: () => void }) => {
+    const interests = [...(user.activeSellingInterests || []), ...(user.activeBuyingInterests || [])];
+    const displayItems = interests.slice(0, 3);
+    const hasMore = interests.length > 3;
+
+    // Only show for Wholesalers and Farmers
+    if (user.role !== UserRole.WHOLESALER && user.role !== UserRole.FARMER) return null;
+
+    return (
+        <div className="mx-4 mb-4 p-5 rounded-[1.75rem] bg-indigo-50/50 border border-indigo-100 shadow-sm relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest">
+                    <Sparkles size={14}/> Market Alignment
+                </div>
+                <button onClick={onUpdate} className="text-indigo-400 hover:text-indigo-600 transition-colors">
+                    <Settings size={14}/>
+                </button>
+            </div>
+            
+            <div className="flex flex-wrap gap-1.5 mb-5">
+                {displayItems.length > 0 ? (
+                    displayItems.map((item, i) => (
+                        <span key={i} className="bg-white border border-indigo-100 px-2.5 py-1 rounded-lg text-[9px] font-black text-indigo-700 uppercase tracking-tighter shadow-sm">
+                            {item}
+                        </span>
+                    ))
+                ) : (
+                    <span className="text-[10px] text-indigo-300 font-bold italic">No alignment set</span>
+                )}
+                {hasMore && <span className="text-[9px] text-indigo-400 font-black mt-1 ml-1">+{interests.length - 3}</span>}
+            </div>
+
+            <button 
+                onClick={onUpdate}
+                className="w-full py-3 bg-white hover:bg-indigo-600 hover:text-white border border-indigo-200 text-indigo-600 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2"
+            >
+                Update Alignment
+            </button>
+        </div>
+    );
+};
 
 const SecureAccountSidebarWidget = ({ onComplete }: { onComplete: () => void }) => {
     const [password, setPassword] = useState('');
@@ -156,11 +199,10 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
     );
 };
 
-const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }: any) => {
+const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }: any) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  // Added missing isProfileModalOpen state to fix undefined variable errors on lines 318, 415, and 416
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCustomerActivityOpen, setIsCustomerActivityOpen] = useState(
     location.pathname === '/login-requests' || 
@@ -180,13 +222,6 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    const unsubscribe = mockService.subscribeToCart((cart) => {
-        setCartCount(cart.length);
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -258,7 +293,6 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
             <SidebarLink to="/" icon={LayoutDashboard} label="Dashboard" active={isActive('/', true)} />
             <SidebarLink to="/orders" icon={ShoppingCart} label="Track Orders" active={isActive('/orders')} />
             <SidebarLink to="/marketplace" icon={ShoppingBag} label="Fresh Catalog" active={isActive('/marketplace')} />
-            <SidebarLink to="/impact" icon={Leaf} label="Impact Dashboard" active={isActive('/impact')} />
             <SidebarLink to="/accounts" icon={Wallet} label="Accounts & Billing" active={isActive('/accounts')} />
         </div>
       ) : user.role === UserRole.GROCERY ? (
@@ -266,7 +300,6 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
             <SidebarLink to="/" icon={LayoutDashboard} label="Wholesale Hub" active={isActive('/', true)} />
             <SidebarLink to="/grocer/marketplace" icon={TrendingDown} label="Market" active={isActive('/grocer/marketplace')} />
             <SidebarLink to="/orders" icon={ShoppingCart} label="My Orders" active={isActive('/orders')} />
-            <SidebarLink to="/impact" icon={Leaf} label="Sustainability" active={isActive('/impact')} />
             <SidebarLink to="/accounts" icon={Wallet} label="Financials" active={isActive('/accounts')} />
         </div>
       ) : isPartner ? (
@@ -275,7 +308,6 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
             <SidebarLink to="/farmers" icon={Sprout} label="Farmer Network" active={isActive('/farmers')} />
             <SidebarLink to="/contacts" icon={Users} label="Buyer Network" active={isActive('/contacts')} />
             <SidebarLink to="/pricing" icon={Tags} label="Inventory & Price" active={isActive('/pricing')} />
-            <SidebarLink to="/impact" icon={Leaf} label="Eco Impact" active={isActive('/impact')} />
             <SidebarLink to="/accounts" icon={DollarSign} label="Financials" active={isActive('/accounts')} />
             <SidebarLink to="/market" icon={Globe} label="Supplier Market" active={isActive('/market')} />
         </div>
@@ -298,6 +330,9 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
         <div className="flex-1 px-4 space-y-8 flex flex-col no-scrollbar">
             <NavContent />
         </div>
+
+        {/* Market Alignment Widget */}
+        <MarketAlignmentSidebarWidget user={user} onUpdate={onOpenInterests} />
 
         {/* Secure Account Widget */}
         {user.loginCode && !user.passwordSet && (
@@ -383,7 +418,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onProfileRefresh }
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           user={user}
-          onComplete={() => onProfileRefresh()}
+          onComplete={() => {}}
       />
     </div>
   );
@@ -393,10 +428,24 @@ const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authStep, setAuthStep] = useState<'category' | 'credentials'>('category');
+  const [isInterestsModalOpen, setIsInterestsModalOpen] = useState(false);
+
+  const checkInterests = (u: User) => {
+    if ((u.role === UserRole.WHOLESALER || u.role === UserRole.FARMER) && 
+        (!u.activeSellingInterests || u.activeSellingInterests.length === 0)) {
+        setIsInterestsModalOpen(true);
+    }
+  };
 
   const handleAutoLogin = (email: string) => {
     const foundUser = mockService.getAllUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (foundUser) { setUser(foundUser); setShowAuthModal(false); } else { alert("Account not found."); }
+    if (foundUser) { 
+        setUser(foundUser); 
+        setShowAuthModal(false);
+        checkInterests(foundUser);
+    } else { 
+        alert("Account not found."); 
+    }
   };
 
   const handleCodeLogin = (code: string) => {
@@ -404,6 +453,7 @@ const App = () => {
       if (foundUser) {
           setUser(foundUser);
           setShowAuthModal(false);
+          checkInterests(foundUser);
       } else {
           alert("Invalid Access Code.");
       }
@@ -411,10 +461,10 @@ const App = () => {
 
   const handlePasswordSet = (userId: string) => {
       mockService.setUserPassword(userId, true);
-      setUser(prev => prev ? { ...prev, passwordSet: true, loginCode: undefined } : null);
+      setUser(prev => prev ? { ...prev, passwordSet: true } : null);
   };
 
-  const handleProfileRefresh = () => {
+  const handleRefreshUser = () => {
       if (user) {
           const updated = mockService.getAllUsers().find(u => u.id === user.id);
           if (updated) setUser({ ...updated });
@@ -431,7 +481,7 @@ const App = () => {
                         user={user} 
                         onLogout={() => setUser(null)} 
                         onPasswordSet={handlePasswordSet}
-                        onProfileRefresh={handleProfileRefresh}
+                        onOpenInterests={() => setIsInterestsModalOpen(true)}
                     >
                         {element}
                     </AppLayout>
@@ -451,6 +501,14 @@ const App = () => {
                 )
             } />
         </Routes>
+        {user && (
+            <InterestsModal 
+                user={user} 
+                isOpen={isInterestsModalOpen} 
+                onClose={() => setIsInterestsModalOpen(false)}
+                onSaved={handleRefreshUser}
+            />
+        )}
     </Router>
   );
 
@@ -478,7 +536,7 @@ const App = () => {
       <Route path="/inventory" element={<Inventory items={mockService.getAllInventory()} />} />
       <Route path="/accounts" element={user ? <Accounts user={user} /> : <Navigate to="/" />} />
       <Route path="/admin/accounts" element={user?.role === UserRole.ADMIN ? <AdminAccounts /> : <Navigate to="/" />} />
-      <Route path="/settings" element={user ? <SettingsComponent user={user} /> : <Navigate to="/" />} />
+      <Route path="/settings" element={user ? <SettingsComponent user={user} onRefreshUser={handleRefreshUser} /> : <Navigate to="/" />} />
       <Route path="/orders" element={user ? <CustomerOrders user={user} /> : <Navigate to="/" />} />
       <Route path="/contacts" element={user ? <Contacts user={user} /> : <Navigate to="/" />} />
       <Route path="/farmers" element={user ? <FarmerNetwork user={user} /> : <Navigate to="/" />} />
@@ -528,7 +586,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
                             </div>
                         </div>
-                        <form onSubmit={handleCodeSubmit} className="flex gap-2">
+                        <form handleCodeSubmit={handleCodeSubmit} className="flex gap-2">
                             <input 
                                 placeholder="ABCDEF" 
                                 className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
@@ -537,7 +595,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 onChange={e => setAccessCode(e.target.value)}
                             />
                             <button 
-                                type="submit"
+                                onClick={handleCodeSubmit}
                                 disabled={isProcessing || !accessCode}
                                 className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
                             >

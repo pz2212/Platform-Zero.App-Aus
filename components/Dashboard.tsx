@@ -5,6 +5,7 @@ import { mockService } from '../services/mockDataService';
 import { WholesalerPriceRequestModal } from './WholesalerPriceRequestModal';
 import { AiOpportunityMatcher } from './AiOpportunityMatcher';
 import { Settings as SettingsComponent } from './Settings';
+import { InterestsModal } from './InterestsModal';
 import { 
   Package, Truck, MapPin, LayoutDashboard, 
   Users, Clock, CheckCircle, X, DollarSign,
@@ -15,7 +16,7 @@ import {
   Search, Filter, Info, RefreshCw, Sparkles, ChevronRight,
   TrendingDown, Pencil, Lock, Gift, Camera, Settings, Plus,
   Layout, History as HistoryIcon, Camera as ScannerIcon,
-  UserCheck, User as UserIcon, Send, Calendar, Printer
+  UserCheck, User as UserIcon, Send, Calendar, Printer, Leaf, Sprout
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -540,6 +541,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [activeAudit, setActiveAudit] = useState<SupplierPriceRequest | null>(null);
   const [showPriceLock, setShowPriceLock] = useState(true);
   const [selectedOrderForAssignment, setSelectedOrderForAssignment] = useState<Order | null>(null);
+  const [isInterestsModalOpen, setIsInterestsModalOpen] = useState(false);
   
   // Sourcing Modal State
   const [sourcingProduct, setSourcingProduct] = useState<{product: Product, demand: number} | null>(null);
@@ -550,6 +552,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 5000);
+    
+    // Sign-in pop up trigger: If wholesaler has no interests, pop up the modal
+    if ((user.role === UserRole.WHOLESALER || user.role === UserRole.FARMER) && 
+        (!user.activeSellingInterests || user.activeSellingInterests.length === 0)) {
+        setIsInterestsModalOpen(true);
+    }
+    
     return () => clearInterval(interval);
   }, [user]);
 
@@ -625,6 +634,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   </div>
               </div>
           ))}
+      </div>
+
+      {/* Market Alignment QuickView (Added) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-2">
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 flex items-center justify-between group hover:shadow-md transition-all">
+            <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-indigo-50 text-[#4A3AFF] rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm">
+                    <Sparkles size={32}/>
+                </div>
+                <div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Market Focus</h3>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {(user.activeSellingInterests || []).slice(0, 5).map(i => (
+                            <span key={i} className="bg-indigo-50 text-[#4A3AFF] px-3 py-1 rounded-lg text-[9px] font-black uppercase border border-indigo-100">{i}</span>
+                        ))}
+                        {(!user.activeSellingInterests || user.activeSellingInterests.length === 0) && (
+                            <span className="text-gray-400 font-bold italic text-sm">No alignment set</span>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <button 
+                onClick={() => setIsInterestsModalOpen(true)}
+                className="px-8 py-4 bg-white border-2 border-[#4A3AFF] text-[#4A3AFF] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all shadow-sm active:scale-95"
+            >
+                Edit Alignment
+            </button>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 flex items-center justify-between group hover:shadow-md transition-all">
+             <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[1.75rem] flex items-center justify-center border border-emerald-100 shadow-inner-sm">
+                    <Sprout size={32}/>
+                </div>
+                <div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Sustainability Score</h3>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Verified Carbon Offset: <span className="text-emerald-600 font-black">420kg</span></p>
+                </div>
+             </div>
+             <button onClick={() => navigate('/impact')} className="p-4 rounded-2xl bg-gray-50 text-gray-300 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all shadow-sm">
+                <ArrowRight size={24} strokeWidth={3}/>
+             </button>
+          </div>
       </div>
 
       {/* MORNING PRICE LOCK FEATURE (Restored) */}
@@ -779,6 +831,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             </div>
           </div>
       </div>
+
+      <InterestsModal 
+        user={user}
+        isOpen={isInterestsModalOpen}
+        onClose={() => setIsInterestsModalOpen(false)}
+        onSaved={loadData}
+      />
 
       {/* sourcing Modal */}
       <DemandSourcingModal 

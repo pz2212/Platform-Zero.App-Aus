@@ -29,8 +29,8 @@ export interface MockCartItem {
 
 export const USERS: User[] = [
   { id: 'u1', name: 'Admin User', businessName: 'Platform Zero', role: UserRole.ADMIN, email: 'admin@pz.com' },
-  { id: 'u2', name: 'Sarah Wholesaler', businessName: 'Fresh Wholesalers', role: UserRole.WHOLESALER, email: 'sarah@fresh.com', dashboardVersion: 'v2', activeSellingInterests: ['Tomatoes', 'Lettuce', 'Eggplants'], activeBuyingInterests: ['Potatoes', 'Apples'], businessProfile: { isComplete: true } as any },
-  { id: 'u3', name: 'Bob Farmer', businessName: 'Green Valley Farms', role: UserRole.FARMER, email: 'bob@greenvalley.com', dashboardVersion: 'v2', activeSellingInterests: ['Potatoes', 'Apples'], activeBuyingInterests: [], businessProfile: { isComplete: true } as any },
+  { id: 'u2', name: 'Sarah Wholesaler', businessName: 'Fresh Wholesalers', role: UserRole.WHOLESALER, email: 'sarah@fresh.com', phone: '0412 888 333', dashboardVersion: 'v2', activeSellingInterests: ['Tomatoes', 'Lettuce', 'Eggplants'], activeBuyingInterests: ['Potatoes', 'Apples'], businessProfile: { isComplete: true } as any },
+  { id: 'u3', name: 'Bob Farmer', businessName: 'Green Valley Farms', role: UserRole.FARMER, email: 'bob@greenvalley.com', phone: '0455 444 777', dashboardVersion: 'v2', activeSellingInterests: ['Potatoes', 'Apples'], activeBuyingInterests: [], businessProfile: { isComplete: true } as any },
   { id: 'u4', name: 'Alice Consumer', businessName: 'The Morning Cafe', role: UserRole.CONSUMER, email: 'alice@cafe.com', phone: '0412 345 678', industry: 'Cafe', smsNotificationsEnabled: true, favorites: ['p1', 'p2'], catalogProducts: ['p1', 'p2', 'p3', 'p4', 'p5'] },
   { id: 'u5', name: 'Gary Grocer', businessName: 'Local Corner Grocers', role: UserRole.GROCERY, email: 'gary@grocer.com', phone: '0411 222 333', industry: 'Grocery Store', smsNotificationsEnabled: true, catalogProducts: ['p1', 'p2', 'p3', 'p4'] },
   { id: 'rep1', name: 'Alex Johnson', businessName: 'Platform Zero', role: UserRole.PZ_REP, email: 'rep1@pz.com', phone: '0400 111 222', commissionRate: 5.0 },
@@ -84,45 +84,26 @@ class MockDataService {
     { id: 'u4', businessName: 'The Morning Cafe', contactName: 'Alice Consumer', category: 'Restaurant', industry: 'Cafe', commonProducts: 'Bananas, Potatoes, Lettuce', location: 'Richmond', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'alice@cafe.com', phone: '0412 345 678', pzMarkup: 15, assignedPzRepId: 'rep1', assignedPzRepName: 'Alex Johnson', assignedPortal: UserRole.CONSUMER, repCommissionRate: 5, commissionTotalOrders: 20, commissionStartOrder: 1 },
     { id: 'u5', businessName: 'Local Corner Grocers', contactName: 'Gary Grocer', category: 'Grocery', industry: 'Grocery Store', commonProducts: 'Everything', location: 'Fitzroy', connectedSupplierId: 'u2', connectedSupplierName: 'Fresh Wholesalers', connectionStatus: 'Active', email: 'gary@grocer.com', phone: '0411 222 333', pzMarkup: 12, assignedPzRepId: 'rep2', assignedPzRepName: 'Sam Taylor', assignedPortal: UserRole.GROCERY, repCommissionRate: 8, commissionTotalOrders: 10, commissionStartOrder: 1 },
     { id: 'c-demo-1', businessName: 'Urban Greens Deli', contactName: 'Mark S.', category: 'Deli', industry: 'Grocery Store', location: 'Adelaide', connectedSupplierId: 'u2' },
-    { id: 'c-demo-2', businessName: 'Seaside Bistro', contactName: 'Elena V.', category: 'Restaurant', industry: 'Restaurant', location: 'Glenelg', connectedSupplierId: 'u2' },
-    { id: 'c-demo-3', businessName: 'The Salad Project', contactName: 'Tom B.', category: 'Catering', industry: 'Catering', location: 'Burnside', connectedSupplierId: 'u2' },
   ];
 
   private drivers: Driver[] = [
     { id: 'dr-1', name: 'John Driver', email: 'john@fresh.com', phone: '0412 111 222', licenseNumber: 'VIC-9988', vehicleRegistration: 'PZ-VAN-1', vehicleType: 'Van', wholesalerId: 'u2', status: 'Active' },
-    { id: 'dr-2', name: 'Mike Logistics', email: 'mike@fresh.com', phone: '0412 333 444', licenseNumber: 'VIC-7766', vehicleRegistration: 'PZ-TRUCK-1', vehicleType: 'Truck', wholesalerId: 'u2', status: 'Active' }
   ];
   private packers: Packer[] = [
     { id: 'pk-1', name: 'Sarah Packer', email: 'sarah.p@fresh.com', phone: '0422 555 666', wholesalerId: 'u2', status: 'Active' },
-    { id: 'pk-2', name: 'Dave Warehouse', email: 'dave.w@fresh.com', phone: '0422 777 888', wholesalerId: 'u2', status: 'Active' }
   ];
-  private registrationRequests: RegistrationRequest[] = [
-      { id: 'reg1', businessName: 'Sunshine Cafe', name: 'John Doe', email: 'john@sunshine.com', requestedRole: UserRole.CONSUMER, status: 'Pending', submittedDate: new Date().toISOString() }
-  ];
-  private priceRequests: SupplierPriceRequest[] = [
-      { 
-        id: 'pr1', 
-        supplierId: 'u2', 
-        status: 'PENDING', 
-        createdAt: new Date().toISOString(), 
-        customerContext: 'New Bistro', 
-        customerLocation: 'Sydney', 
-        items: [
-            { productId: 'p1', productName: 'Roma Tomatoes', qty: 100, invoicePrice: 5.50, targetPrice: 4.20 },
-            { productId: 'p2', productName: 'Iceberg Lettuce', qty: 50, invoicePrice: 3.20, targetPrice: 2.10 },
-            { productId: 'p4', productName: 'Black Eggplant', qty: 30, invoicePrice: 7.00, targetPrice: 5.50 }
-        ] 
-      }
-  ];
+  private registrationRequests: RegistrationRequest[] = [];
+  private priceRequests: SupplierPriceRequest[] = [];
 
   constructor() {
       this.generateDemoOrders();
+      this.generateDemoIssues();
   }
 
   private generateDemoOrders() {
       const now = new Date();
       
-      // Order #103 for screenshot parity
+      // Order #103 - Arriving Today
       this.orders.push({
           id: 'o-103', 
           buyerId: 'u4', 
@@ -137,14 +118,15 @@ class MockDataService {
           source: 'Marketplace',
           logistics: {
             deliveryTime: '04:52',
-            deliveryLocation: 'Adelaide CBD',
+            deliveryLocation: 'Richmond Hub',
             deliveryDate: '07/01/2026',
             driverName: 'John Driver'
           }
       });
 
+      // Order #PENDING
       this.orders.push({
-          id: 'o-demo-pending', 
+          id: 'o-pending', 
           buyerId: 'u4', 
           sellerId: 'u2', 
           items: [
@@ -157,8 +139,9 @@ class MockDataService {
           source: 'Direct'
       });
 
+      // Local Corner Grocers Order
       this.orders.push({
-          id: 'o-demo-confirmed', 
+          id: 'o-grocer-1', 
           buyerId: 'u5', 
           sellerId: 'u2', 
           items: [
@@ -170,8 +153,9 @@ class MockDataService {
           source: 'Direct'
       });
 
+      // Urban Greens Deli Order
       this.orders.push({
-          id: 'o-demo-shipped', 
+          id: 'o-deli-1', 
           buyerId: 'c-demo-1', 
           sellerId: 'u2', 
           items: [
@@ -186,6 +170,32 @@ class MockDataService {
             deliveryLocation: 'Adelaide Central', 
             deliveryTime: '14:30' 
           }
+      });
+  }
+
+  private generateDemoIssues() {
+      // Create specific demo issues for "THE MORNING CAFE" to match the provided screenshot
+      const demoIssues = [
+          { orderId: 'o-103', productId: 'p1', desc: 'Reported issue.' },
+          { orderId: 'o-pending', productId: 'p1', desc: 'Reported issue.' },
+          { orderId: 'o-103', productId: 'p2', desc: 'Reported issue.' }
+      ];
+
+      demoIssues.forEach((di, idx) => {
+          const newIssue: OrderIssue = {
+              id: `iss-demo-${idx}`,
+              orderId: di.orderId,
+              productId: di.productId,
+              type: 'Quality Issues',
+              description: di.desc,
+              reportedAt: new Date().toISOString(),
+              supplierStatus: 'PENDING',
+              repStatus: 'UNSEEN'
+          };
+          this.issues.push(newIssue);
+          // Link issue to the order
+          const order = this.orders.find(o => o.id === di.orderId);
+          if (order) order.issue = newIssue;
       });
   }
 
