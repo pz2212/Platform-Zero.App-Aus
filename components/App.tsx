@@ -202,7 +202,6 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
 const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }: any) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // Added missing isProfileModalOpen state to fix undefined variable errors on lines 318, 415, and 416
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCustomerActivityOpen, setIsCustomerActivityOpen] = useState(
     location.pathname === '/login-requests' || 
@@ -548,6 +547,8 @@ const App = () => {
 const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }: any) => {
     const [accessCode, setAccessCode] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedDemo, setSelectedDemo] = useState<any>(null);
+    const [demoPassword, setDemoPassword] = useState('');
 
     if (!isOpen) return null;
 
@@ -558,6 +559,17 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
         await new Promise(r => setTimeout(r, 600));
         onCodeLogin(accessCode);
         setIsProcessing(false);
+    };
+
+    const handleDemoSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (demoPassword === 'PZ2222') {
+            onAutoLogin(selectedDemo.email);
+            setDemoPassword('');
+            setSelectedDemo(null);
+        } else {
+            alert("Incorrect password for demo access.");
+        }
     };
 
     const demoLogins = [
@@ -577,53 +589,100 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                 </div>
                 <div className="p-10 space-y-10">
                     
-                    {/* CODE LOGIN SECTION */}
-                    <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
-                            <div>
-                                <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
-                            </div>
-                        </div>
-                        <form handleCodeSubmit={handleCodeSubmit} className="flex gap-2">
-                            <input 
-                                placeholder="ABCDEF" 
-                                className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
-                                maxLength={6}
-                                value={accessCode}
-                                onChange={e => setAccessCode(e.target.value)}
-                            />
+                    {selectedDemo ? (
+                        /* PASSWORD PROTECTION VIEW */
+                        <div className="space-y-6 animate-in slide-in-from-right-4">
                             <button 
-                                onClick={handleCodeSubmit}
-                                disabled={isProcessing || !accessCode}
-                                className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                                onClick={() => { setSelectedDemo(null); setDemoPassword(''); }}
+                                className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
                             >
-                                {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                                <ArrowLeft size={14}/> Back to list
                             </button>
-                        </form>
-                    </div>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                        {demoLogins.map(demo => (
-                            <button 
-                                key={demo.label} 
-                                onClick={() => onAutoLogin(demo.email)} 
-                                className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${demo.color}`}
-                            >
-                                <div className="text-left">
-                                    <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
-                                    <span className="block text-xs text-gray-400 font-medium">{demo.email}</span>
+                            <div className="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-gray-900 text-xl shadow-inner-sm border border-gray-200`}>
+                                    {selectedDemo.label.charAt(0)}
                                 </div>
-                                <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
-                            </button>
-                        ))}
-                    </div>
+                                <div>
+                                    <h3 className="font-black text-gray-900 uppercase text-lg leading-none tracking-tighter">{selectedDemo.label}</h3>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">{selectedDemo.email}</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleDemoSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">DEMO ACCESS PASSWORD</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
+                                        <input 
+                                            autoFocus
+                                            type="password"
+                                            placeholder="••••••••" 
+                                            className="w-full pl-12 pr-4 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100"
+                                            value={demoPassword}
+                                            onChange={e => setDemoPassword(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <button 
+                                    type="submit"
+                                    className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    Verify & Access <ArrowRight size={18} />
+                                </button>
+                            </form>
+                        </div>
+                    ) : (
+                        <>
+                            {/* CODE LOGIN SECTION */}
+                            <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
+                                    <div>
+                                        <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
+                                    </div>
+                                </div>
+                                <form onSubmit={handleCodeSubmit} className="flex gap-2">
+                                    <input 
+                                        placeholder="ABCDEF" 
+                                        className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                        maxLength={6}
+                                        value={accessCode}
+                                        onChange={e => setAccessCode(e.target.value)}
+                                    />
+                                    <button 
+                                        type="submit"
+                                        disabled={isProcessing || !accessCode}
+                                        className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                                    >
+                                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                {demoLogins.map(demo => (
+                                    <button 
+                                        key={demo.label} 
+                                        onClick={() => setSelectedDemo(demo)} 
+                                        className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${demo.color}`}
+                                    >
+                                        <div className="text-left">
+                                            <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
+                                            <span className="block text-xs text-gray-400 font-medium">{demo.email}</span>
+                                        </div>
+                                        <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
