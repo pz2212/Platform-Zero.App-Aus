@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { 
   Upload, ArrowRight, CheckCircle, Calendar, DollarSign, 
@@ -245,8 +244,8 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                           <option value="Daily">Daily</option>
                         </select>
                         <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
                     </div>
+                  </div>
                   </div>
 
                   {formData.role === UserRole.CONSUMER && (
@@ -313,7 +312,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
 
              <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm overflow-hidden">
                 <h4 className="font-black text-gray-900 text-lg uppercase tracking-tight mb-6 flex items-center gap-2">
-                    <Table size={20} className="text-indigo-500"/> Itemized Quote Comparison
+                    <Table size={20} className="text-indigo-50"/> Itemized Quote Comparison
                 </h4>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -357,7 +356,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
         )}
 
         {step === 4 && (
-          <div className="max-w-[500px] mx-auto text-center space-y-12 animate-in zoom-in-95 duration-500 w-full px-4">
+          <div className="max-w-[800px] mx-auto text-center space-y-12 animate-in zoom-in-95 duration-500 w-full px-4">
              <div className="inline-flex items-center gap-2 bg-[#D1FAE5] text-[#065F46] px-5 py-2.5 rounded-full font-black uppercase text-[10px] tracking-widest shadow-sm">
                 APPLICATION RECEIVED
              </div>
@@ -369,7 +368,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                 </p>
              </div>
 
-             <div className="space-y-4">
+             <div className="space-y-6 max-w-[500px] mx-auto">
                 {/* Complete Profile Card */}
                 <div className="bg-white rounded-[2rem] border-2 border-[#10B981] p-8 text-left relative overflow-hidden group shadow-sm">
                     <div className="absolute top-0 right-0 bg-[#10B981] text-white px-6 py-2.5 text-[9px] font-black uppercase tracking-widest rounded-bl-2xl shadow-md">
@@ -402,7 +401,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                             <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">BOOK A DEMO</h3>
                             <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">Schedule a 15-min call with our specialist for a guided tour.</p>
                             <button 
-                                onClick={() => window.open('https://calendly.com/pz-onboarding', '_blank')}
+                                onClick={() => window.open('https://calendly.com/alex-platformzerosolutions/45min', '_blank')}
                                 className="mt-4 flex items-center gap-2 text-[#2563EB] font-black text-[11px] uppercase tracking-widest group-hover:gap-3 transition-all"
                             >
                                 SELECT TIME <ArrowRight size={14} strokeWidth={3}/>
@@ -410,10 +409,54 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                         </div>
                     </div>
                 </div>
-                
-                <div className="pt-6">
-                    <button onClick={() => setStep(1)} className="text-[11px] font-black text-gray-400 hover:text-slate-900 uppercase tracking-[0.3em] transition-colors">BACK TO START</button>
+             </div>
+
+             {/* Testimonials Section */}
+             <div className="pt-12 border-t border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                   {/* V2 Foods */}
+                   <div className="space-y-4 text-left">
+                      <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
+                         <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="V2 Foods"/>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
+                         "We've never needed a credit or product replacement. Every delivery from Platform Zero has met our standards."
+                      </p>
+                      <p className="text-xs font-black text-gray-900 uppercase tracking-tight">
+                         V2 Foods <span className="font-medium text-gray-400">— Head of Procurement</span>
+                      </p>
+                   </div>
+
+                   {/* Emirates */}
+                   <div className="space-y-4 text-left">
+                      <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
+                         <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Emirates"/>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
+                         "As a company, we’re always looking for partners who help us make an impact. Platform Zero not only delivers exceptional quality fresh produce but also provides sustainability and impact reporting that goes beyond anyone else in the market."
+                      </p>
+                      <p className="text-xs font-black text-gray-900 uppercase tracking-tight">
+                         Emirates <span className="font-medium text-gray-400">— Head of Procurement</span>
+                      </p>
+                   </div>
+
+                   {/* Chargrill Charlie's */}
+                   <div className="space-y-4 text-left">
+                      <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
+                         <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Chargrill Charlie's"/>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
+                         "We trialled Platform Zero and never looked back. Now, nearly all Chargrill Charlie’s sites are supplied by PZ. Each location keeps recommending them to others because it’s a no-brainer."
+                      </p>
+                      <p className="text-xs font-black text-gray-900 uppercase tracking-tight">
+                         Chargrill Charlie's <span className="font-medium text-gray-400">— Merrickville Business Owner</span>
+                      </p>
+                   </div>
                 </div>
+             </div>
+
+             <div className="pt-6">
+                <button onClick={() => setStep(1)} className="text-[11px] font-black text-gray-400 hover:text-slate-900 uppercase tracking-[0.3em] transition-colors">BACK TO START</button>
              </div>
           </div>
         )}

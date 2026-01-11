@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { InventoryItem, User, UserRole, Order, Customer, Product } from '../types';
 import { mockService } from '../services/mockDataService';
@@ -75,7 +74,7 @@ const VestingModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: boolean
                         disabled={isSaving}
                         className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2"
                     >
-                        {isSaving ? <Loader2 className="animate-spin" size={16}/> : 'Lock Vesting Schedule'}
+                        {isSaving ? <Loader2 size={16} className="animate-spin"/> : 'Lock Vesting Schedule'}
                     </button>
                 </div>
             </div>
@@ -493,6 +492,7 @@ export const AdminDashboard: React.FC = () => {
                         <th className="px-6 py-6">Customer Entity</th>
                         <th className="px-6 py-6">Status</th>
                         <th className="px-6 py-6">Assigned Supplier</th>
+                        <th className="px-6 py-6">Assigned Portal</th>
                         <th className="px-6 py-6">Assigned Rep</th>
                         <th className="px-6 py-6 text-center">%/Order</th>
                         <th className="px-6 py-6">Commission Scope</th>
@@ -524,6 +524,19 @@ export const AdminDashboard: React.FC = () => {
                                     >
                                         <option value="">Direct Node</option>
                                         {wholesalers.map(w => <option key={w.id} value={w.id}>{w.businessName}</option>)}
+                                    </select>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <select 
+                                        value={customer.assignedPortal || ''}
+                                        onChange={(e) => handleAssignPortal(customer.id, e.target.value as UserRole)}
+                                        className="max-w-[120px] bg-white border border-gray-100 rounded-lg px-2 py-1 font-black text-[9px] uppercase tracking-widest text-gray-600 outline-none truncate"
+                                    >
+                                        <option value="">Portal...</option>
+                                        <option value={UserRole.CONSUMER}>Buyer</option>
+                                        <option value={UserRole.GROCERY}>Grocer</option>
+                                        <option value={UserRole.WHOLESALER}>Wholesaler</option>
+                                        <option value={UserRole.FARMER}>Farmer</option>
                                     </select>
                                 </td>
                                 <td className="px-6 py-4">

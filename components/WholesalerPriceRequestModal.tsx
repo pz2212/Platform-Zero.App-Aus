@@ -3,7 +3,6 @@ import {
   X, Check, DollarSign, Loader2, Sparkles, TrendingUp, AlertTriangle, 
   ChevronRight, Info, Target, Calculator, Package,
   Send,
-  // Added missing CheckCircle icon import
   CheckCircle
 } from 'lucide-react';
 import { SupplierPriceRequest, SupplierPriceRequestItem } from '../types';
@@ -90,7 +89,6 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-[#0F172A]/90 backdrop-blur-xl p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-6xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 flex flex-col max-h-[95vh]">
                 
-                {/* MATCHED SCREENSHOT HEADER */}
                 <div className="p-8 md:p-12 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-white relative">
                     <div className="relative z-10 flex items-center gap-6">
                         <div className="w-16 h-16 bg-[#F43F5E] rounded-3xl flex items-center justify-center text-white shadow-xl shadow-red-500/20 animate-pulse border-4 border-white shrink-0">
@@ -108,7 +106,6 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                 </div>
                 
                 <div className="p-8 md:p-12 overflow-y-auto flex-1 custom-scrollbar bg-[#F8FAFC]">
-                    {/* BLUE INFO BAR FROM SCREENSHOT */}
                     <div className="bg-[#EFF6FF] border-2 border-[#DBEAFE] p-8 rounded-[2rem] mb-12 flex items-start gap-6 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-6 opacity-[0.03] transform rotate-12 scale-150 group-hover:rotate-0 transition-transform duration-1000 pointer-events-none"><Calculator size={140}/></div>
                         <div className="p-4 bg-white rounded-2xl text-blue-600 shadow-sm border border-blue-50 shrink-0 relative z-10">
@@ -132,7 +129,6 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                                 <div key={idx} className={`p-8 bg-white rounded-[2.5rem] border-2 transition-all group shadow-sm hover:shadow-xl ${item.offeredPrice && !item.isMatchingTarget ? 'border-orange-100' : item.isMatchingTarget ? 'border-emerald-100' : 'border-gray-50'}`}>
                                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-center">
                                         
-                                        {/* Product Details */}
                                         <div className="xl:col-span-4">
                                             <h4 className="font-black text-gray-900 text-3xl uppercase tracking-tighter leading-none mb-3 group-hover:text-indigo-600 transition-colors">{item.productName}</h4>
                                             <div className="flex items-center gap-4">
@@ -141,12 +137,7 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                                             </div>
                                         </div>
 
-                                        {/* Comparison metrics */}
-                                        <div className="xl:col-span-4 grid grid-cols-2 gap-6">
-                                            <div className="p-5 bg-gray-50 rounded-[1.75rem] border border-gray-100 shadow-inner-sm">
-                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Customer Pays</p>
-                                                <div className="text-3xl font-black text-gray-400 line-through tracking-tighter decoration-red-400/30 decoration-4">${item.invoicePrice.toFixed(2)}</div>
-                                            </div>
+                                        <div className="xl:col-span-4 grid grid-cols-1">
                                             <div className="p-5 bg-emerald-50/40 rounded-[1.75rem] border-2 border-emerald-50 shadow-sm">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">PZ Target</span>
@@ -156,7 +147,6 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                                             </div>
                                         </div>
 
-                                        {/* Quote Input Logic */}
                                         <div className="xl:col-span-4 flex flex-col gap-4">
                                             <div className="flex gap-3 h-16">
                                                 <button 
@@ -179,7 +169,6 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                                                 </div>
                                             </div>
 
-                                            {/* AI ASSISTANCE LAYER */}
                                             {(aiResult || isLoadingAI) && (
                                                 <div className="animate-in slide-in-from-top-2 duration-300">
                                                     <div className="bg-[#0F172A] rounded-2xl p-4 flex items-center justify-between border border-white/5 relative overflow-hidden group/ai shadow-2xl">
@@ -221,13 +210,12 @@ export const WholesalerPriceRequestModal: React.FC<WholesalerPriceRequestModalPr
                     </div>
                 </div>
 
-                {/* MATCHED SCREENSHOT FOOTER */}
                 <div className="p-8 md:p-12 border-t border-gray-100 bg-white sticky bottom-0 z-20 flex flex-col sm:flex-row justify-between items-center gap-10 shadow-[0_-30px_60px_rgba(0,0,0,0.03)] backdrop-blur-md">
                     <div className="text-left w-full sm:w-auto">
                         <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-3 ml-1">Aggregate Quote Value</p>
                         <div className="flex items-baseline gap-3">
                              <p className="text-6xl font-black text-gray-900 tracking-tighter leading-none">${items.reduce((sum, i) => sum + (i.offeredPrice || 0) * i.qty, 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-                             <span className="text-sm font-black text-gray-400 uppercase tracking-widest">/ Est. Weekly Rev</span>
+                             <span className="text-sm font-black text-gray-400 uppercase tracking-widest">/ Per Week</span>
                         </div>
                     </div>
                     
