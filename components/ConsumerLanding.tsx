@@ -417,7 +417,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                    {/* V2 Foods */}
                    <div className="space-y-4 text-left">
                       <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
-                         <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="V2 Foods"/>
+                         <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="V2 Foods"/>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
                          "We've never needed a credit or product replacement. Every delivery from Platform Zero has met our standards."
@@ -430,7 +430,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                    {/* Emirates */}
                    <div className="space-y-4 text-left">
                       <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
-                         <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Emirates"/>
+                         <img src="https://images.unsplash.com/photo-1520437358207-323b43b50729?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Emirates"/>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
                          "As a company, we’re always looking for partners who help us make an impact. Platform Zero not only delivers exceptional quality fresh produce but also provides sustainability and impact reporting that goes beyond anyone else in the market."
@@ -443,7 +443,7 @@ export const ConsumerLanding: React.FC<{ onLogin?: () => void }> = ({ onLogin })
                    {/* Chargrill Charlie's */}
                    <div className="space-y-4 text-left">
                       <div className="rounded-[2rem] overflow-hidden aspect-[1.6/1] bg-gray-100 border border-gray-100 shadow-sm">
-                         <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Chargrill Charlie's"/>
+                         <img src="https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&q=80&w=400&h=250" className="w-full h-full object-cover" alt="Chargrill Charlie's"/>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed font-medium italic">
                          "We trialled Platform Zero and never looked back. Now, nearly all Chargrill Charlie’s sites are supplied by PZ. Each location keeps recommending them to others because it’s a no-brainer."

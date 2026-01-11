@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { User, Product, RegistrationRequest, SupplierPriceRequest } from '../types';
@@ -27,6 +26,7 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
   const [customerName, setCustomerName] = useState(state.req?.businessName || '');
   const [customerLoc, setCustomerLoc] = useState(state.req?.consumerData?.location || '');
   const [invoiceFileName, setInvoiceFileName] = useState<string | null>(state.req?.consumerData?.invoiceFile ? 'Uploaded_Invoice.pdf' : null);
+  const [invoiceData, setInvoiceData] = useState<string | null>(state.req?.consumerData?.invoiceFile || null);
   const [pzSavingsPercent, setPzSavingsPercent] = useState<number>(30);
   const [supplierTargetPercent, setSupplierTargetPercent] = useState<number>(55);
   const [selectedWholesalerIds, setSelectedWholesalerIds] = useState<string[]>([]);
@@ -63,6 +63,16 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
       } finally {
           setIsProcessing(false);
       }
+  };
+
+  const handleDownloadInvoice = () => {
+      if (!invoiceData) return;
+      const link = document.createElement('a');
+      link.href = invoiceData;
+      link.download = invoiceFileName || 'invoice.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
   };
 
   const calculatePzPrice = (invoicePrice: number) => {
@@ -139,7 +149,7 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
                             <input 
                                 value={customerName}
                                 onChange={(e) => setCustomerName(e.target.value)}
-                                className="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all"
+                                className="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all"
                                 placeholder="e.g. Alex"
                             />
                         </div>
@@ -152,7 +162,7 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
                             <input 
                                 value={customerLoc}
                                 onChange={(e) => setCustomerLoc(e.target.value)}
-                                className="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white transition-all"
+                                className="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 focus:bg-white transition-all"
                                 placeholder="e.g. Melbourne"
                             />
                         </div>
@@ -162,12 +172,17 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
                         <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Upload Invoice (Optional)</label>
                         <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all bg-emerald-50/20 border-emerald-200`}>
                             {invoiceFileName ? (
-                                <div className="flex items-center justify-between gap-3 text-emerald-700">
-                                    <div className="flex items-center gap-3">
-                                        <FileText size={20}/>
-                                        <span className="text-xs font-black truncate max-w-[150px]">{invoiceFileName}</span>
-                                    </div>
-                                    <button onClick={() => setInvoiceFileName(null)} className="p-1 hover:bg-emerald-100 rounded-lg"><X size={16}/></button>
+                                <div className="flex items-center justify-between gap-2 text-emerald-700">
+                                    <button 
+                                        onClick={handleDownloadInvoice}
+                                        className="flex items-center gap-3 hover:bg-emerald-100 p-2 rounded-xl transition-colors min-w-0"
+                                        title="Download Invoice"
+                                    >
+                                        <FileText size={20} className="shrink-0"/>
+                                        <span className="text-xs font-black truncate max-w-[120px]">{invoiceFileName}</span>
+                                        <FileDown size={14} className="shrink-0"/>
+                                    </button>
+                                    <button onClick={() => { setInvoiceFileName(null); setInvoiceData(null); }} className="p-1.5 hover:bg-emerald-100 rounded-lg shrink-0"><X size={16}/></button>
                                 </div>
                             ) : (
                                 <div className="text-center py-4">
@@ -224,7 +239,7 @@ export const PricingRequests: React.FC<{ user: User }> = ({ user }) => {
                                 <input 
                                     type="number" value={supplierTargetPercent}
                                     onChange={(e) => setSupplierTargetPercent(parseFloat(e.target.value))}
-                                    className="w-full pl-8 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl font-black text-gray-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all"
+                                    className="w-full pl-8 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl font-black text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/5 transition-all"
                                 />
                             </div>
                         </div>
