@@ -371,3 +371,69 @@ export const extractInvoiceItems = async (base64Data: string, mimeType: string):
     return [];
   }
 };
+
+/**
+ * AI-powered extraction of produce varieties from catalog documents (PDF/Images)
+ * Upgraded for high-precision multi-page table parsing.
+ */
+export const extractProductsFromPdf = async (base64Data: string, mimeType: string): Promise<any[]> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: mimeType || 'application/pdf',
+              data: base64Data
+            }
+          },
+          {
+            text: `Carefully analyze this multi-page document which contains a master list of fresh produce. 
+            The document uses a table format with columns 'Crop' and 'Variety'.
+            
+            Extract ALL line items from every page.
+            
+            For each item, identify:
+            - 'name': The value from the 'Crop' column (e.g. "Apples", "Bananas").
+            - 'variety': The specific value from the 'Variety' column. If 'Variety' is identical to 'Crop', use "Standard".
+            - 'category': Categorize as either "Fruit" or "Vegetable".
+            
+            Return ONLY a JSON array of objects.`
+          }
+        ]
+      },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    name: { type: Type.STRING },
+                    variety: { type: Type.STRING },
+                    category: { type: Type.STRING, enum: ["Fruit", "Vegetable"] }
+                },
+                required: ["name", "variety", "category"]
+            }
+        }
+      }
+    });
+
+    const text = response.text;
+    if (text) {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error("JSON Parse Error in extraction:", e);
+            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+        }
+    }
+    return [];
+  } catch (error) {
+    console.error("Gemini Bulk Extraction Error:", error);
+    throw error;
+  }
+};

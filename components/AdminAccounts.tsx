@@ -287,6 +287,8 @@ export const AdminAccounts: React.FC = () => {
       setAllUsers(mockService.getAllUsers());
     };
     load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const filteredCustomers = useMemo(() => {

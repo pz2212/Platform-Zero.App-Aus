@@ -281,6 +281,12 @@ class MockDataService {
       const sellerId = buyerProfile?.connectedSupplierId || 'u2'; 
       const newOrder: Order = { id: `o-${Date.now()}`, buyerId, sellerId, items, totalAmount: total, status: 'Pending', date: new Date().toISOString(), paymentStatus: 'Unpaid', source: 'Direct' };
       this.orders.push(newOrder);
+
+      // Notify Seller and Admin
+      const supplierName = this.users.find(u => u.id === sellerId)?.businessName || 'Assigned Supplier';
+      this.addAppNotification(sellerId, 'NEW INCOMING ORDER', `Received order for ${items.length} items from ${buyerProfile?.businessName}. Total: $${total.toFixed(2)}`, 'ORDER');
+      this.addAppNotification('u1', 'NEW NETWORK ORDER', `${buyerProfile?.businessName} placed an order with ${supplierName}. Value: $${total.toFixed(2)}`, 'ORDER');
+
       return newOrder;
   }
 
@@ -516,10 +522,14 @@ class MockDataService {
   }
 
   createInstantOrder(buyerId: string, item: InventoryItem, qty: number, price: number) {
+      const sellerId = item.ownerId;
+      const buyer = this.customers.find(c => c.id === buyerId);
+      const seller = this.users.find(u => u.id === sellerId);
+
       const newOrder: Order = {
           id: `o-inst-${Date.now()}`,
           buyerId,
-          sellerId: item.ownerId,
+          sellerId,
           items: [{ productId: item.productId, quantityKg: qty, pricePerKg: price }],
           totalAmount: qty * price,
           status: 'Confirmed',
@@ -527,6 +537,11 @@ class MockDataService {
           paymentStatus: 'Unpaid'
       };
       this.orders.push(newOrder);
+
+      // Notify Seller and Admin
+      this.addAppNotification(sellerId, 'LOT PURCHASED', `${buyer?.businessName} has purchased your ${this.products.find(p => p.id === item.productId)?.name} lot.`, 'ORDER');
+      this.addAppNotification('u1', 'CROSS-MARKET TRADE', `${buyer?.businessName} purchased from ${seller?.businessName}. Value: $${(qty * price).toFixed(2)}`, 'ORDER');
+
       return newOrder;
   }
 
@@ -719,6 +734,18 @@ class MockDataService {
       o.logistics.driverName = driverName;
       if (o.status === 'Pending') o.status = 'Confirmed';
     }
+  }
+
+  submitProductRequest(userId: string, data: any) {
+    const user = this.users.find(u => u.id === userId);
+    this.addAppNotification('u1', 'NEW PRODUCT REQUEST', `${user?.businessName} requested ${data.productName} (${data.types.join(', ')}).`, 'SYSTEM');
+    console.log('Product request submitted:', data);
+  }
+
+  submitSupplierRequest(userId: string, data: any) {
+    const user = this.users.find(u => u.id === userId);
+    this.addAppNotification('u1', 'NEW SUPPLIER RECOMMENDATION', `${user?.businessName} recommended ${data.businessName} (${data.category}).`, 'SYSTEM');
+    console.log('Supplier request submitted:', data);
   }
 }
 

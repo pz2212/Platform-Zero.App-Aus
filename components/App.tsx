@@ -582,16 +582,17 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-7xl overflow-hidden animate-in zoom-in-95">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-6xl overflow-hidden animate-in zoom-in-95">
                 <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase leading-none">Portal Access</h2>
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all p-1"><X size={28} /></button>
                 </div>
-                <div className="p-8 space-y-10">
+                
+                <div className="p-8 md:p-10 space-y-12">
                     
                     {selectedDemo ? (
-                        /* PASSWORD PROTECTION VIEW (STAYS CENTERED/COMPACT FOR FOCUS) */
-                        <div className="max-w-md mx-auto space-y-6 animate-in slide-in-from-right-4">
+                        /* PASSWORD PROTECTION VIEW (COMPACT CENTERED) */
+                        <div className="max-w-md mx-auto space-y-8 animate-in slide-in-from-right-4">
                             <button 
                                 onClick={() => { setSelectedDemo(null); setDemoPassword(''); }}
                                 className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
@@ -599,26 +600,26 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <ArrowLeft size={14}/> Back to list
                             </button>
 
-                            <div className="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-gray-900 text-xl shadow-inner-sm border border-gray-200`}>
+                            <div className="flex items-center gap-5 p-8 bg-gray-50 rounded-[2rem] border border-gray-100">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-gray-900 text-2xl shadow-inner-sm border border-gray-200`}>
                                     {selectedDemo.label.charAt(0)}
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-gray-900 uppercase text-lg leading-none tracking-tighter">{selectedDemo.label}</h3>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">{selectedDemo.email}</p>
+                                    <h3 className="font-black text-gray-900 uppercase text-xl leading-none tracking-tighter">{selectedDemo.label}</h3>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">{selectedDemo.email}</p>
                                 </div>
                             </div>
 
-                            <form onSubmit={handleDemoSubmit} className="space-y-4">
-                                <div className="space-y-2">
+                            <form onSubmit={handleDemoSubmit} className="space-y-6">
+                                <div className="space-y-3">
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">AUTHORIZED PASSWORD</label>
                                     <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
+                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={24}/>
                                         <input 
                                             autoFocus
                                             type="password"
                                             placeholder="••••••••" 
-                                            className="w-full pl-12 pr-4 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100"
+                                            className="w-full pl-14 pr-4 py-6 bg-white border-2 border-gray-100 rounded-3xl font-black text-2xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100 shadow-inner-sm"
                                             value={demoPassword}
                                             onChange={e => setDemoPassword(e.target.value)}
                                         />
@@ -626,52 +627,54 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 </div>
                                 <button 
                                     type="submit"
-                                    className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
+                                    className="w-full py-6 bg-indigo-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.25em] shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-4"
                                 >
-                                    Verify & Access <ArrowRight size={18} />
+                                    Verify & Access <ArrowRight size={20} />
                                 </button>
                             </form>
                         </div>
                     ) : (
                         <>
-                            {/* OFFICIAL HQ LOGIN - LIVE STATUS */}
+                            {/* OFFICIAL HQ LOGIN SECTION */}
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Official Entry</p>
-                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-emerald-100">
+                                    <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.4em]">Official Entry</p>
+                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
                                         <Circle className="fill-emerald-500 w-1.5 h-1.5 animate-pulse" /> VERIFIED SYSTEM
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => onAutoLogin('admin@pz.com')} 
-                                    className="w-full flex items-center justify-between p-6 rounded-2xl border-4 border-slate-900 bg-slate-900 text-white shadow-2xl shadow-slate-200 hover:bg-black transition-all group active:scale-[0.98]"
+                                    className="w-full flex items-center justify-between p-10 rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
                                 >
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/10 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                                            <ShieldEllipsis size={28} />
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/5 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                            <ShieldEllipsis size={32} />
                                         </div>
                                         <div className="text-left">
-                                            <h3 className="text-lg font-black tracking-tight leading-none mb-1.5 uppercase">PLATFORM ZERO HQ</h3>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Market Operations Terminal</p>
+                                            <h3 className="text-2xl font-black tracking-tight leading-none mb-1.5 uppercase">PLATFORM ZERO HQ</h3>
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Market Operations Terminal</p>
                                         </div>
                                     </div>
-                                    <ArrowRight size={24} className="text-emerald-400 group-hover:translate-x-2 transition-transform" />
+                                    <div className="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                                        <ArrowRight size={28} className="group-hover:translate-x-1 transition-transform" />
+                                    </div>
                                 </button>
                             </div>
 
-                            {/* CODE LOGIN SECTION */}
-                            <div className="bg-[#F6F8FF] p-8 rounded-[2rem] border border-[#E0E7FF] shadow-inner-sm">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
+                            {/* FAST-TRACK LOGIN SECTION */}
+                            <div className="bg-[#F8FAFF] p-10 rounded-[3rem] border border-[#E0E7FF] shadow-inner-sm relative group">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#5C56D6] shadow-sm border border-[#E0E7FF]"><Key size={24} strokeWidth={2.5}/></div>
                                     <div>
                                         <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
                                     </div>
                                 </div>
-                                <form onSubmit={handleCodeSubmit} className="flex gap-2">
+                                <form onSubmit={handleCodeSubmit} className="flex gap-4">
                                     <input 
                                         placeholder="ABCDEF" 
-                                        className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-5 font-black tracking-widest uppercase text-2xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                        className="flex-1 bg-white border-2 border-[#E0E7FF] rounded-[1.75rem] px-8 py-6 font-black tracking-[0.5em] uppercase text-4xl text-center focus:ring-4 focus:ring-[#5C56D6]/5 focus:border-[#5C56D6] outline-none transition-all placeholder:text-gray-100 shadow-sm"
                                         maxLength={6}
                                         value={accessCode}
                                         onChange={e => setAccessCode(e.target.value)}
@@ -679,32 +682,37 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     <button 
                                         type="submit"
                                         disabled={isProcessing || !accessCode}
-                                        className="bg-[#94A3B8]/60 text-white px-8 py-5 rounded-xl shadow-lg hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50"
+                                        className="bg-[#C7D2FE] text-white px-10 py-6 rounded-[1.75rem] shadow-xl hover:bg-[#5C56D6] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
                                     >
-                                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={32} strokeWidth={3} />}
+                                        {isProcessing ? <Loader2 size={32} className="animate-spin" /> : <ArrowRight size={40} strokeWidth={3} />}
                                     </button>
                                 </form>
                             </div>
 
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
-                            </div>
+                            {/* DEMO PERSPECTIVES GRID */}
+                            <div className="space-y-6">
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                                    <div className="relative flex justify-center text-[11px] font-black uppercase tracking-[0.4em]"><span className="px-8 bg-white text-gray-300">Demo Perspectives</span></div>
+                                </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {demoLogins.map(demo => (
-                                    <button 
-                                        key={demo.label} 
-                                        onClick={() => setSelectedDemo(demo)} 
-                                        className={`flex items-center justify-between p-8 rounded-[2rem] border-2 transition-all group ${demo.color} text-left`}
-                                    >
-                                        <div className="text-left">
-                                            <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest block mb-1">{demo.label}</span>
-                                            <span className="text-[9px] text-gray-400 font-medium truncate block">{demo.email}</span>
-                                        </div>
-                                        <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
-                                    </button>
-                                ))}
+                                <div className="grid grid-cols-2 gap-6">
+                                    {demoLogins.map(demo => (
+                                        <button 
+                                            key={demo.label} 
+                                            onClick={() => setSelectedDemo(demo)} 
+                                            className={`flex items-center justify-between p-10 rounded-[2.5rem] border-2 transition-all group ${demo.color} text-left active:scale-[0.98] shadow-sm hover:shadow-xl`}
+                                        >
+                                            <div className="text-left">
+                                                <span className="text-[13px] font-black text-gray-900 uppercase tracking-widest block mb-1">{demo.label}</span>
+                                                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-tight block opacity-60 group-hover:opacity-100 transition-opacity">{demo.email}</span>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-white/50 border border-white group-hover:bg-white transition-all shadow-sm">
+                                                <ArrowRight size={20} className="text-gray-400 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}
