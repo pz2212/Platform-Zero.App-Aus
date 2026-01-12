@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Order, Product, Customer, InventoryItem, SupplierPriceRequest, UserRole, Driver, Packer, OrderItem } from '../types';
 import { mockService } from '../services/mockDataService';
@@ -51,7 +50,6 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
     const allInventory = mockService.getAllInventory();
     const allUsers = mockService.getAllUsers();
 
-    // Find partners who have this stock available
     const partnerLots = allInventory.filter(i => 
         i.productId === product.id && 
         i.ownerId !== user.id && 
@@ -78,42 +76,42 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
     };
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100">
-                <div className="p-8 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
-                    <div className="flex items-center gap-5">
-                        <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                            <Plus size={28}/>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-2 md:p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100 h-full max-h-[90vh]">
+                <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30 shrink-0">
+                    <div className="flex items-center gap-3 md:gap-5">
+                        <div className="w-10 h-10 md:w-14 md:h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+                            <Plus size={24} md:size={28}/>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Source {product.name}</h2>
-                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mt-1">Filling Stock Deficit • Requirement: {currentDemand}kg</p>
+                            <h2 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight truncate max-w-[180px] md:max-w-none">Source {product.name}</h2>
+                            <p className="text-[8px] md:text-[10px] text-indigo-600 font-black uppercase tracking-widest mt-1">Deficit: {currentDemand}kg</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={24}/></button>
+                    <button onClick={onClose} className="p-2 md:p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={20} md:size={24}/></button>
                 </div>
 
-                <div className="p-8 md:p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantity Needed (KG)</label>
+                <div className="p-6 md:p-10 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <div className="space-y-2 md:space-y-4">
+                            <label className="block text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantity Needed (KG)</label>
                             <div className="relative group">
-                                <Package size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors"/>
+                                <Package size={20} className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors"/>
                                 <input 
                                     type="number" 
-                                    className="w-full pl-16 pr-8 py-6 bg-gray-50 border-2 border-transparent focus:border-indigo-500 rounded-[2rem] font-black text-3xl text-gray-900 outline-none transition-all shadow-inner-sm"
+                                    className="w-full pl-12 md:pl-16 pr-4 py-4 md:py-6 bg-gray-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl md:rounded-[2rem] font-black text-2xl md:text-3xl text-gray-900 outline-none transition-all shadow-inner-sm"
                                     value={qty}
                                     onChange={e => setQty(e.target.value)}
                                 />
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Date Needed By</label>
+                        <div className="space-y-2 md:space-y-4">
+                            <label className="block text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Date Needed By</label>
                             <div className="relative group">
-                                <Calendar size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors"/>
+                                <Calendar size={20} className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors"/>
                                 <input 
                                     type="date" 
-                                    className="w-full pl-16 pr-8 py-6 bg-gray-50 border border-gray-100 rounded-[2rem] font-black text-xl text-gray-900 outline-none transition-all shadow-inner-sm appearance-none"
+                                    className="w-full pl-12 md:pl-16 pr-4 py-4 md:py-6 bg-gray-50 border border-gray-100 rounded-2xl md:rounded-[2rem] font-black text-base md:text-xl text-gray-900 outline-none transition-all shadow-inner-sm appearance-none"
                                     value={neededByDate}
                                     onChange={e => setNeededByDate(e.target.value)}
                                 />
@@ -121,45 +119,44 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="bg-gray-100/50 p-1.5 rounded-2xl flex border border-gray-200/50 shadow-inner-sm">
+                    <div className="space-y-4">
+                        <div className="bg-gray-100/50 p-1 rounded-xl flex border border-gray-200/50 shadow-inner-sm overflow-x-auto no-scrollbar whitespace-nowrap">
                             <button 
                                 onClick={() => setView('PARTNERS')}
-                                className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'PARTNERS' ? 'bg-white text-gray-900 shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2.5 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${view === 'PARTNERS' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
-                                Existing Partners ({partnersWithStock.length})
+                                Partners ({partnersWithStock.length})
                             </button>
                             <button 
                                 onClick={() => setView('DIRECTORY')}
-                                className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'DIRECTORY' ? 'bg-white text-gray-900 shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2.5 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${view === 'DIRECTORY' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
-                                Market Directory
+                                Directory
                             </button>
                         </div>
 
                         <div className="space-y-3">
                             {view === 'PARTNERS' ? (
                                 partnersWithStock.length === 0 ? (
-                                    <div className="py-12 text-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl">
+                                    <div className="py-12 text-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-[2rem]">
                                         <AlertTriangle size={32} className="mx-auto text-gray-300 mb-3"/>
-                                        <p className="text-sm font-black text-gray-400 uppercase tracking-tight">None of your current partners have this stock available.</p>
-                                        <button onClick={() => setView('DIRECTORY')} className="mt-4 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Check Market Directory instead</button>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-tight px-4 leading-relaxed">No existing partners have this stock available.</p>
                                     </div>
                                 ) : partnersWithStock.map(p => (
-                                    <div key={p.owner?.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-black">
+                                    <div key={p.owner?.id} className="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between shadow-sm hover:shadow-md transition-all gap-4">
+                                        <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-black shrink-0">
                                                 {p.owner?.businessName.charAt(0)}
                                             </div>
-                                            <div>
-                                                <p className="font-black text-gray-900 uppercase text-sm">{p.owner?.businessName}</p>
-                                                <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">{p.lot.quantityKg}kg Avail. @ ${p.lot.discountPricePerKg || product.defaultPricePerKg}/kg</p>
+                                            <div className="min-w-0">
+                                                <p className="font-black text-gray-900 uppercase text-xs md:text-sm truncate">{p.owner?.businessName}</p>
+                                                <p className="text-[9px] md:text-[10px] text-emerald-600 font-bold uppercase tracking-widest">{p.lot.quantityKg}kg Avail.</p>
                                             </div>
                                         </div>
                                         <button 
                                             onClick={() => handlePing(p.owner!.id)}
                                             disabled={!!isPinging}
-                                            className="px-8 py-3.5 bg-[#043003] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                                            className="w-full sm:w-auto px-6 py-3 bg-[#043003] text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                                         >
                                             {isPinging === p.owner?.id ? <Loader2 size={14} className="animate-spin"/> : <Zap size={14}/>}
                                             Ping Partner
@@ -169,23 +166,23 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                             ) : (
                                 <div className="space-y-3">
                                     {SA_PRODUCE_MARKET_SUPPLIERS.map(s => (
-                                        <div key={s.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 font-black">
+                                        <div key={s.id} className="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between shadow-sm hover:shadow-md transition-all gap-4">
+                                            <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
+                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 font-black shrink-0">
                                                     {s.name.charAt(0)}
                                                 </div>
-                                                <div>
-                                                    <p className="font-black text-gray-900 uppercase text-sm">{s.name}</p>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{s.type} • {s.specialty}</p>
+                                                <div className="min-w-0">
+                                                    <p className="font-black text-gray-900 uppercase text-xs md:text-sm truncate">{s.name}</p>
+                                                    <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{s.specialty}</p>
                                                 </div>
                                             </div>
                                             <button 
                                                 onClick={() => handlePing(s.id, true)}
                                                 disabled={!!isPinging}
-                                                className="px-8 py-3.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                                                className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                                             >
                                                 {isPinging === s.id ? <Loader2 size={14} className="animate-spin"/> : <Globe size={14}/>}
-                                                Connect & Source
+                                                Source
                                             </button>
                                         </div>
                                     ))}
@@ -195,9 +192,9 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-gray-100 bg-gray-50/50">
-                    <p className="text-[10px] text-center text-gray-400 font-black uppercase tracking-widest">
-                        Requests are marked as <span className="text-red-500">Urgent Priority</span> on the supplier's terminal.
+                <div className="p-6 border-t border-gray-100 bg-gray-50/50 shrink-0">
+                    <p className="text-[9px] text-center text-gray-400 font-black uppercase tracking-widest">
+                        Requests are marked <span className="text-red-500">Urgent</span>
                     </p>
                 </div>
             </div>
@@ -234,69 +231,69 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
     };
 
     return (
-        <div className="bg-white rounded-[2.5rem] border-2 border-indigo-100 shadow-xl p-8 mb-8 animate-in slide-in-from-top-4 duration-500 overflow-hidden relative group mx-2">
+        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border-2 border-indigo-100 shadow-xl p-6 md:p-8 mb-8 animate-in slide-in-from-top-4 duration-500 overflow-hidden relative group mx-2">
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform pointer-events-none">
                 <Sparkles size={140} className="text-indigo-900"/>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 border-4 border-white shrink-0">
-                        <Lock size={28} strokeWidth={2.5}/>
+            <div className="flex flex-col xl:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
+                <div className="flex items-center gap-4 md:gap-6 w-full xl:w-auto">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 border-4 border-white shrink-0">
+                        <Lock size={22} md:size={28} strokeWidth={2.5}/>
                     </div>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Morning Price Lock</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-200"></span>
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{currentIndex + 1} / {sellingProducts.length}</span>
+                            <span className="text-[8px] md:text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Morning Lock</span>
+                            <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-gray-200"></span>
+                            <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">{currentIndex + 1} / {sellingProducts.length}</span>
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight leading-none">Has the price changed?</h3>
+                        <h3 className="text-lg md:text-2xl font-black text-gray-900 uppercase tracking-tight leading-none">Update daily rates?</h3>
                     </div>
                 </div>
 
-                <div className="flex-1 flex items-center gap-8 bg-gray-50/80 p-5 rounded-3xl border border-gray-100 min-w-0 max-w-xl">
-                    <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-100 shrink-0 shadow-sm">
+                <div className="w-full xl:flex-1 flex items-center gap-4 md:gap-8 bg-gray-50/80 p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border border-gray-100">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] md:rounded-2xl overflow-hidden border border-gray-100 shrink-0 shadow-sm bg-white">
                         <img src={current.imageUrl} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="font-black text-gray-900 uppercase text-lg truncate leading-none mb-2">{current.name}</p>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                           <History size={12}/> Yesterday: <span className="text-indigo-600 font-black">${current.defaultPricePerKg.toFixed(2)}/kg</span>
+                        <p className="font-black text-gray-900 uppercase text-sm md:text-lg truncate leading-none mb-1.5 md:mb-2">{current.name}</p>
+                        <p className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                           <History size={10}/> Yesterday: <span className="text-indigo-600 font-black">${current.defaultPricePerKg.toFixed(2)}</span>
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
                     {isEditing ? (
-                        <div className="flex items-center gap-3 w-full animate-in slide-in-from-right-2">
-                            <div className="relative flex-1 md:w-40">
-                                <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"/>
+                        <div className="flex items-center gap-2 w-full animate-in slide-in-from-right-2">
+                            <div className="relative flex-1 sm:w-32 md:w-40">
+                                <DollarSign size={16} className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-300"/>
                                 <input 
                                     autoFocus
                                     type="number" 
                                     step="0.01"
-                                    className="w-full pl-10 pr-4 py-4 bg-white border-2 border-indigo-600 rounded-2xl font-black text-xl text-gray-900 outline-none shadow-inner-sm"
+                                    className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-3 md:py-4 bg-white border-2 border-indigo-600 rounded-xl md:rounded-2xl font-black text-lg md:text-xl text-gray-900 outline-none shadow-inner-sm"
                                     value={newPrice}
                                     onChange={e => setNewPrice(e.target.value)}
                                     placeholder="0.00"
                                 />
                             </div>
-                            <button onClick={handleUpdate} className="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">Lock Price</button>
-                            <button onClick={() => setIsEditing(false)} className="p-4 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-2xl"><X size={24}/></button>
+                            <button onClick={handleUpdate} className="px-6 md:px-10 py-3 md:py-4 bg-indigo-600 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl">Lock</button>
+                            <button onClick={() => setIsEditing(false)} className="p-3 md:p-4 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl md:rounded-2xl"><X size={20} md:size={24}/></button>
                         </div>
                     ) : (
                         <>
                             <button 
                                 onClick={handleNext}
-                                className="flex-1 md:flex-none px-14 py-5 bg-emerald-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-emerald-500 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-2"
                             >
-                                <CheckCircle size={18}/> No Change
+                                <CheckCircle size={16} md:size={18}/> No Change
                             </button>
                             <button 
                                 onClick={() => setIsEditing(true)}
-                                className="flex-1 md:flex-none px-14 py-5 bg-[#0F172A] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
+                                className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-[#0F172A] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-2"
                             >
-                                <Pencil size={18}/> Update Rate
+                                <Pencil size={16} md:size={18}/> Update
                             </button>
                         </>
                     )}
@@ -306,175 +303,7 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
     );
 };
 
-const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, customers, onAssigned }: any) => {
-    const [selectedPackerId, setSelectedPackerId] = useState('');
-    const [selectedDriverId, setSelectedDriverId] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
-    if (!isOpen || !order) return null;
-
-    const buyer = customers.find((c: any) => c.id === order.buyerId);
-    const packers = mockService.getPackers(order.sellerId);
-    const drivers = mockService.getDrivers(order.sellerId);
-
-    const handleAccept = async () => {
-        mockService.acceptOrderV2(order.id);
-        onAssigned(order.id);
-    };
-
-    const handleFinalize = async () => {
-        if (!selectedPackerId || !selectedDriverId) {
-            alert("Please select both a packer and a driver to finalize the assignment.");
-            return;
-        }
-
-        setIsSaving(true);
-        await new Promise(r => setTimeout(r, 1000));
-        
-        const packerName = packers.find(p => p.id === selectedPackerId)?.name || 'Team';
-        const driverName = drivers.find(d => d.id === selectedDriverId)?.name || 'Logistics';
-        
-        mockService.assignOrderToTeam(order.id, packerName, driverName);
-        onAssigned(order.id);
-        setIsSaving(false);
-        onClose();
-    };
-
-    return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-5xl overflow-hidden animate-in zoom-in-95 duration-200 border-2 border-indigo-100">
-                
-                {/* Header Section */}
-                <div className="p-8 md:p-10 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center bg-white gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner border border-indigo-100">
-                            {buyer?.businessName ? buyer.businessName.charAt(0) : 'T'}
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">{buyer?.businessName || 'THE MORNING CAFE'}</h2>
-                            <div className="flex items-center gap-4">
-                                <span className={`px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
-                                    {order.status.toUpperCase()}
-                                </span>
-                                <span className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                    <Clock size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-10">
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">TRADE TOTAL</p>
-                            <p className="text-5xl font-black text-gray-900 tracking-tighter">${order.totalAmount.toFixed(2)}</p>
-                        </div>
-                        {order.status === 'Pending' && (
-                            <button 
-                                onClick={handleAccept}
-                                className="px-10 py-5 bg-[#043003] hover:bg-black text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95"
-                            >
-                                ACCEPT ORDER
-                            </button>
-                        )}
-                        <button onClick={onClose} className="p-2 text-gray-300 hover:text-gray-900"><X size={32}/></button>
-                    </div>
-                </div>
-
-                <div className="p-10 grid grid-cols-1 lg:grid-cols-12 gap-12 bg-white max-h-[60vh] overflow-y-auto no-scrollbar">
-                    {/* LEFT: ORDER MANIFEST */}
-                    <div className="lg:col-span-5 space-y-6">
-                        <div className="flex items-center gap-2 text-indigo-600">
-                            <Package size={20}/>
-                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ORDER MANIFEST</h3>
-                        </div>
-                        <div className="border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm bg-gray-50/30">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50/50 border-b border-gray-100">
-                                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                        <th className="px-6 py-4">ITEM</th>
-                                        <th className="px-6 py-4 text-center">QTY</th>
-                                        <th className="px-6 py-4 text-right">PRICE</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {order.items.map((item: any, i: number) => {
-                                        const p = products.find((prod: any) => prod.id === item.productId);
-                                        return (
-                                            <tr key={i} className="hover:bg-gray-50/50">
-                                                <td className="px-6 py-5 font-black text-gray-900 text-xs uppercase">{p?.name}</td>
-                                                <td className="px-6 py-5 text-center font-bold text-gray-500 text-xs">{item.quantityKg}{p?.unit || 'kg'}</td>
-                                                <td className="px-6 py-5 text-right font-black text-gray-900 text-xs">${(item.quantityKg * item.pricePerKg).toFixed(2)}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* RIGHT: TEAM ASSIGNMENT */}
-                    <div className="lg:col-span-7 space-y-10">
-                        {/* Packer Assignment */}
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-2 text-orange-600">
-                                <Boxes size={18}/>
-                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ASSIGN PACKING</h3>
-                            </div>
-                            <div className="relative group">
-                                <select 
-                                    className="w-full pl-6 pr-12 py-5 bg-white border-4 border-[#FFEDD5] rounded-[1.75rem] font-black text-xs uppercase tracking-widest text-gray-900 outline-none shadow-sm appearance-none cursor-pointer focus:border-orange-200 transition-all"
-                                    value={selectedPackerId}
-                                    onChange={(e) => setSelectedPackerId(e.target.value)}
-                                >
-                                    <option value="">SELECT PACKER...</option>
-                                    {packers.map((m: any) => (
-                                        <option key={m.id} value={m.id}>{m.name.toUpperCase()}</option>
-                                    ))}
-                                </select>
-                                <ChevronDown size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-orange-400 pointer-events-none" strokeWidth={3}/>
-                            </div>
-                        </div>
-
-                        {/* Driver Assignment */}
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-2 text-blue-600">
-                                <Truck size={18}/>
-                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">ASSIGN DELIVERY</h3>
-                            </div>
-                            <div className="relative group">
-                                <select 
-                                    className="w-full pl-6 pr-12 py-5 bg-white border-4 border-[#C7DFFF] rounded-[1.75rem] font-black text-xs uppercase tracking-widest text-gray-900 outline-none shadow-sm appearance-none cursor-pointer focus:border-blue-300 transition-all"
-                                    value={selectedDriverId}
-                                    onChange={(e) => setSelectedDriverId(e.target.value)}
-                                >
-                                    <option value="">SELECT DRIVER...</option>
-                                    {drivers.map((m: any) => (
-                                        <option key={m.id} value={m.id}>{m.name.toUpperCase()} ({m.vehicleType})</option>
-                                    ))}
-                                </select>
-                                <ChevronDown size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" strokeWidth={3}/>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 pt-4">
-                            <button className="py-5 bg-white border border-gray-100 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest text-gray-900 flex items-center justify-center gap-2 hover:bg-gray-50 shadow-sm">
-                                <Printer size={18}/> PRINT SLIP
-                            </button>
-                            <button 
-                                onClick={handleFinalize}
-                                disabled={isSaving || !selectedPackerId || !selectedDriverId}
-                                className="py-5 bg-[#5c56d6] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-[#4a44b8] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isSaving ? <Loader2 className="animate-spin" size={18}/> : <><CheckCircle size={18}/> FINALIZE & DISPATCH</>}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
+// Simplified Demand Matrix Item for Mobile
 const DemandMatrixItem = ({ product, item, demand, onSource }: { product: Product, item?: InventoryItem, demand: number, onSource: () => void }) => {
     const onHand = item?.quantityKg || 0;
     const deficit = demand - onHand;
@@ -483,49 +312,140 @@ const DemandMatrixItem = ({ product, item, demand, onSource }: { product: Produc
     return (
         <div 
             onClick={onSource}
-            className="p-6 bg-white rounded-3xl border border-gray-100 space-y-4 hover:shadow-md transition-all cursor-pointer group"
+            className="p-4 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-gray-100 space-y-4 hover:shadow-md transition-all cursor-pointer group"
         >
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 shadow-sm shrink-0">
+                <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden border border-gray-100 shadow-sm shrink-0">
                         <img src={product.imageUrl} className="w-full h-full object-cover" />
                     </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 text-sm uppercase leading-none tracking-tight group-hover:text-indigo-600 transition-colors">{product.name}</h4>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{product.variety}</p>
+                    <div className="min-w-0">
+                        <h4 className="font-black text-gray-900 text-xs md:text-sm uppercase leading-none tracking-tight group-hover:text-indigo-600 transition-colors truncate">{product.name}</h4>
+                        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 truncate">{product.variety}</p>
                     </div>
                 </div>
                 <button 
                     onClick={(e) => { e.stopPropagation(); onSource(); }}
-                    className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors shadow-sm"
+                    className="p-1.5 md:p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0"
                 >
                     <Plus size={16} strokeWidth={3}/>
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
-                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">On Hand</p>
-                    <p className="text-sm font-black text-gray-900">{onHand}kg</p>
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="p-2.5 md:p-3 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5 md:mb-1">On Hand</p>
+                    <p className="text-xs md:text-sm font-black text-gray-900">{onHand}kg</p>
                 </div>
-                <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                    <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Demand</p>
-                    <p className="text-sm font-black text-indigo-900">{demand}kg</p>
+                <div className="p-2.5 md:p-3 bg-indigo-50/50 rounded-xl md:rounded-2xl border border-indigo-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-0.5 md:mb-1">Demand</p>
+                    <p className="text-xs md:text-sm font-black text-indigo-900">{demand}kg</p>
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden shadow-inner-sm">
+            <div className="space-y-1.5 md:space-y-2">
+                <div className="w-full bg-gray-100 h-1 md:h-1.5 rounded-full overflow-hidden shadow-inner-sm">
                     <div 
                         className={`h-full transition-all duration-1000 ${deficit > 0 ? 'bg-orange-500' : 'bg-emerald-500'}`} 
                         style={{ width: `${progress}%` }}
                     ></div>
                 </div>
                 {deficit > 0 && (
-                    <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest flex items-center gap-1.5">
-                        <AlertTriangle size={10}/> Stock Deficit Identified • Click to Source
+                    <p className="text-[8px] md:text-[9px] font-black text-orange-600 uppercase tracking-widest flex items-center gap-1">
+                        <AlertTriangle size={10}/> Stock Deficit
                     </p>
                 )}
+            </div>
+        </div>
+    );
+};
+
+/* Added OrderAssignmentModal to fix compilation error */
+const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, customers, onAssigned }: {
+    isOpen: boolean,
+    onClose: () => void,
+    order: Order | null,
+    products: Product[],
+    users: User[],
+    customers: Customer[],
+    onAssigned: () => void
+}) => {
+    const [selectedPacker, setSelectedPacker] = useState('');
+    const [selectedDriver, setSelectedDriver] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    if (!isOpen || !order) return null;
+
+    const wholesalersPackers = mockService.getPackers(order.sellerId);
+    const wholesalersDrivers = mockService.getDrivers(order.sellerId);
+
+    const handleAssign = async () => {
+        if (!selectedPacker || !selectedDriver) {
+            alert("Please select both a packer and a driver.");
+            return;
+        }
+        setIsSaving(true);
+        await new Promise(r => setTimeout(r, 800));
+        mockService.assignOrderToTeam(order.id, selectedPacker, selectedDriver);
+        setIsSaving(false);
+        onAssigned();
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+                    <div>
+                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Assign Operations Team</h2>
+                        <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Order #{order.id.split('-').pop()}</p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-300 hover:text-gray-900 p-2 bg-white rounded-full border border-gray-100 shadow-sm"><X size={24}/></button>
+                </div>
+
+                <div className="p-8 space-y-8">
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Select Packer</label>
+                        <select 
+                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/10 transition-all"
+                            value={selectedPacker}
+                            onChange={e => setSelectedPacker(e.target.value)}
+                        >
+                            <option value="">Choose Packer...</option>
+                            {wholesalersPackers.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Select Driver</label>
+                        <select 
+                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/10 transition-all"
+                            value={selectedDriver}
+                            onChange={e => setSelectedDriver(e.target.value)}
+                        >
+                            <option value="">Choose Driver...</option>
+                            {wholesalersDrivers.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex items-start gap-4">
+                        <Info size={20} className="text-indigo-600 shrink-0 mt-0.5"/>
+                        <p className="text-[11px] text-indigo-800 font-medium leading-relaxed">
+                            Assigning a team will notify both the packer and driver via their respective portal apps. The order status will update to <span className="font-black">Confirmed</span>.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex gap-4">
+                    <button onClick={onClose} className="flex-1 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all">Cancel</button>
+                    <button 
+                        onClick={handleAssign}
+                        disabled={isSaving || !selectedPacker || !selectedDriver}
+                        className="flex-[2] py-4 bg-[#043003] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                        {isSaving ? <Loader2 className="animate-spin" size={20}/> : <><CheckCircle size={20}/> Assign Team</>}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -543,22 +463,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [selectedOrderForAssignment, setSelectedOrderForAssignment] = useState<Order | null>(null);
   const [isInterestsModalOpen, setIsInterestsModalOpen] = useState(false);
   
-  // Sourcing Modal State
   const [sourcingProduct, setSourcingProduct] = useState<{product: Product, demand: number} | null>(null);
-
-  // Enabled Scanner State
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
 
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 5000);
-    
-    // Sign-in pop up trigger: If wholesaler has no interests, pop up the modal
     if ((user.role === UserRole.WHOLESALER || user.role === UserRole.FARMER) && 
         (!user.activeSellingInterests || user.activeSellingInterests.length === 0)) {
         setIsInterestsModalOpen(true);
     }
-    
     return () => clearInterval(interval);
   }, [user]);
 
@@ -586,143 +500,109 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const products = mockService.getAllProducts();
   const users = mockService.getAllUsers();
 
-  const handleVisualScanner = () => {
-      setIsScannerModalOpen(true);
-  };
-
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20 max-w-[1600px] mx-auto">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-20 max-w-[1600px] mx-auto px-2">
       
-      {/* HEADER SECTION - REVERTED TO SCREENSHOT */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-2">
+      {/* HEADER SECTION - Responsive Layout */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="space-y-2">
-          <h1 className="text-5xl font-black text-gray-900 tracking-tighter uppercase leading-none">Partner Operations</h1>
-          <div className="flex items-center gap-4">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Management Console</p>
-              <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{user.businessName} Adelaide</p>
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase leading-none">Partner Operations</h1>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+              <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Management Console</p>
+              <span className="w-1 h-1 rounded-full bg-gray-200"></span>
+              <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px] md:max-w-none">{user.businessName}</p>
               
-              <div className="ml-4 flex bg-gray-100 p-1 rounded-xl gap-1 border border-gray-200 shadow-inner-sm">
-                  <button onClick={() => setActiveView('OPS')} className={`px-5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'OPS' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Ops View</button>
-                  <button onClick={() => setActiveView('PROCUREMENT')} className={`px-5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'PROCUREMENT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Procurement Hub</button>
+              <div className="flex bg-gray-100 p-1 rounded-xl gap-1 border border-gray-200 shadow-inner-sm shrink-0">
+                  <button onClick={() => setActiveView('OPS')} className={`px-3 md:px-5 py-1.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'OPS' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Ops</button>
+                  <button onClick={() => setActiveView('PROCUREMENT')} className={`px-3 md:px-5 py-1.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all ${activeView === 'PROCUREMENT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Procurement</button>
               </div>
           </div>
         </div>
         <button 
-            onClick={handleVisualScanner}
-            className="px-10 py-5 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-3 group"
+            onClick={() => setIsScannerModalOpen(true)}
+            className="w-full lg:w-auto px-10 py-5 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3 group"
         >
             <ScannerIcon size={20} className="group-hover:rotate-12 transition-transform" /> Visual Scanner
         </button>
       </div>
 
-      {/* KPI ROW */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-2">
+      {/* KPI ROW - Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
               { label: 'ORDERS TODAY', value: incomingQueue.length + processingQueue.length, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
               { label: 'WHOLESALERS', value: '2', icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50' },
               { label: 'ON THE ROAD', value: activeFulfillment.length, icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
               { label: 'REVENUE', value: `$${processingQueue.reduce((s, o) => s + o.totalAmount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50' }
           ].map((card, i) => (
-              <div key={i} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-40 group hover:shadow-md transition-all">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">{card.label}</span>
+              <div key={i} className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-32 md:h-40 group hover:shadow-md transition-all">
+                  <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none truncate">{card.label}</span>
                   <div className="flex justify-between items-end">
-                      <h3 className="text-4xl font-black text-gray-900 tracking-tighter">{card.value}</h3>
-                      <div className={`p-3 rounded-2xl ${card.bg} ${card.color} border border-white shadow-inner-sm group-hover:scale-110 transition-transform`}>
-                          <card.icon size={20} />
+                      <h3 className="text-xl md:text-4xl font-black text-gray-900 tracking-tighter truncate pr-2">{card.value}</h3>
+                      <div className={`p-2 md:p-3 rounded-xl md:rounded-2xl ${card.bg} ${card.color} border border-white shadow-inner-sm shrink-0 group-hover:scale-110 transition-transform`}>
+                          <card.icon size={16} md:size={20} />
                       </div>
                   </div>
               </div>
           ))}
       </div>
 
-      {/* Market Alignment QuickView (Added) */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-2">
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 flex items-center justify-between group hover:shadow-md transition-all">
-            <div className="flex items-center gap-6">
-                <div className="w-16 h-16 bg-indigo-50 text-[#4A3AFF] rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm">
-                    <Sparkles size={32}/>
+      {/* Market Alignment Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+          <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between group hover:shadow-md transition-all gap-6">
+            <div className="flex items-center gap-4 md:gap-6 w-full">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-50 text-[#4A3AFF] rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm shrink-0">
+                    <Sparkles size={24} md:size={32}/>
                 </div>
-                <div>
-                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Market Focus</h3>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {(user.activeSellingInterests || []).slice(0, 5).map(i => (
-                            <span key={i} className="bg-indigo-50 text-[#4A3AFF] px-3 py-1 rounded-lg text-[9px] font-black uppercase border border-indigo-100">{i}</span>
+                <div className="min-w-0 flex-1">
+                    <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Market Focus</h3>
+                    <div className="flex flex-wrap gap-1.5 md:gap-2 mt-3 md:mt-4">
+                        {(user.activeSellingInterests || []).slice(0, 4).map(i => (
+                            <span key={i} className="bg-indigo-50 text-[#4A3AFF] px-2 md:px-3 py-0.5 md:py-1 rounded-lg text-[7px] md:text-[9px] font-black uppercase border border-indigo-100">{i}</span>
                         ))}
-                        {(!user.activeSellingInterests || user.activeSellingInterests.length === 0) && (
-                            <span className="text-gray-400 font-bold italic text-sm">No alignment set</span>
-                        )}
                     </div>
                 </div>
             </div>
             <button 
                 onClick={() => setIsInterestsModalOpen(true)}
-                className="px-8 py-4 bg-white border-2 border-[#4A3AFF] text-[#4A3AFF] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all shadow-sm active:scale-95"
+                className="w-full sm:w-auto px-6 py-3.5 bg-white border-2 border-[#4A3AFF] text-[#4A3AFF] rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
             >
-                Edit Alignment
+                Edit
             </button>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 flex items-center justify-between group hover:shadow-md transition-all">
-             <div className="flex items-center gap-6">
-                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[1.75rem] flex items-center justify-center border border-emerald-100 shadow-inner-sm">
-                    <Sprout size={32}/>
+          <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex items-center justify-between group hover:shadow-md transition-all gap-4">
+             <div className="flex items-center gap-4 md:gap-6">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-50 text-emerald-600 rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-emerald-100 shadow-inner-sm shrink-0">
+                    <Sprout size={24} md:size={32}/>
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Sustainability Score</h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Verified Carbon Offset: <span className="text-emerald-600 font-black">420kg</span></p>
+                    <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Impact</h3>
+                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Carbon Offset: <span className="text-emerald-600 font-black">420kg</span></p>
                 </div>
              </div>
-             <button onClick={() => navigate('/impact')} className="p-4 rounded-2xl bg-gray-50 text-gray-300 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all shadow-sm">
-                <ArrowRight size={24} strokeWidth={3}/>
+             <button onClick={() => navigate('/impact')} className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-gray-50 text-gray-300 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all shadow-sm">
+                <ArrowRight size={20} md:size={24} strokeWidth={3}/>
              </button>
           </div>
       </div>
 
-      {/* MORNING PRICE LOCK FEATURE (Restored) */}
       {showPriceLock && (
           <MorningPriceLock user={user} products={products} onComplete={() => setShowPriceLock(false)} />
       )}
 
-      {/* PRICE AUDIT ALERTS - MAINTAINED WORKFLOW */}
-      {pendingPriceRequests.map(req => (
-          <div key={req.id} className="bg-[#EEF2FF] border-2 border-indigo-200 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 mx-2 animate-in slide-in-from-top-4 duration-700">
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-100 border-4 border-white shrink-0">
-                    <Handshake size={32} />
-                </div>
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="bg-indigo-600 text-white px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Urgent Negotiation</span>
-                        <span className="text-indigo-400 font-bold text-xs uppercase tracking-widest">• 2 Hour SLA</span>
-                    </div>
-                    <h3 className="text-2xl font-black text-[#1E1B4B] uppercase tracking-tight leading-none">Price Audit for {req.customerContext}</h3>
-                    <p className="text-indigo-700/70 text-sm font-medium mt-2">Platform Zero Admin has assigned a competitive pricing audit. Respond to secure the account.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveAudit(req)}
-                className="w-full md:w-auto px-12 py-5 bg-indigo-600 hover:bg-[#1E1B4B] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 transition-all flex items-center justify-center gap-3 active:scale-95"
-              >
-                  Respond to Audit <ChevronRight size={18}/>
-              </button>
-          </div>
-      ))}
-
-      {/* MAIN TWO-COLUMN LAYOUT - MATCHED TO SCREENSHOT */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 px-2">
+      {/* MAIN TWO-COLUMN LAYOUT - Responsive Stack */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8">
           
-          {/* LEFT: DEMAND MATRIX (Enabled) */}
-          <div className="xl:col-span-4 space-y-6">
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
-                <div className="p-8 border-b border-gray-100 bg-gray-50/20 shrink-0">
+          {/* LEFT: DEMAND MATRIX */}
+          <div className="xl:col-span-4 h-fit">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/20 shrink-0">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg"><LayoutGrid size={20}/></div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Demand Matrix</h2>
+                        <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0"><LayoutGrid size={18} md:size={20}/></div>
+                        <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight">Demand Matrix</h2>
                     </div>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Inventory vs. Today's Fulfillment</p>
                 </div>
-                <div className="p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30">
+                <div className="p-4 md:p-6 space-y-4 bg-gray-50/30">
                     <DemandMatrixItem 
                         product={products.find(p => p.name.includes('Tomatoes')) || products[0]} 
                         item={inventory.find(i => i.productId === 'p1')}
@@ -735,91 +615,85 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         demand={50}
                         onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Lettuce')) || products[1], demand: 50 })}
                     />
-                    <DemandMatrixItem 
-                        product={products.find(p => p.name.includes('Eggplant')) || products[3]} 
-                        item={inventory.find(i => i.productId === 'p4')}
-                        demand={30}
-                        onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Eggplant')) || products[3], demand: 30 })}
-                    />
                 </div>
             </div>
           </div>
 
           {/* RIGHT: FULFILLMENT PIPELINE */}
           <div className="xl:col-span-8">
-            <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden min-h-[600px] flex flex-col h-full">
-                <div className="p-10 border-b border-gray-100 bg-white shrink-0">
-                    <div className="flex justify-between items-start mb-10">
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 bg-gray-50 rounded-[1.5rem] flex items-center justify-center text-gray-900 border border-gray-100 shadow-inner-sm shrink-0">
-                                <HistoryIcon size={28}/>
+            <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full min-h-[400px] md:min-h-[600px]">
+                <div className="p-6 md:p-10 border-b border-gray-100 bg-white shrink-0">
+                    <div className="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-10">
+                        <div className="flex items-center gap-4 md:gap-5">
+                            <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-[1.25rem] md:rounded-[1.5rem] flex items-center justify-center text-gray-900 border border-gray-100 shadow-inner-sm shrink-0">
+                                <HistoryIcon size={24} md:size={28}/>
                             </div>
                             <div>
-                                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Fulfillment Pipeline</h2>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Managing your direct sales trade flow</p>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Fulfillment Pipeline</h2>
+                                <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5 md:mt-2">Managing direct trade flow</p>
                             </div>
                         </div>
 
-                        <div className="bg-gray-100/50 p-1.5 rounded-2xl flex border border-gray-200/50 shadow-inner-sm">
+                        <div className="bg-gray-100/50 p-1 rounded-xl md:rounded-2xl flex border border-gray-200/50 shadow-inner-sm w-full lg:w-auto overflow-x-auto no-scrollbar">
                             {[
                                 { id: 'INCOMING', label: 'INCOMING', icon: Bell, count: incomingQueue.length },
                                 { id: 'PROCESSING', label: 'PROCESSING', icon: Package, count: processingQueue.length },
-                                { id: 'ACTIVE', label: 'ACTIVE RUNS', icon: Truck, count: activeFulfillment.length }
+                                { id: 'ACTIVE', label: 'ACTIVE', icon: Truck, count: activeFulfillment.length }
                             ].map(t => (
                                 <button 
                                     key={t.id}
                                     onClick={() => setOrderSubTab(t.id as any)}
-                                    className={`px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${orderSubTab === t.id ? 'bg-white text-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 md:gap-3 whitespace-nowrap ${orderSubTab === t.id ? 'bg-white text-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    <t.icon size={16}/> {t.label} {t.count > 0 && <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] ${orderSubTab === t.id ? 'bg-[#3B82F6] text-white' : 'bg-gray-200 text-gray-500'}`}>{t.count}</span>}
+                                    <t.icon size={14} md:size={16}/> {t.label}
                                 </button>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                <div className="p-10 flex-1 overflow-y-auto bg-gray-50/20 custom-scrollbar space-y-6">
+                <div className="p-4 md:p-10 flex-1 overflow-y-auto bg-gray-50/20 custom-scrollbar space-y-4 md:space-y-6">
                     {currentList.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center opacity-30 py-32 grayscale text-center">
-                            <Package size={64} className="text-gray-200 mb-6" />
-                            <p className="text-sm font-black uppercase tracking-widest">No active trades in this category</p>
+                        <div className="h-full flex flex-col items-center justify-center opacity-30 py-24 md:py-32 grayscale text-center px-6">
+                            <Package size={48} md:size={64} className="text-gray-200 mb-6" />
+                            <p className="text-[10px] md:text-sm font-black uppercase tracking-widest">No active trades in this category</p>
                         </div>
                     ) : currentList.map(order => {
                         const buyer = customers.find(c => c.id === order.buyerId);
                         return (
                             <div key={order.id} 
                                 onClick={() => setSelectedOrderForAssignment(order)}
-                                className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group animate-in slide-in-from-bottom-2 duration-300 cursor-pointer"
+                                className="bg-white p-5 md:p-8 rounded-[1.75rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group animate-in slide-in-from-bottom-2 duration-300 cursor-pointer"
                             >
-                                <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-                                    <div className="flex items-center gap-8 flex-1 w-full">
-                                        <div className="w-20 h-20 bg-blue-50 rounded-[1.75rem] flex items-center justify-center text-blue-600 font-black text-3xl shadow-inner-sm border border-blue-100/50 shrink-0 uppercase">
+                                <div className="flex flex-col lg:flex-row justify-between items-center gap-6 md:gap-8">
+                                    <div className="flex items-center gap-4 md:gap-8 flex-1 w-full min-w-0">
+                                        <div className="w-14 h-14 md:w-20 md:h-20 bg-blue-50 rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center text-blue-600 font-black text-xl md:text-3xl shadow-inner-sm border border-blue-100/50 shrink-0 uppercase">
                                             {buyer?.businessName ? buyer.businessName.charAt(0) : 'B'}
                                         </div>
-                                        <div className="min-w-0">
-                                            <h4 className="font-black text-gray-900 text-2xl uppercase tracking-tighter leading-none mb-3 truncate group-hover:text-blue-600 transition-colors">{buyer?.businessName || 'Market Buyer'}</h4>
-                                            <div className="flex flex-wrap items-center gap-6">
-                                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{order.status.toUpperCase()}</span>
-                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><Clock size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="font-black text-gray-900 text-lg md:text-2xl uppercase tracking-tighter leading-none mb-2 md:mb-3 truncate group-hover:text-blue-600 transition-colors">{buyer?.businessName || 'Market Buyer'}</h4>
+                                            <div className="flex flex-wrap items-center gap-3 md:gap-6">
+                                                <span className={`px-2 md:px-4 py-1 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border shadow-sm ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{order.status.toUpperCase()}</span>
+                                                <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2"><Clock size={12} md:size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-14 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-0 border-gray-50 pt-8 lg:pt-0">
-                                        <div className="text-left lg:text-right">
-                                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Trade Total</p>
-                                            <p className="text-4xl font-black text-gray-900 tracking-tighter">${order.totalAmount.toFixed(2)}</p>
+                                    <div className="flex items-center gap-6 md:gap-14 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-0 border-gray-50 pt-5 lg:pt-0">
+                                        <div className="text-left lg:text-right min-w-[80px]">
+                                            <p className="text-[8px] md:text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Total</p>
+                                            <p className="text-xl md:text-4xl font-black text-gray-900 tracking-tighter leading-none">${order.totalAmount.toFixed(2)}</p>
                                         </div>
                                         {order.status === 'Pending' ? (
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); handleAcceptOrder(order.id); }}
-                                                className="px-14 py-6 bg-[#043003] hover:bg-black text-white rounded-[1.75rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/10 transition-all active:scale-95"
+                                                className="px-6 md:px-14 py-3.5 md:py-6 bg-[#043003] hover:bg-black text-white rounded-xl md:rounded-[1.75rem] font-black text-[9px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.2em] shadow-xl shadow-emerald-900/10 transition-all active:scale-95 flex-1 md:flex-none"
                                             >
-                                                Accept Order
+                                                Accept
                                             </button>
                                         ) : (
-                                            <div className="p-5 rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 transition-all group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100">
-                                                <ChevronRight size={32} strokeWidth={3}/>
+                                            <div className="p-3 md:p-5 rounded-xl md:rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 transition-all group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100">
+                                                <ChevronRight size={24} md:size={32} strokeWidth={3}/>
                                             </div>
                                         )}
                                     </div>
@@ -839,7 +713,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         onSaved={loadData}
       />
 
-      {/* sourcing Modal */}
       <DemandSourcingModal 
         isOpen={!!sourcingProduct}
         onClose={() => setSourcingProduct(null)}
@@ -848,30 +721,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         user={user}
       />
 
-      {/* Visual Scanner Modal */}
       {isScannerModalOpen && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[3.5rem] w-full max-w-6xl h-[90vh] overflow-hidden relative shadow-2xl flex flex-col border border-gray-100">
-            <div className="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-4 uppercase">
-                <Camera size={36} className="text-indigo-600"/> 
-                Visual Market Capture
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-md p-2 md:p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] w-full max-w-6xl h-full max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col border border-gray-100">
+            <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
+              <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 md:gap-4 uppercase leading-none truncate">
+                <Camera size={28} md:size={36} className="text-indigo-600 shrink-0"/> 
+                Visual Scanner
               </h2>
               <button 
                 onClick={() => setIsScannerModalOpen(false)} 
-                className="text-gray-400 hover:text-gray-900 p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"
+                className="text-gray-400 hover:text-gray-900 p-2 md:p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"
               >
-                <X size={32}/>
+                <X size={24} md:size={32}/>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">
               <AiOpportunityMatcher user={user} />
             </div>
           </div>
         </div>
       )}
 
-      {/* WH-ONLY MODALS */}
       <WholesalerPriceRequestModal 
           isOpen={!!activeAudit} 
           onClose={() => setActiveAudit(null)} 
