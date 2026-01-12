@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { UserRole, User, AppNotification, RegistrationRequest } from '../types';
@@ -572,9 +573,6 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
         }
     };
 
-    // Pull Admin out of demo for "Live" status
-    const liveAdmin = { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-900 border-slate-900 hover:bg-black text-white' };
-
     const demoLogins = [
         { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
         { label: 'FARMER', email: 'bob@greenvalley.com', color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100' },
@@ -582,14 +580,16 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
         { label: 'BUYER (GROCERY)', email: 'gary@grocer.com', color: 'bg-orange-50 border-orange-100 hover:bg-orange-100' },
     ];
 
+    const adminDemo = { label: 'ADMIN HQ', email: 'admin@pz.com' };
+
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
-                    <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all"><X size={28} /></button>
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                    <h2 className="text-lg font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
+                    <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all p-1"><X size={24} /></button>
                 </div>
-                <div className="p-10 space-y-10">
+                <div className="p-6 space-y-8 overflow-y-auto no-scrollbar">
                     
                     {selectedDemo ? (
                         /* PASSWORD PROTECTION VIEW */
@@ -601,13 +601,13 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <ArrowLeft size={14}/> Back to list
                             </button>
 
-                            <div className="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-gray-900 text-xl shadow-inner-sm border border-gray-200`}>
+                            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-gray-900 text-sm shadow-inner-sm border border-gray-200`}>
                                     {selectedDemo.label.charAt(0)}
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-gray-900 uppercase text-lg leading-none tracking-tighter">{selectedDemo.label}</h3>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">{selectedDemo.email}</p>
+                                    <h3 className="font-black text-gray-900 uppercase text-xs leading-none tracking-tight">{selectedDemo.label}</h3>
+                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{selectedDemo.email}</p>
                                 </div>
                             </div>
 
@@ -615,12 +615,12 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">AUTHORIZED PASSWORD</label>
                                     <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={18}/>
                                         <input 
                                             autoFocus
                                             type="password"
                                             placeholder="••••••••" 
-                                            className="w-full pl-12 pr-4 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100"
+                                            className="w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl font-black text-lg text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100"
                                             value={demoPassword}
                                             onChange={e => setDemoPassword(e.target.value)}
                                         />
@@ -628,7 +628,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 </div>
                                 <button 
                                     type="submit"
-                                    className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
+                                    className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-3"
                                 >
                                     Verify & Access <ArrowRight size={18} />
                                 </button>
@@ -636,44 +636,44 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                         </div>
                     ) : (
                         <>
-                            {/* OFFICIAL HQ LOGIN - MOVED TO LIVE STATUS */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Official Entry</p>
-                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-emerald-100">
-                                        <Circle className="fill-emerald-500 w-1.5 h-1.5 animate-pulse" /> VERIFIED SYSTEM
+                            {/* OFFICIAL ENTRY SECTION */}
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center px-1">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Official Entry</p>
+                                    <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-1">
+                                        <Circle className="fill-emerald-500 w-1 h-1 animate-pulse" /> VERIFIED SYSTEM
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => setSelectedDemo(liveAdmin)} 
-                                    className="w-full flex items-center justify-between p-6 rounded-3xl border-4 border-slate-900 bg-slate-900 text-white shadow-2xl shadow-slate-200 hover:bg-black transition-all group active:scale-[0.98]"
+                                    onClick={() => setSelectedDemo(adminDemo)} 
+                                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0F172A] text-white transition-all group active:scale-[0.98] shadow-lg shadow-slate-900/10"
                                 >
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/10 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                                            <ShieldEllipsis size={28} />
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/10 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                            <ShieldEllipsis size={20} />
                                         </div>
                                         <div className="text-left">
-                                            <h3 className="text-lg font-black tracking-tight leading-none mb-1.5 uppercase">PLATFORM ZERO HQ</h3>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Market Operations Terminal</p>
+                                            <h3 className="text-sm font-black tracking-tight leading-none mb-1 uppercase">PLATFORM ZERO HQ</h3>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Operations Terminal</p>
                                         </div>
                                     </div>
-                                    <ArrowRight size={24} className="text-emerald-400 group-hover:translate-x-2 transition-transform" />
+                                    <ArrowRight size={18} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>
 
-                            {/* CODE LOGIN SECTION */}
-                            <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"><Key size={24}/></div>
+                            {/* FAST TRACK LOGIN BOX */}
+                            <div className="bg-[#EEF2FF] p-6 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-50 shrink-0"><Key size={18}/></div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
+                                        <h3 className="font-black text-gray-900 uppercase text-[11px] tracking-tight leading-none">Fast-Track Login</h3>
+                                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Enter your 6-digit access code</p>
                                     </div>
                                 </div>
                                 <form onSubmit={handleCodeSubmit} className="flex gap-2">
                                     <input 
                                         placeholder="ABCDEF" 
-                                        className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                        className="flex-1 bg-white border border-gray-100 rounded-xl px-4 py-3 font-black tracking-widest uppercase text-lg text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100 shadow-sm"
                                         maxLength={6}
                                         value={accessCode}
                                         onChange={e => setAccessCode(e.target.value)}
@@ -681,32 +681,34 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     <button 
                                         type="submit"
                                         disabled={isProcessing || !accessCode}
-                                        className="bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                                        className="bg-[#5c56d6] text-white px-4 py-3 rounded-xl shadow-lg hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
                                     >
-                                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={24} />}
+                                        {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} strokeWidth={3} />}
                                     </button>
                                 </form>
                             </div>
 
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
+                            {/* DIVIDER */}
+                            <div className="relative flex items-center justify-center">
+                                <div className="absolute w-full border-t border-gray-100"></div>
+                                <div className="relative px-4 bg-white text-[8px] font-black uppercase tracking-[0.4em] text-gray-300">DEMO PERSPECTIVES</div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            {/* VERTICAL LIST */}
+                            <div className="space-y-2">
                                 {demoLogins.map(demo => (
                                     <button 
                                         key={demo.label} 
                                         onClick={() => setSelectedDemo(demo)} 
-                                        className={`flex flex-col p-6 rounded-2xl border transition-all group ${demo.color} text-left h-full justify-between gap-4`}
+                                        className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all group ${demo.color} shadow-sm active:scale-[0.98] border-transparent`}
                                     >
-                                        <div className="text-left">
-                                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest block mb-1">{demo.label}</span>
-                                            <span className="text-[9px] text-gray-400 font-medium truncate block">{demo.email}</span>
+                                        <div className="flex items-center gap-3 text-left">
+                                            <div className="text-left">
+                                                <span className="text-[12px] font-black uppercase tracking-tight block leading-none mb-1 text-gray-900">{demo.label}</span>
+                                                <span className="text-[8px] font-bold uppercase tracking-widest block text-gray-400">{demo.email}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex justify-end">
-                                            <ArrowRight size={16} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
-                                        </div>
+                                        <ChevronRight size={16} className="text-gray-300 transition-transform group-hover:translate-x-1" strokeWidth={3}/>
                                     </button>
                                 ))}
                             </div>

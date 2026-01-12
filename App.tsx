@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { UserRole, User, AppNotification, RegistrationRequest } from './types';
-import { mockService } from './services/mockDataService';
+import { mockService, MockCartItem } from './services/mockDataService';
 import { Dashboard } from './components/Dashboard';
 import { FarmerDashboard } from './components/FarmerDashboard';
 import { ConsumerDashboard } from './components/ConsumerDashboard';
@@ -40,7 +39,7 @@ import {
   Sparkles, User as UserIcon, Building, ChevronRight,
   Sprout, Globe, Users2, Circle, LogIn, ArrowRight, Menu, Search, Calculator, BarChart3,
   Wallet, FileText, CreditCard, Activity, Briefcase, Store, TrendingDown, Gavel, Leaf, BarChart4,
-  Smartphone, Key, Shield, Loader2, Check, Landmark
+  Smartphone, Key, Shield, Loader2, Check, Landmark, ShieldEllipsis
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active, onClick, badge = 0, isSubItem = false }: any) => (
@@ -446,12 +445,13 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
             setDemoPassword('');
             setSelectedDemo(null);
         } else {
-            alert("Incorrect password for demo access.");
+            alert("Incorrect password for authorized access.");
         }
     };
 
+    const liveAdmin = { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-900 border-slate-900 hover:bg-black text-white' };
+
     const demoLogins = [
-        { label: 'ADMIN HQ', email: 'admin@pz.com', color: 'bg-slate-50 border-slate-100 hover:bg-slate-100' },
         { label: 'WHOLESALER', email: 'sarah@fresh.com', color: 'bg-blue-50 border-blue-100 hover:bg-blue-100' },
         { label: 'FARMER', email: 'bob@greenvalley.com', color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100' },
         { label: 'BUYER (CAFÉ)', email: 'alice@cafe.com', color: 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100' },
@@ -460,7 +460,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
+            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-lg overflow-hidden animate-in zoom-in-95">
                 <div className="p-8 border-b border-gray-100 flex justify-between items-center">
                     <h2 className="text-xl font-black text-gray-900 tracking-tight uppercase">Portal Access</h2>
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all"><X size={28} /></button>
@@ -489,7 +489,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
 
                             <form onSubmit={handleDemoSubmit} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">DEMO ACCESS PASSWORD</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">AUTHORIZED PASSWORD</label>
                                     <div className="relative group">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
                                         <input 
@@ -512,6 +512,31 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                         </div>
                     ) : (
                         <>
+                            {/* OFFICIAL HQ LOGIN - LIVE STATUS */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Official Entry</p>
+                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-emerald-100">
+                                        <Circle className="fill-emerald-500 w-1.5 h-1.5 animate-pulse" /> VERIFIED SYSTEM
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedDemo(liveAdmin)} 
+                                    className="w-full flex items-center justify-between p-6 rounded-3xl border-4 border-slate-900 bg-slate-900 text-white shadow-2xl shadow-slate-200 hover:bg-black transition-all group active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/10 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                            <ShieldEllipsis size={28} />
+                                        </div>
+                                        <div className="text-left">
+                                            <h3 className="text-lg font-black tracking-tight leading-none mb-1.5 uppercase">PLATFORM ZERO HQ</h3>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Market Operations Terminal</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight size={24} className="text-emerald-400 group-hover:translate-x-2 transition-transform" />
+                                </button>
+                            </div>
+
                             {/* CODE LOGIN SECTION */}
                             <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 shadow-inner-sm">
                                 <div className="flex items-center gap-4 mb-6">
@@ -524,7 +549,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <form onSubmit={handleCodeSubmit} className="flex gap-2">
                                     <input 
                                         placeholder="ABCDEF" 
-                                        className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
+                                        className="flex-1 bg-white border border-gray-200 rounded-xl px-6 py-4 font-black tracking-widest uppercase text-xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-200"
                                         maxLength={6}
                                         value={accessCode}
                                         onChange={e => setAccessCode(e.target.value)}
@@ -544,18 +569,20 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="px-6 bg-white text-gray-300">DEMO PERSPECTIVES</span></div>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-2 gap-3">
                                 {demoLogins.map(demo => (
                                     <button 
                                         key={demo.label} 
                                         onClick={() => setSelectedDemo(demo)} 
-                                        className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${demo.color}`}
+                                        className={`flex flex-col p-6 rounded-2xl border transition-all group ${demo.color} text-left h-full justify-between gap-4`}
                                     >
                                         <div className="text-left">
-                                            <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{demo.label}</span>
-                                            <span className="block text-xs text-gray-400 font-medium">{demo.email}</span>
+                                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest block mb-1">{demo.label}</span>
+                                            <span className="text-[9px] text-gray-400 font-medium truncate block">{demo.email}</span>
                                         </div>
-                                        <ArrowRight size={20} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
+                                        <div className="flex justify-end">
+                                            <ArrowRight size={16} className="text-gray-300 group-hover:text-gray-900 transition-all group-hover:translate-x-1"/>
+                                        </div>
                                     </button>
                                 ))}
                             </div>

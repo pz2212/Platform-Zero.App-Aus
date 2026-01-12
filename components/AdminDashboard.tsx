@@ -401,8 +401,8 @@ export const AdminDashboard: React.FC = () => {
             const start = customer.commissionStartOrder || 1;
             const total = customer.commissionTotalOrders || 20;
             if (m.orders >= start && m.orders < (start + total)) {
-                const rate = customer.repCommissionRate || 5;
-                m.commissionEarned += o.totalAmount * (rate / 100);
+                const rate = customer.repCommissionRate;
+                m.commissionEarned += o.totalAmount * ((rate !== undefined ? rate : 5) / 100);
             }
         }
     });
@@ -552,8 +552,9 @@ export const AdminDashboard: React.FC = () => {
                                     <input 
                                         type="number"
                                         step="any"
-                                        className="w-14 bg-gray-50 border border-gray-100 rounded px-1 py-1 text-[11px] font-black text-center outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-inner-sm"
-                                        value={customer.repCommissionRate !== undefined ? customer.repCommissionRate : 5}
+                                        className="w-16 bg-gray-50 border border-gray-100 rounded px-1 py-1 text-[11px] font-black text-center outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-inner-sm"
+                                        value={customer.repCommissionRate !== undefined ? customer.repCommissionRate : ''}
+                                        placeholder="5"
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             handleUpdateCommission(customer.id, val === '' ? 0 : parseFloat(val));
