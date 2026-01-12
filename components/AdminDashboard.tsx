@@ -155,7 +155,7 @@ const MarkupEditorModal = ({ isOpen, onClose, customer, onUpdate }: { isOpen: bo
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-sm overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
                         <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Configure Markup</h2>
@@ -416,7 +416,7 @@ export const AdminDashboard: React.FC = () => {
 
   const kpis = [
     { id: 'ORDERS', label: 'Orders Today', value: stats.ordersToday, icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { id: 'WHOLESALERS', label: 'Partners', value: stats.wholesalers, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { id: 'WHOLESALER', label: 'Partners', value: stats.wholesalers, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { id: 'REVENUE', label: 'GMV', value: `$${stats.gmv.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { id: 'IMPACT', label: 'Waste Saved', value: `${stats.wasteDiverted.toLocaleString()}kg`, icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-50' }
   ];
@@ -551,9 +551,13 @@ export const AdminDashboard: React.FC = () => {
                                 <td className="px-6 py-4 text-center">
                                     <input 
                                         type="number"
-                                        className="w-12 bg-gray-50 border border-gray-100 rounded px-1 py-0.5 text-[11px] font-black text-center outline-none focus:border-indigo-400"
-                                        value={customer.repCommissionRate || 5}
-                                        onChange={(e) => handleUpdateCommission(customer.id, parseFloat(e.target.value))}
+                                        step="any"
+                                        className="w-14 bg-gray-50 border border-gray-100 rounded px-1 py-1 text-[11px] font-black text-center outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-inner-sm"
+                                        value={customer.repCommissionRate !== undefined ? customer.repCommissionRate : 5}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            handleUpdateCommission(customer.id, val === '' ? 0 : parseFloat(val));
+                                        }}
                                     />
                                 </td>
                                 <td className="px-6 py-4">
