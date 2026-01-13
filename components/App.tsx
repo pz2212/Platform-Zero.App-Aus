@@ -310,6 +310,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }:
             <SidebarLink to="/pricing" icon={Tags} label="Inventory & Price" active={isActive('/pricing')} />
             <SidebarLink to="/accounts" icon={DollarSign} label="Financials" active={isActive('/accounts')} />
             <SidebarLink to="/market" icon={Globe} label="Supplier Market" active={isActive('/market')} />
+            <SidebarLink to="/market" icon={Globe} label="Supplier Market" active={isActive('/market')} />
         </div>
       ) : null}
     </>

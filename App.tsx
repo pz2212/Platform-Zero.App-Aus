@@ -636,7 +636,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => onAutoLogin('admin@pz.com')} 
+                                    onClick={() => setSelectedDemo({ label: 'PLATFORM ZERO HQ', email: 'admin@pz.com' })} 
                                     className="w-full flex items-center justify-between p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
                                 >
                                     <div className="flex items-center gap-4 md:gap-6 min-w-0">
@@ -664,7 +664,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 </div>
                                 <form onSubmit={handleCodeSubmit} className="flex flex-col sm:flex-row gap-4">
                                     <input 
-                                        placeholder="ABCDEF" 
+                                        placeholder="A B C D E F" 
                                         className="flex-1 bg-white border-2 border-[#E0E7FF] rounded-2xl px-4 py-4 font-black tracking-[0.5em] uppercase text-2xl md:text-4xl text-center focus:ring-4 focus:ring-[#5C56D6]/5 focus:border-[#5C56D6] outline-none transition-all placeholder:text-gray-100 shadow-sm"
                                         maxLength={6}
                                         value={accessCode}
