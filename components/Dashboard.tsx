@@ -81,14 +81,16 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                 <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30 shrink-0">
                     <div className="flex items-center gap-3 md:gap-5">
                         <div className="w-10 h-10 md:w-14 md:h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
-                            <Plus size={24} md:size={28}/>
+                            {/* Fixed: removed md:size */}
+                            <Plus size={24} />
                         </div>
                         <div>
                             <h2 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight truncate max-w-[180px] md:max-w-none">Source {product.name}</h2>
                             <p className="text-[8px] md:text-[10px] text-indigo-600 font-black uppercase tracking-widest mt-1">Deficit: {currentDemand}kg</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 md:p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={20} md:size={24}/></button>
+                    {/* Fixed: removed md:size */}
+                    <button onClick={onClose} className="p-2 md:p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={20} /></button>
                 </div>
 
                 <div className="p-6 md:p-10 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
@@ -238,8 +240,9 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
             
             <div className="flex flex-col xl:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
                 <div className="flex items-center gap-4 md:gap-6 w-full xl:w-auto">
+                    {/* Fixed: removed md:size */}
                     <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 border-4 border-white shrink-0">
-                        <Lock size={22} md:size={28} strokeWidth={2.5}/>
+                        <Lock size={22} strokeWidth={2.5}/>
                     </div>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -279,21 +282,24 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
                                 />
                             </div>
                             <button onClick={handleUpdate} className="px-6 md:px-10 py-3 md:py-4 bg-indigo-600 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl">Lock</button>
-                            <button onClick={() => setIsEditing(false)} className="p-3 md:p-4 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl md:rounded-2xl"><X size={20} md:size={24}/></button>
+                            {/* Fixed: removed md:size */}
+                            <button onClick={() => setIsEditing(false)} className="p-3 md:p-4 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl md:rounded-2xl"><X size={20}/></button>
                         </div>
                     ) : (
                         <>
+                            {/* Fixed: removed md:size */}
                             <button 
                                 onClick={handleNext}
                                 className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-emerald-500 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-2"
                             >
-                                <CheckCircle size={16} md:size={18}/> No Change
+                                <CheckCircle size={16}/> No Change
                             </button>
+                            {/* Fixed: removed md:size */}
                             <button 
                                 onClick={() => setIsEditing(true)}
                                 className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-[#0F172A] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-2"
                             >
-                                <Pencil size={16} md:size={18}/> Update
+                                <Pencil size={16}/> Update
                             </button>
                         </>
                     )}
@@ -539,7 +545,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   <div className="flex justify-between items-end">
                       <h3 className="text-xl md:text-4xl font-black text-gray-900 tracking-tighter truncate pr-2">{card.value}</h3>
                       <div className={`p-2 md:p-3 rounded-xl md:rounded-2xl ${card.bg} ${card.color} border border-white shadow-inner-sm shrink-0 group-hover:scale-110 transition-transform`}>
-                          <card.icon size={16} md:size={20} />
+                          {/* Fixed: removed md:size */}
+                          <card.icon size={16} />
                       </div>
                   </div>
               </div>
@@ -551,7 +558,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between group hover:shadow-md transition-all gap-6">
             <div className="flex items-center gap-4 md:gap-6 w-full">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-50 text-[#4A3AFF] rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm shrink-0">
-                    <Sparkles size={24} md:size={32}/>
+                    {/* Fixed: removed md:size */}
+                    <Sparkles size={24}/>
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Market Focus</h3>
@@ -573,7 +581,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex items-center justify-between group hover:shadow-md transition-all gap-4">
              <div className="flex items-center gap-4 md:gap-6">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-50 text-emerald-600 rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-emerald-100 shadow-inner-sm shrink-0">
-                    <Sprout size={24} md:size={32}/>
+                    {/* Fixed: removed md:size */}
+                    <Sprout size={24}/>
                 </div>
                 <div>
                     <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Impact</h3>
@@ -581,7 +590,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 </div>
              </div>
              <button onClick={() => navigate('/impact')} className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-gray-50 text-gray-300 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all shadow-sm">
-                <ArrowRight size={20} md:size={24} strokeWidth={3}/>
+                {/* Fixed: removed md:size */}
+                <ArrowRight size={20} strokeWidth={3}/>
              </button>
           </div>
       </div>
@@ -598,7 +608,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                 <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/20 shrink-0">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0"><LayoutGrid size={18} md:size={20}/></div>
+                        {/* Fixed: removed md:size */}
+                        <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0"><LayoutGrid size={18}/></div>
                         <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight">Demand Matrix</h2>
                     </div>
                 </div>
@@ -626,7 +637,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-10">
                         <div className="flex items-center gap-4 md:gap-5">
                             <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-[1.25rem] md:rounded-[1.5rem] flex items-center justify-center text-gray-900 border border-gray-100 shadow-inner-sm shrink-0">
-                                <HistoryIcon size={24} md:size={28}/>
+                                {/* Fixed: removed md:size */}
+                                <HistoryIcon size={24}/>
                             </div>
                             <div>
                                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Fulfillment Pipeline</h2>
@@ -645,7 +657,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                     onClick={() => setOrderSubTab(t.id as any)}
                                     className={`flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 md:gap-3 whitespace-nowrap ${orderSubTab === t.id ? 'bg-white text-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    <t.icon size={14} md:size={16}/> {t.label}
+                                    {/* Fixed: removed md:size */}
+                                    <t.icon size={14}/> {t.label}
                                 </button>
                             ))}
                         </div>
@@ -655,7 +668,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <div className="p-4 md:p-10 flex-1 overflow-y-auto bg-gray-50/20 custom-scrollbar space-y-4 md:space-y-6">
                     {currentList.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center opacity-30 py-24 md:py-32 grayscale text-center px-6">
-                            <Package size={48} md:size={64} className="text-gray-200 mb-6" />
+                            {/* Fixed: removed md:size */}
+                            <Package size={48} className="text-gray-200 mb-6" />
                             <p className="text-[10px] md:text-sm font-black uppercase tracking-widest">No active trades in this category</p>
                         </div>
                     ) : currentList.map(order => {
@@ -674,7 +688,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                             <h4 className="font-black text-gray-900 text-lg md:text-2xl uppercase tracking-tighter leading-none mb-2 md:mb-3 truncate group-hover:text-blue-600 transition-colors">{buyer?.businessName || 'Market Buyer'}</h4>
                                             <div className="flex flex-wrap items-center gap-3 md:gap-6">
                                                 <span className={`px-2 md:px-4 py-1 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border shadow-sm ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{order.status.toUpperCase()}</span>
-                                                <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2"><Clock size={12} md:size={14}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                                {/* Fixed: removed md:size */}
+                                                <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2"><Clock size={12}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -693,7 +708,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                             </button>
                                         ) : (
                                             <div className="p-3 md:p-5 rounded-xl md:rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 transition-all group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100">
-                                                <ChevronRight size={24} md:size={32} strokeWidth={3}/>
+                                                {/* Fixed: removed md:size */}
+                                                <ChevronRight size={24} strokeWidth={3}/>
                                             </div>
                                         )}
                                     </div>
@@ -726,14 +742,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] w-full max-w-6xl h-full max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col border border-gray-100">
             <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
               <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 md:gap-4 uppercase leading-none truncate">
-                <Camera size={28} md:size={36} className="text-indigo-600 shrink-0"/> 
+                {/* Fixed: removed md:size */}
+                <Camera size={28} className="text-indigo-600 shrink-0"/> 
                 Visual Scanner
               </h2>
               <button 
                 onClick={() => setIsScannerModalOpen(false)} 
                 className="text-gray-400 hover:text-gray-900 p-2 md:p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"
               >
-                <X size={24} md:size={32}/>
+                {/* Fixed: removed md:size */}
+                <X size={24}/>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">

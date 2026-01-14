@@ -25,7 +25,7 @@ const SA_PRODUCE_MARKET_SUPPLIERS = [
     { name: 'AMJ Produce', mobile: '0422 777 444', email: 'sales@amjproduce.com.au', location: 'Burma Drive, Pooraka', specialty: 'Fruit & Veg', type: 'Warehouse' },
     { name: 'B&C Fresh', mobile: '0433 666 555', email: 'admin@bcfresh.com.au', location: 'Store 12-14', specialty: 'Exotics', type: 'Wholesaler' },
     { name: 'Bache Bros', mobile: '0444 555 666', email: 'bachebros@internode.on.net', location: 'Store 60', specialty: 'Potatoes & Onions', type: 'Wholesaler' },
-    { name: 'Ceravolo Orchards', mobile: '0455 444 777', email: 'info@ceravolo.com.au', location: 'Store 32', specialty: 'Apples & Pears', type: 'Warehouse' },
+    { name: 'Ceravolo Orchards', mobile: '0455 444 777', email: 'info@ceravolo.com.au', location: 'Store 32', specialty: 'Apples & Pears', type: 'Wholesaler' },
     { name: 'Costa Group (SA)', mobile: '0466 333 888', email: 'sa.sales@costagroup.com.au', location: 'Store 101', specialty: 'Global Produce', type: 'Warehouse' },
     { name: 'Favco SA', mobile: '0477 222 999', email: 'sales@favcosa.com.au', location: 'Store 41-43', specialty: 'Premium Stonefruit', type: 'Wholesaler' },
     { name: 'GD Produce', mobile: '0488 111 000', email: 'sales@gdproduce.com.au', location: 'Store 12', specialty: 'Leafy Greens', type: 'Wholesaler' },
@@ -87,7 +87,7 @@ const SendProductOfferModal = ({ isOpen, onClose, targetPartner, products }: {
         <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
             <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
                 <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <div><h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Direct Photo Offer</h2><p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Target: {targetPartner.name || targetPartner.businessName}</p></div>
+                    <div><h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Direct Photo Offer</h2><p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">To: {targetPartner.name || targetPartner.businessName}</p></div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X size={24}/></button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -444,7 +444,3 @@ export const Contacts: React.FC<ContactsProps> = ({ user }) => {
     </div>
   );
 };
-
-const ArrowLeft = ({ size = 24, ...props }: any) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-);

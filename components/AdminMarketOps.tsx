@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { mockService } from '../services/mockDataService';
 import { Order, OrderIssue, Customer, User, UserRole, Product } from '../types';
@@ -218,7 +217,7 @@ const LiveOrderDetailsModal = ({ isOpen, onClose, order, products, users, custom
                         </div>
                         <div className="divide-y divide-gray-50 border border-gray-100 rounded-[2.5rem] overflow-hidden bg-white shadow-inner-sm">
                             {order.items.map((item, idx) => {
-                                const p = products.find(prod => prod.id === item.productId);
+                                const p = allProducts.find(prod => prod.id === item.productId);
                                 return (
                                     <div key={idx} className="p-6 flex items-center justify-between hover:bg-gray-50/50 transition-all">
                                         <div className="flex items-center gap-5">
@@ -398,7 +397,3 @@ export const AdminMarketOps: React.FC = () => {
     </div>
   );
 };
-
-const Activity = ({ size = 24, ...props }: any) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-);

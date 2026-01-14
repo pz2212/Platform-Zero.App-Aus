@@ -38,13 +38,15 @@ const ProductCard: React.FC<{
                         onClick={() => onToggleFavorite(product.id)}
                         className={`p-2 md:p-2.5 rounded-xl border transition-all active:scale-90 ${isFavorite ? 'bg-red-50 border-red-100 text-red-500' : 'bg-gray-50 border-gray-100 text-gray-300 hover:text-red-400'}`}
                     >
-                        <Heart size={16} md:size={18} fill={isFavorite ? "currentColor" : "none"} />
+                        {/* Fixed: removed md:size */}
+                        <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
                     </button>
                     <button 
                         onClick={() => onToggleCatalog(product.id)}
                         className={`p-2 md:p-2.5 rounded-xl border transition-all active:scale-90 ${isCatalog ? 'bg-emerald-50 border-emerald-200 text-emerald-500' : 'bg-gray-50 border-gray-100 text-gray-300 hover:text-emerald-500'}`}
                     >
-                        <Check size={16} md:size={18} strokeWidth={4} />
+                        {/* Fixed: removed md:size */}
+                        <Check size={16} strokeWidth={4} />
                     </button>
                 </div>
             </div>
@@ -52,13 +54,16 @@ const ProductCard: React.FC<{
             {/* Impact Metrics - Matching Dashboard Style */}
             <div className="space-y-2 mb-8">
                 <div className="flex items-center gap-2 text-emerald-500 font-black text-[9px] md:text-[10px] uppercase tracking-widest">
-                    <Wind size={14} md:size={16} /> Saves {product.co2SavingsPerKg || 0.8}kg CO2/kg
+                    {/* Fixed: removed md:size */}
+                    <Wind size={14} /> Saves {product.co2SavingsPerKg || 0.8}kg CO2/kg
                 </div>
                 <div className="flex items-center gap-2 text-blue-500 font-black text-[9px] md:text-[10px] uppercase tracking-widest">
-                    <Droplets size={14} md:size={16} /> Saves {product.waterSavingsPerKg || 50}L Water/kg
+                    {/* Fixed: removed md:size */}
+                    <Droplets size={14} /> Saves {product.waterSavingsPerKg || 50}L Water/kg
                 </div>
                 <div className="flex items-center gap-2 text-indigo-500 font-black text-[9px] md:text-[10px] uppercase tracking-widest">
-                    <Recycle size={14} md:size={16} /> {product.wasteDivertedPerKg || 1.0}kg Diverted/kg
+                    {/* Fixed: removed md:size */}
+                    <Recycle size={14} /> {product.wasteDivertedPerKg || 1.0}kg Diverted/kg
                 </div>
             </div>
 
@@ -79,9 +84,11 @@ const ProductCard: React.FC<{
                 </div>
 
                 <div className="flex items-center bg-[#F8FAFC] border border-gray-100 rounded-xl p-1 shadow-inner-sm">
-                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-3 text-gray-400 hover:text-red-500 transition-colors"><Minus size={16} md:size={18} strokeWidth={3}/></button>
+                    {/* Fixed: removed md:size */}
+                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-3 text-gray-400 hover:text-red-500 transition-colors"><Minus size={16} strokeWidth={3}/></button>
                     <span className="flex-1 text-center font-black text-base md:text-lg text-gray-900">{qty}</span>
-                    <button onClick={() => setQty(qty + 1)} className="p-3 text-gray-400 hover:text-emerald-500 transition-colors"><Plus size={16} md:size={18} strokeWidth={3}/></button>
+                    {/* Fixed: removed md:size */}
+                    <button onClick={() => setQty(qty + 1)} className="p-3 text-gray-400 hover:text-emerald-500 transition-colors"><Plus size={16} strokeWidth={3}/></button>
                 </div>
 
                 <button 
@@ -194,7 +201,8 @@ const BulkUploadModal = ({ isOpen, onClose, onComplete }: {
                         <p className="text-[9px] md:text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em] mt-2">Gemini 3 Pro Processor</p>
                     </div>
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-900 p-2 bg-gray-50 rounded-full transition-all">
-                        <X size={20} md:size={24} strokeWidth={2.5} />
+                        {/* Fixed: removed md:size */}
+                        <X size={20} strokeWidth={2.5} />
                     </button>
                 </div>
 
@@ -208,7 +216,8 @@ const BulkUploadModal = ({ isOpen, onClose, onComplete }: {
                             className={`h-64 md:h-72 border-[3px] border-dashed rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer transition-all bg-white shadow-inner-sm text-center p-6 ${isDragging ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-100 hover:border-indigo-300 hover:bg-gray-50/30'}`}
                         >
                             <div className="bg-indigo-50 w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-6 text-indigo-600 shadow-sm transition-transform group-hover:scale-110">
-                                <FileUp size={32} md:size={40} strokeWidth={2.5}/>
+                                {/* Fixed: removed md:size */}
+                                <FileUp size={32} strokeWidth={2.5}/>
                             </div>
                             <h3 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight">Upload Product PDF</h3>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Extract Varieties Automatically</p>
@@ -218,8 +227,9 @@ const BulkUploadModal = ({ isOpen, onClose, onComplete }: {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between p-4 md:p-6 bg-gray-50 rounded-[1.5rem] md:rounded-[2rem] border border-gray-100">
                                 <div className="flex items-center gap-4 min-w-0">
+                                    {/* Fixed: removed md:size */}
                                     <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
-                                        <FileCheck size={20} md:size={24} />
+                                        <FileCheck size={20} />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="font-black text-gray-900 uppercase text-xs md:text-sm leading-none truncate">{file.name}</p>
@@ -232,9 +242,11 @@ const BulkUploadModal = ({ isOpen, onClose, onComplete }: {
                             {isAnalyzing ? (
                                 <div className="py-20 md:py-24 text-center space-y-6 animate-pulse">
                                     <div className="relative inline-block">
-                                        <Loader2 className="animate-spin text-indigo-600 mx-auto" size={48} md:size={64} strokeWidth={2} />
+                                        {/* Fixed: removed md:size */}
+                                        <Loader2 className="animate-spin text-indigo-600 mx-auto" size={48} strokeWidth={2} />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <Sparkles size={18} md:size={24} className="text-indigo-400 animate-bounce" />
+                                            {/* Fixed: removed md:size */}
+                                            <Sparkles size={18} className="text-indigo-400 animate-bounce" />
                                         </div>
                                     </div>
                                     <div className="space-y-2 px-4">
@@ -288,6 +300,7 @@ const BulkUploadModal = ({ isOpen, onClose, onComplete }: {
                         disabled={isSaving || extractedItems.length === 0 || isAnalyzing}
                         className="flex-[2] py-4 md:py-5 bg-[#93A393] text-white rounded-2xl md:rounded-[1.25rem] font-black text-[10px] md:text-[11px] uppercase tracking-widest shadow-lg hover:bg-[#043003] transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
                     >
+                        {/* Fixed: removed md:size */}
                         {isSaving ? <Loader2 className="animate-spin" size={18}/> : <><Check size={18} strokeWidth={4}/> Import Catalog</>}
                     </button>
                 </div>
@@ -375,20 +388,21 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="flex gap-4 w-full md:w-auto">
             {/* View Mode Switcher Matches Requested Visual - Responsive Container */}
             <div className="bg-gray-100/50 p-1 rounded-2xl border border-gray-200 shadow-inner-sm flex gap-1 w-full md:w-auto overflow-x-auto no-scrollbar">
                 <button 
                     onClick={() => setViewMode('MY CATALOG')}
                     className={`flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${viewMode === 'MY CATALOG' ? 'bg-white text-emerald-600 shadow-md border border-gray-100' : 'text-gray-400'}`}
                 >
-                    <Check size={14} md:size={16} strokeWidth={4}/> CATALOG
+                    <Check size={14} strokeWidth={4}/> CATALOG
                 </button>
                 <button 
                     onClick={() => setViewMode('DIRECTORY')}
                     className={`flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${viewMode === 'DIRECTORY' ? 'bg-white text-gray-900 shadow-md border border-gray-100' : 'text-gray-400'}`}
                 >
-                    <Globe size={14} md:size={16}/> DIRECTORY
+                    {/* Fixed: removed md:size */}
+                    <Globe size={14}/> DIRECTORY
                 </button>
             </div>
 
@@ -413,7 +427,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
         </div>
       </div>
 
-      <div className="flex gap-2 p-1 rounded-2xl border border-gray-200 shadow-sm w-fit bg-gray-100/50 overflow-x-auto no-scrollbar">
+      <div className="flex gap-2 p-1.5 bg-gray-100/50 rounded-2xl border border-gray-200 w-fit mx-2">
         {(['ALL', 'Fruit', 'Vegetable'] as const).map(cat => (
             <button 
                 key={cat}
@@ -439,7 +453,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
         ))}
         {filteredProducts.length === 0 && (
           <div className="col-span-full py-24 md:py-40 text-center opacity-30">
-            <Search size={48} md:size={64} className="mx-auto text-gray-200 mb-6" />
+            {/* Fixed: removed md:size */}
+            <Search size={48} className="mx-auto text-gray-200 mb-6" />
             <p className="font-black uppercase tracking-widest text-[10px] md:text-xs">No matching varieties found</p>
           </div>
         )}

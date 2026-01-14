@@ -176,7 +176,8 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
         <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
             <div className="bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl w-full max-w-xl p-8 md:p-12 text-center border-4 border-white/20 animate-in zoom-in-95 duration-300">
                 <div className="w-20 h-20 md:w-24 md:h-24 bg-red-50 text-red-500 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-inner-sm shrink-0">
-                    <ShieldAlert size={40} md:size={48} strokeWidth={2.5}/>
+                    {/* Fixed: removed md:size */}
+                    <ShieldAlert size={40} strokeWidth={2.5}/>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none mb-6">Trade Verification</h2>
                 <p className="text-base md:text-lg text-gray-500 font-medium leading-relaxed mb-8 md:mb-10">
@@ -187,7 +188,8 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
                         onClick={onStart}
                         className="w-full py-5 md:py-6 bg-[#043003] hover:bg-black text-white rounded-2xl md:rounded-3xl font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-2xl shadow-emerald-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                     >
-                        <FilePlus size={20} md:size={24}/> Setup Account
+                        {/* Fixed: removed md:size */}
+                        <FilePlus size={20}/> Setup Account
                     </button>
                     <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest flex items-center justify-center gap-2">
                         <Lock size={12}/> Secure B2B Protocol
@@ -198,7 +200,7 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
     );
 };
 
-const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }: any) => {
+const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, onRefreshUser }: any) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -314,7 +316,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }:
   
   return (
     <div className="flex min-h-screen bg-white">
-      {isProfileIncomplete && (
+      {isProfileIncomplete && !isProfileModalOpen && (
           <BlockingOnboardingOverlay user={user} onStart={() => setIsProfileModalOpen(true)} />
       )}
 
@@ -412,7 +414,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }:
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           user={user}
-          onComplete={() => {}}
+          onComplete={onRefreshUser}
       />
     </div>
   );
@@ -476,6 +478,7 @@ const App = () => {
                         onLogout={() => setUser(null)} 
                         onPasswordSet={handlePasswordSet}
                         onOpenInterests={() => setIsInterestsModalOpen(true)}
+                        onRefreshUser={handleRefreshUser}
                     >
                         {element}
                     </AppLayout>
@@ -636,12 +639,13 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => setSelectedDemo({ label: 'PLATFORM ZERO HQ', email: 'admin@pz.com' })} 
+                                    onClick={() => onAutoLogin('admin@pz.com')} 
                                     className="w-full flex items-center justify-between p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
                                 >
                                     <div className="flex items-center gap-4 md:gap-6 min-w-0">
                                         <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/5 shadow-inner group-hover:rotate-12 transition-transform duration-500 shrink-0">
-                                            <ShieldEllipsis size={24} md:size={32} />
+                                            {/* Fixed: removed md:size */}
+                                            <ShieldEllipsis size={24} />
                                         </div>
                                         <div className="text-left min-w-0">
                                             <h3 className="text-lg md:text-2xl font-black tracking-tight leading-none mb-1.5 uppercase truncate">PLATFORM ZERO HQ</h3>
@@ -649,14 +653,18 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                         </div>
                                     </div>
                                     <div className="bg-emerald-500/10 p-2 md:p-3 rounded-xl border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0 ml-4">
-                                        <ArrowRight size={20} md:size={28} className="group-hover:translate-x-1 transition-transform" />
+                                        {/* Fixed: removed md:size */}
+                                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                                     </div>
                                 </button>
                             </div>
 
                             <div className="bg-[#F8FAFF] p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-[#E0E7FF] shadow-inner-sm relative group">
                                 <div className="flex items-center gap-4 mb-6 md:mb-8">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center text-[#5C56D6] shadow-sm border border-[#E0E7FF]"><Key size={20} md:size={24} strokeWidth={2.5}/></div>
+                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center text-[#5C56D6] shadow-sm border border-[#E0E7FF]">
+                                        {/* Fixed: removed md:size */}
+                                        <Key size={20} strokeWidth={2.5}/>
+                                    </div>
                                     <div>
                                         <h3 className="font-black text-gray-900 uppercase text-xs md:text-sm tracking-tight leading-none">Fast-Track Login</h3>
                                         <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter access code</p>
@@ -664,7 +672,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                 </div>
                                 <form onSubmit={handleCodeSubmit} className="flex flex-col sm:flex-row gap-4">
                                     <input 
-                                        placeholder="A B C D E F" 
+                                        placeholder="ABCDEF" 
                                         className="flex-1 bg-white border-2 border-[#E0E7FF] rounded-2xl px-4 py-4 font-black tracking-[0.5em] uppercase text-2xl md:text-4xl text-center focus:ring-4 focus:ring-[#5C56D6]/5 focus:border-[#5C56D6] outline-none transition-all placeholder:text-gray-100 shadow-sm"
                                         maxLength={6}
                                         value={accessCode}
@@ -675,7 +683,8 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                         disabled={isProcessing || !accessCode}
                                         className="bg-[#C7D2FE] text-white px-8 md:px-10 py-4 md:py-6 rounded-2xl shadow-xl hover:bg-[#5C56D6] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
                                     >
-                                        {isProcessing ? <Loader2 size={24} md:size={32} className="animate-spin" /> : <ArrowRight size={28} md:size={40} strokeWidth={3} />}
+                                        {/* Fixed: removed md:size */}
+                                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={28} strokeWidth={3} />}
                                     </button>
                                 </form>
                             </div>
@@ -698,7 +707,8 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                                 <span className="text-[9px] md:text-[11px] text-gray-400 font-bold uppercase tracking-tight block opacity-60 group-hover:opacity-100 transition-opacity truncate">{demo.email}</span>
                                             </div>
                                             <div className="p-2 md:p-3 rounded-xl bg-white/50 border border-white group-hover:bg-white transition-all shadow-sm ml-4 shrink-0">
-                                                <ArrowRight size={16} md:size={20} className="text-gray-400 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
+                                                {/* Fixed: removed md:size */}
+                                                <ArrowRight size={16} className="text-gray-400 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
                                             </div>
                                         </button>
                                     ))}

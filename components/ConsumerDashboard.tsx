@@ -36,11 +36,13 @@ const EssentialsProductCard: React.FC<{
             <div className="flex items-center gap-2 md:gap-4 ml-2">
                 <div className="flex items-center bg-gray-50 border border-gray-100 rounded-xl px-1 py-1">
                     <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                        <Minus size={12} md:size={14} strokeWidth={3}/>
+                        {/* Fixed: removed md:size */}
+                        <Minus size={12} strokeWidth={3}/>
                     </button>
                     <span className="w-6 md:w-8 text-center font-black text-xs md:text-sm text-gray-900">{qty}</span>
                     <button onClick={() => setQty(qty + 1)} className="p-1 text-gray-400 hover:text-emerald-500 transition-colors">
-                        <Plus size={12} md:size={14} strokeWidth={3}/>
+                        {/* Fixed: removed md:size */}
+                        <Plus size={12} strokeWidth={3}/>
                     </button>
                 </div>
 
@@ -48,7 +50,8 @@ const EssentialsProductCard: React.FC<{
                     onClick={() => onAddToCart(product, qty)}
                     className="w-9 h-9 md:w-10 md:h-10 bg-[#043003] text-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/10 hover:bg-black transition-all active:scale-90"
                 >
-                    <ShoppingCart size={16} md:size={18} strokeWidth={2.5}/>
+                    {/* Fixed: removed md:size */}
+                    <ShoppingCart size={16} strokeWidth={2.5}/>
                 </button>
             </div>
         </div>
@@ -172,6 +175,7 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
                 
                 {activeOrders.length === 0 ? (
                     <div className="bg-white rounded-[2rem] md:rounded-[3rem] border-2 border-dashed border-gray-100 min-h-[260px] md:min-h-[300px] flex flex-col items-center justify-center text-center p-8 md:p-12 group hover:bg-gray-50/50 transition-all">
+                        {/* Fixed: removed md:size */}
                         <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-200 mb-4 transition-transform group-hover:scale-110">
                             <Package size={32}/>
                         </div>
@@ -187,7 +191,8 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
                             >
                                 <div className="flex items-center gap-4 md:gap-6 min-w-0">
                                     <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-[1.25rem] flex items-center justify-center shadow-inner-sm shrink-0">
-                                        <Truck size={20} md:size={24}/>
+                                        {/* Fixed: removed md:size */}
+                                        <Truck size={20} />
                                     </div>
                                     <div className="min-w-0">
                                         <h4 className="font-black text-gray-900 uppercase text-xs md:text-sm leading-none truncate">Order #{order.id.split('-').pop()}</h4>
@@ -203,10 +208,12 @@ export const ConsumerDashboard: React.FC<ConsumerDashboardProps> = ({ user }) =>
                                             onClick={(e) => { e.stopPropagation(); setTrackingOrder(order); }}
                                             className="p-2 md:p-3 bg-[#043003] text-white rounded-xl shadow-lg active:scale-95 transition-all"
                                         >
-                                            <MapPin size={16} md:size={18}/>
+                                            {/* Fixed: removed md:size */}
+                                            <MapPin size={16} />
                                         </button>
                                     )}
-                                    <ChevronRight size={18} md:size={20} className="text-gray-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"/>
+                                    {/* Fixed: removed md:size */}
+                                    <ChevronRight size={18} className="text-gray-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"/>
                                 </div>
                             </div>
                         ))}
@@ -284,7 +291,8 @@ const WeeklyOrderCalendar = ({ orders, onReorder }: { orders: Order[], onReorder
             <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/10 shrink-0">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-white text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner-sm border border-gray-100 shrink-0">
-                        <Calendar size={20} md:size={24} />
+                        {/* Fixed: removed md:size */}
+                        <Calendar size={20} />
                     </div>
                     <div>
                         <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight leading-none">Order Calendar</h2>
@@ -333,7 +341,8 @@ const WeeklyOrderCalendar = ({ orders, onReorder }: { orders: Order[], onReorder
                         {selectedDateOrders.length === 0 ? (
                             <div className="min-h-[220px] md:min-h-[260px] flex flex-col items-center justify-center bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-100 text-center p-8 md:p-10 group transition-all hover:bg-gray-50">
                                 <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center text-gray-200 mb-4 shadow-sm transition-transform group-hover:scale-110">
-                                    <Clock size={28} md:size={32} />
+                                    {/* Fixed: removed md:size */}
+                                    <Clock size={28} />
                                 </div>
                                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">No Trade Activity</p>
                             </div>
@@ -404,14 +413,16 @@ const ReorderManifestModal = ({ isOpen, onClose, order, products, onConfirm }: {
                 <div className="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
-                            <RotateCcw size={20} md:size={24} strokeWidth={3}/>
+                            {/* Fixed: removed md:size */}
+                            <RotateCcw size={20} strokeWidth={3}/>
                         </div>
                         <div>
                             <h2 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight leading-none">Re-order</h2>
                             <p className="text-[9px] md:text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em] mt-1.5">Adjust manifest</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-gray-300 hover:text-gray-900 p-2 bg-gray-50 rounded-full border border-gray-100 shadow-sm transition-all"><X size={20} md:size={24}/></button>
+                    {/* Fixed: removed md:size */}
+                    <button onClick={onClose} className="text-gray-300 hover:text-gray-900 p-2 bg-gray-50 rounded-full border border-gray-100 shadow-sm transition-all"><X size={20}/></button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 custom-scrollbar bg-white">
@@ -431,12 +442,14 @@ const ReorderManifestModal = ({ isOpen, onClose, order, products, onConfirm }: {
                                     </div>
                                     
                                     <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-200/50 shadow-inner-sm ml-2">
-                                        <button onClick={() => handleQtyChange(item.productId, -1)} className="p-1 md:p-2 text-gray-400 hover:text-red-500 transition-colors"><Minus size={16} md:size={18} strokeWidth={3}/></button>
+                                        {/* Fixed: removed md:size */}
+                                        <button onClick={() => handleQtyChange(item.productId, -1)} className="p-1 md:p-2 text-gray-400 hover:text-red-500 transition-colors"><Minus size={16} strokeWidth={3}/></button>
                                         <div className="px-2 md:px-6 text-center min-w-[40px] md:min-w-[60px]">
                                             <p className="font-black text-gray-900 text-base md:text-lg leading-none">{item.quantityKg}</p>
                                             <p className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">{p?.unit || 'KG'}</p>
                                         </div>
-                                        <button onClick={() => handleQtyChange(item.productId, 1)} className="p-1 md:p-2 text-gray-400 hover:text-emerald-500 transition-colors"><Plus size={16} md:size={18} strokeWidth={3}/></button>
+                                        {/* Fixed: removed md:size */}
+                                        <button onClick={() => handleQtyChange(item.productId, 1)} className="p-1 md:p-2 text-gray-400 hover:text-emerald-500 transition-colors"><Plus size={16} strokeWidth={3}/></button>
                                     </div>
                                 </div>
                             );
@@ -450,12 +463,14 @@ const ReorderManifestModal = ({ isOpen, onClose, order, products, onConfirm }: {
                         <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter">${finalTotal.toFixed(2)}</h3>
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
+                        {/* Fixed: removed md:size */}
                         <button onClick={onClose} className="flex-1 md:flex-none px-6 md:px-10 py-4 md:py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 shadow-sm">Cancel</button>
                         <button 
                             onClick={() => onConfirm(localItems)} 
                             className="flex-[1.5] md:flex-none px-6 md:px-12 py-4 md:py-5 bg-[#043003] text-white rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2 md:gap-3"
                         >
-                            <ShoppingCart size={16} md:size={18}/> Re-Order
+                            {/* Fixed: removed md:size */}
+                            <ShoppingCart size={16} strokeWidth={2.5}/> Re-Order
                         </button>
                     </div>
                 </div>
