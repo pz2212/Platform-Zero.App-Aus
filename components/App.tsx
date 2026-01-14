@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { UserRole, User, AppNotification, RegistrationRequest } from '../types';
@@ -645,7 +644,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => onAutoLogin('admin@pz.com')} 
+                                    onClick={() => setSelectedDemo({ label: 'PLATFORM ZERO HQ', email: 'admin@pz.com', color: 'bg-[#0F172A] border-slate-800 hover:bg-black' })} 
                                     className="w-full flex items-center justify-between p-10 rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
                                 >
                                     <div className="flex items-center gap-6">
