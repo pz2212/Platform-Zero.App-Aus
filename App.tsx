@@ -34,6 +34,7 @@ import { AdminMarketOps } from './components/AdminMarketOps';
 import { EnvironmentalImpact } from './components/EnvironmentalImpact';
 import { CompleteProfileModal } from './components/CompleteProfileModal';
 import { InterestsModal } from './components/InterestsModal';
+import { RepDashboard } from './components/RepDashboard';
 import { 
   LayoutDashboard, ShoppingCart, Users, Settings, LogOut, Tags, ChevronDown, UserPlus, 
   DollarSign, X, Lock, ArrowLeft, Bell, 
@@ -301,6 +302,12 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }:
             <SidebarLink to="/orders" icon={ShoppingCart} label="My Orders" active={isActive('/orders')} />
             <SidebarLink to="/accounts" icon={Wallet} label="Financials" active={isActive('/accounts')} />
         </div>
+      ) : user.role === UserRole.PZ_REP ? (
+        <div className="space-y-1">
+            <SidebarLink to="/" icon={LayoutDashboard} label="Sales Console" active={isActive('/', true)} />
+            <SidebarLink to="/contacts" icon={Users} label="My Leads" active={isActive('/contacts')} />
+            <SidebarLink to="/pricing-requests" icon={Calculator} label="Pricing Audits" active={isActive('/pricing-requests')} />
+        </div>
       ) : isPartner ? (
         <div className="space-y-1">
             <SidebarLink to="/" icon={LayoutDashboard} label="Order Management" active={isActive('/', true)} />
@@ -518,6 +525,8 @@ const App = () => {
         user?.role === UserRole.ADMIN ? <AdminDashboard /> : 
         user?.role === UserRole.CONSUMER ? <ConsumerDashboard user={user} /> : 
         user?.role === UserRole.GROCERY ? <GrocerDashboard user={user} /> :
+        user?.role === UserRole.FARMER ? <FarmerDashboard user={user} /> :
+        user?.role === UserRole.PZ_REP ? <RepDashboard user={user} /> :
         user ? <Dashboard user={user} /> : <Navigate to="/" />
       } />
       <Route path="/grocer/marketplace" element={user ? <GrocerMarketplace user={user} /> : <Navigate to="/" />} />
