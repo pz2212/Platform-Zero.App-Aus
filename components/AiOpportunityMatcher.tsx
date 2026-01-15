@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, ScanLine, CheckCircle, Send, MessageSquare, AlertCircle, Loader2, Image as ImageIcon, FolderOpen, X, Store, MapPin, Share2, Heart, Edit2, ChevronDown } from 'lucide-react';
 import { mockService } from '../services/mockDataService';
@@ -85,9 +84,28 @@ export const AiOpportunityMatcher: React.FC<AiOpportunityMatcherProps> = ({ user
 
   const updateResults = (name: string, quality: string) => {
     setAnalysisResult({ name, quality });
-    const buyers = mockService.findBuyersForProduct(name);
+    let buyers = mockService.findBuyersForProduct(name);
+    
+    // ENABLE DUMMY OPTIONS: If no natural matches found, suggest top network leads to demonstrate UI
+    if (buyers.length === 0) {
+        const allCustomers = mockService.getCustomers();
+        buyers = allCustomers.slice(0, 3).map(c => ({
+            ...c,
+            connectionStatus: c.connectionStatus || 'Lead'
+        }));
+    }
+
     setMatchedBuyers(buyers);
     setIsEditingName(false);
+
+    // AUTO-PRICE: Set suggested price based on catalog or default to $2.50
+    const allProds = mockService.getAllProducts();
+    const match = allProds.find(p => p.name.toLowerCase().includes(name.toLowerCase()));
+    if (match) {
+        setPrice(match.defaultPricePerKg);
+    } else {
+        setPrice(2.50);
+    }
   };
 
   const handleManualCorrect = (productName: string) => {

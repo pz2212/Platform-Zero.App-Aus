@@ -72,6 +72,7 @@ const MarketAlignmentSidebarWidget = ({ user, onUpdate }: { user: User, onUpdate
     const displayItems = interests.slice(0, 3);
     const hasMore = interests.length > 3;
 
+    // Only show for Wholesalers and Farmers
     if (user.role !== UserRole.WHOLESALER && user.role !== UserRole.FARMER) return null;
 
     return (
@@ -173,24 +174,24 @@ const SecureAccountSidebarWidget = ({ onComplete }: { onComplete: () => void }) 
 
 const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () => void }) => {
     return (
-        <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
-            <div className="bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl w-full max-w-xl p-8 md:p-12 text-center border-4 border-white/20 animate-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-red-50 text-red-500 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-inner-sm shrink-0">
-                    <ShieldAlert size={40} strokeWidth={2.5}/>
+        <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in duration-500">
+            <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-xl p-12 text-center border-4 border-white/20 animate-in zoom-in-95 duration-300">
+                <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner-sm">
+                    <ShieldAlert size={48} strokeWidth={2.5}/>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none mb-6">Trade Verification</h2>
-                <p className="text-base md:text-lg text-gray-500 font-medium leading-relaxed mb-8 md:mb-10">
-                    Complete the official trade setup to access the Platform Zero network.
+                <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none mb-6">Trade Verification Required</h2>
+                <p className="text-lg text-gray-500 font-medium leading-relaxed mb-10">
+                    To maintain market integrity and security, <span className="font-black text-gray-900">{user.businessName}</span> must complete the official trade setup and sign the Platform Zero NDA before accessing the marketplace.
                 </p>
                 <div className="space-y-4">
                     <button 
                         onClick={onStart}
-                        className="w-full py-5 md:py-6 bg-[#043003] hover:bg-black text-white rounded-2xl md:rounded-3xl font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-2xl shadow-emerald-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                        className="w-full py-6 bg-[#043003] hover:bg-black text-white rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl shadow-emerald-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                     >
-                        <FilePlus size={20}/> Setup Account
+                        <FilePlus size={24}/> Complete Trade Setup
                     </button>
-                    <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                        <Lock size={12}/> Secure B2B Protocol
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                        <Lock size={12}/> Secure B2B Onboarding Protocol
                     </p>
                 </div>
             </div>
@@ -198,7 +199,7 @@ const BlockingOnboardingOverlay = ({ user, onStart }: { user: User, onStart: () 
     );
 };
 
-const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, onRefreshUser }: any) => {
+const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }: any) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -244,6 +245,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
             <div className="pt-4 mt-4 border-t border-gray-50 space-y-1">
                 <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Market Data</p>
                 
+                {/* Customer Activity Dropdown */}
                 <div className="space-y-1">
                     <button 
                         onClick={() => setIsCustomerActivityOpen(!isCustomerActivityOpen)}
@@ -255,7 +257,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
                     >
                         <div className="flex items-center space-x-3">
                             <Activity size={20} className="text-gray-400" />
-                            <span className="text-sm font-bold tracking-tight uppercase">Activity</span>
+                            <span className="text-sm font-bold tracking-tight uppercase">Customer Activity</span>
                         </div>
                         <ChevronDown size={14} className={`transition-transform duration-300 ${isCustomerActivityOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -264,11 +266,11 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
                         <div className="space-y-1 mt-1 animate-in slide-in-from-top-2 duration-200">
                             <SidebarLink to="/login-requests" icon={UserPlus} label="Login Requests" active={isActive('/login-requests')} isSubItem />
                             <SidebarLink to="/customer-portal" icon={Store} label="Customer Portal" active={isActive('/customer-portal')} isSubItem />
-                            <SidebarLink to="/consumer-onboarding" icon={Users} label="Onboarding" active={isActive('/consumer-onboarding')} isSubItem />
+                            <SidebarLink to="/consumer-onboarding" icon={Users} label="Onboarding Feed" active={isActive('/consumer-onboarding')} isSubItem />
                         </div>
                     )}
                 </div>
-                <SidebarLink to="/impact" icon={Leaf} label="Impact" active={isActive('/impact')} />
+                <SidebarLink to="/impact" icon={Leaf} label="Impact Dashboard" active={isActive('/impact')} />
             </div>
 
             <div className="pt-4 mt-4 border-t border-gray-100">
@@ -279,10 +281,10 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
 
             <div className="pt-4 mt-4 border-t border-gray-100">
                 <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Management</p>
-                <SidebarLink to="/admin/accounts" icon={Landmark} label="Accounts" active={isActive('/admin/accounts')} />
-                <SidebarLink to="/rep-management" icon={Briefcase} label="Reps" active={isActive('/rep-management')} />
+                <SidebarLink to="/admin/accounts" icon={Landmark} label="Accounts Ledger" active={isActive('/admin/accounts')} />
+                <SidebarLink to="/rep-management" icon={Briefcase} label="Rep Management" active={isActive('/rep-management')} />
                 <SidebarLink to="/suppliers" icon={Store} label="Suppliers" active={isActive('/suppliers')} />
-                <SidebarLink to="/marketplace" icon={Layers} label="Catalog" active={isActive('/marketplace')} />
+                <SidebarLink to="/marketplace" icon={Layers} label="Catalog Manager" active={isActive('/marketplace')} />
             </div>
           </div>
       ) : user.role === UserRole.CONSUMER ? (
@@ -290,22 +292,23 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
             <SidebarLink to="/" icon={LayoutDashboard} label="Dashboard" active={isActive('/', true)} />
             <SidebarLink to="/orders" icon={ShoppingCart} label="Track Orders" active={isActive('/orders')} />
             <SidebarLink to="/marketplace" icon={ShoppingBag} label="Fresh Catalog" active={isActive('/marketplace')} />
-            <SidebarLink to="/accounts" icon={Wallet} label="Financials" active={isActive('/accounts')} />
+            <SidebarLink to="/accounts" icon={Wallet} label="Accounts & Billing" active={isActive('/accounts')} />
         </div>
       ) : user.role === UserRole.GROCERY ? (
         <div className="space-y-1">
-            <SidebarLink to="/" icon={LayoutDashboard} label="Hub" active={isActive('/', true)} />
+            <SidebarLink to="/" icon={LayoutDashboard} label="Wholesale Hub" active={isActive('/', true)} />
             <SidebarLink to="/grocer/marketplace" icon={TrendingDown} label="Market" active={isActive('/grocer/marketplace')} />
-            <SidebarLink to="/orders" icon={ShoppingCart} label="Orders" active={isActive('/orders')} />
+            <SidebarLink to="/orders" icon={ShoppingCart} label="My Orders" active={isActive('/orders')} />
             <SidebarLink to="/accounts" icon={Wallet} label="Financials" active={isActive('/accounts')} />
         </div>
       ) : isPartner ? (
         <div className="space-y-1">
-            <SidebarLink to="/" icon={LayoutDashboard} label="Orders" active={isActive('/', true)} />
-            <SidebarLink to="/farmers" icon={Sprout} label="Farmers" active={isActive('/farmers')} />
-            <SidebarLink to="/contacts" icon={Users} label="Buyers" active={isActive('/contacts')} />
-            <SidebarLink to="/pricing" icon={Tags} label="Inventory" active={isActive('/pricing')} />
+            <SidebarLink to="/" icon={LayoutDashboard} label="Order Management" active={isActive('/', true)} />
+            <SidebarLink to="/farmers" icon={Sprout} label="Farmer Network" active={isActive('/farmers')} />
+            <SidebarLink to="/contacts" icon={Users} label="Buyer Network" active={isActive('/contacts')} />
+            <SidebarLink to="/pricing" icon={Tags} label="Inventory & Price" active={isActive('/pricing')} />
             <SidebarLink to="/accounts" icon={DollarSign} label="Financials" active={isActive('/accounts')} />
+            <SidebarLink to="/market" icon={Globe} label="Supplier Market" active={isActive('/market')} />
             <SidebarLink to="/market" icon={Globe} label="Supplier Market" active={isActive('/market')} />
         </div>
       ) : null}
@@ -314,7 +317,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
   
   return (
     <div className="flex min-h-screen bg-white">
-      {isProfileIncomplete && !isProfileModalOpen && (
+      {isProfileIncomplete && (
           <BlockingOnboardingOverlay user={user} onStart={() => setIsProfileModalOpen(true)} />
       )}
 
@@ -328,8 +331,10 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
             <NavContent />
         </div>
 
+        {/* Market Alignment Widget */}
         <MarketAlignmentSidebarWidget user={user} onUpdate={onOpenInterests} />
 
+        {/* Secure Account Widget */}
         {user.loginCode && !user.passwordSet && (
             <SecureAccountSidebarWidget onComplete={() => onPasswordSet(user.id)} />
         )}
@@ -344,21 +349,21 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
       </aside>
 
       <main className="flex-1 md:ml-64 w-full min-h-screen bg-[#F8FAFC]">
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
-            <div className="flex items-center gap-3 md:gap-4 flex-1">
-              <div className="md:hidden w-8 h-8 bg-[#043003] rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">P</div>
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 md:px-8 flex items-center justify-between sticky top-0 z-50">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="md:hidden w-8 h-8 bg-[#043003] rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">P</div>
               <div className="hidden sm:flex items-center gap-4 flex-1">
                 <div className="relative max-w-md w-full group">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18}/>
-                  <input type="text" placeholder="Search records..." className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"/>
+                  <input type="text" placeholder="Search HQ records..." className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"/>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-4 relative shrink-0">
-                <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-4 relative">
+                <div className="flex items-center gap-3">
                   <div className="text-right hidden sm:block">
-                    <p className="text-xs font-black text-gray-900 leading-none mb-1 uppercase truncate max-w-[100px]">{user.name}</p>
+                    <p className="text-xs font-black text-gray-900 leading-none mb-1 uppercase">{user.name}</p>
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">{user.role}</p>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-black shadow-sm shrink-0">
@@ -376,11 +381,12 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
                     }`}
                   >
                     <Menu size={16} strokeWidth={2.5}/>
+                    <span>NAVIGATE</span>
                     <ChevronDown size={12} strokeWidth={3} className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-180' : ''}`}/>
                   </button>
 
                   {isMobileMenuOpen && (
-                    <div className="absolute right-0 top-14 w-[280px] max-w-[90vw] bg-white rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 py-4 px-3 z-[60] animate-in zoom-in-95 slide-in-from-top-2 duration-200">
+                    <div className="absolute right-0 top-14 w-[280px] max-w-[90vw] bg-white rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 py-4 px-3 z-[60] animate-in zoom-in-95 slide-in-from-top-2 duration-200 max-h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
                         <div className="px-4 py-2 mb-4 border-b border-gray-50">
                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">Account</p>
                             <p className="font-black text-gray-900 uppercase truncate text-xs">{user.businessName}</p>
@@ -405,14 +411,14 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests, o
                 </div>
             </div>
         </header>
-        <div className="flex-1 p-4 md:p-8">{children}</div>
+        <div className="flex-1 p-6 md:p-8">{children}</div>
       </main>
 
       <CompleteProfileModal 
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           user={user}
-          onComplete={onRefreshUser}
+          onComplete={() => {}}
       />
     </div>
   );
@@ -476,7 +482,6 @@ const App = () => {
                         onLogout={() => setUser(null)} 
                         onPasswordSet={handlePasswordSet}
                         onOpenInterests={() => setIsInterestsModalOpen(true)}
-                        onRefreshUser={handleRefreshUser}
                     >
                         {element}
                     </AppLayout>
@@ -583,9 +588,10 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-600 transition-all p-1"><X size={28} /></button>
                 </div>
                 
-                <div className="p-8 md:p-10 space-y-12 h-full max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <div className="p-8 md:p-10 space-y-12">
                     
                     {selectedDemo ? (
+                        /* PASSWORD PROTECTION VIEW (COMPACT CENTERED) */
                         <div className="max-w-md mx-auto space-y-8 animate-in slide-in-from-right-4">
                             <button 
                                 onClick={() => { setSelectedDemo(null); setDemoPassword(''); }}
@@ -613,7 +619,7 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                             autoFocus
                                             type="password"
                                             placeholder="••••••••" 
-                                            className="w-full pl-14 pr-4 py-6 bg-white border-2 border-gray-100 rounded-3xl font-black text-2xl text-center focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100 shadow-sm"
+                                            className="w-full pl-14 pr-4 py-6 bg-white border-2 border-gray-100 rounded-3xl font-black text-2xl text-center text-gray-900 focus:ring-4 focus:ring-indigo-50/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-100 shadow-inner-sm"
                                             value={demoPassword}
                                             onChange={e => setDemoPassword(e.target.value)}
                                         />
@@ -629,46 +635,46 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                         </div>
                     ) : (
                         <>
+                            {/* OFFICIAL HQ LOGIN SECTION */}
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-2 px-1">
+                                <div className="flex items-center justify-between mb-2">
                                     <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.4em]">Official Entry</p>
-                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-emerald-100">
-                                        <Circle className="fill-emerald-500 w-1.5 h-1.5 animate-pulse" /> VERIFIED
+                                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                        <Circle className="fill-emerald-500 w-1.5 h-1.5 animate-pulse" /> VERIFIED SYSTEM
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setSelectedDemo({ label: 'PLATFORM ZERO HQ', email: 'admin@pz.com', color: 'bg-[#0F172A] border-slate-800 hover:bg-black' })} 
-                                    className="w-full flex items-center justify-between p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
+                                    className="w-full flex items-center justify-between p-10 rounded-[2.5rem] bg-[#0F172A] text-white shadow-2xl hover:bg-black transition-all group active:scale-[0.99] border-2 border-slate-800"
                                 >
-                                    <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                                        <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/5 shadow-inner group-hover:rotate-12 transition-transform duration-500 shrink-0">
-                                            <ShieldEllipsis size={24} />
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/5 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                            <ShieldEllipsis size={32} />
                                         </div>
-                                        <div className="text-left min-w-0">
-                                            <h3 className="text-lg md:text-2xl font-black tracking-tight leading-none mb-1.5 uppercase truncate">PLATFORM ZERO HQ</h3>
-                                            <p className="text-[9px] md:text-[11px] text-slate-500 font-bold uppercase tracking-widest truncate">Market Ops Terminal</p>
+                                        <div className="text-left">
+                                            <h3 className="text-2xl font-black tracking-tight leading-none mb-1.5 uppercase">PLATFORM ZERO HQ</h3>
+                                            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Market Operations Terminal</p>
                                         </div>
                                     </div>
-                                    <div className="bg-emerald-500/10 p-2 md:p-3 rounded-xl border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0 ml-4">
-                                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                    <div className="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                                        <ArrowRight size={28} className="group-hover:translate-x-1 transition-transform" />
                                     </div>
                                 </button>
                             </div>
 
-                            <div className="bg-[#F8FAFF] p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-[#E0E7FF] shadow-inner-sm relative group">
-                                <div className="flex items-center gap-4 mb-6 md:mb-8">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center text-[#5C56D6] shadow-sm border border-[#E0E7FF]">
-                                        <Key size={20} strokeWidth={2.5}/>
-                                    </div>
+                            {/* FAST-TRACK LOGIN SECTION */}
+                            <div className="bg-[#F8FAFF] p-10 rounded-[3rem] border border-[#E0E7FF] shadow-inner-sm relative group">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#5C56D6] shadow-sm border border-[#E0E7FF]"><Key size={24} strokeWidth={2.5}/></div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase text-xs md:text-sm tracking-tight leading-none">Fast-Track Login</h3>
-                                        <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter access code</p>
+                                        <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight leading-none">Fast-Track Login</h3>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">Enter your 6-digit access code</p>
                                     </div>
                                 </div>
-                                <form onSubmit={handleCodeSubmit} className="flex flex-col sm:flex-row gap-4">
+                                <form onSubmit={handleCodeSubmit} className="flex gap-4">
                                     <input 
                                         placeholder="ABCDEF" 
-                                        className="flex-1 bg-white border-2 border-[#E0E7FF] rounded-2xl px-4 py-4 font-black tracking-[0.5em] uppercase text-2xl md:text-4xl text-center focus:ring-4 focus:ring-[#5C56D6]/5 focus:border-[#5C56D6] outline-none transition-all placeholder:text-gray-100 shadow-sm"
+                                        className="flex-1 bg-white border-2 border-[#E0E7FF] rounded-[1.75rem] px-8 py-6 font-black tracking-[0.5em] uppercase text-4xl text-center text-gray-900 focus:ring-4 focus:ring-[#5C56D6]/5 focus:border-[#5C56D6] outline-none transition-all placeholder:text-gray-100 shadow-sm"
                                         maxLength={6}
                                         value={accessCode}
                                         onChange={e => setAccessCode(e.target.value)}
@@ -676,32 +682,33 @@ const AuthModal = ({ isOpen, onClose, step, setStep, onAutoLogin, onCodeLogin }:
                                     <button 
                                         type="submit"
                                         disabled={isProcessing || !accessCode}
-                                        className="bg-[#C7D2FE] text-white px-8 md:px-10 py-4 md:py-6 rounded-2xl shadow-xl hover:bg-[#5C56D6] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
+                                        className="bg-[#C7D2FE] text-white px-10 py-6 rounded-[1.75rem] shadow-xl hover:bg-[#5C56D6] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
                                     >
-                                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <ArrowRight size={28} strokeWidth={3} />}
+                                        {isProcessing ? <Loader2 size={32} className="animate-spin" /> : <ArrowRight size={40} strokeWidth={3} />}
                                     </button>
                                 </form>
                             </div>
 
+                            {/* DEMO PERSPECTIVES GRID */}
                             <div className="space-y-6">
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                                    <div className="relative flex justify-center text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em]"><span className="px-6 md:px-8 bg-white text-gray-300">Demo Perspectives</span></div>
+                                    <div className="relative flex justify-center text-[11px] font-black uppercase tracking-[0.4em]"><span className="px-8 bg-white text-gray-300">Demo Perspectives</span></div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                                <div className="grid grid-cols-2 gap-6">
                                     {demoLogins.map(demo => (
                                         <button 
                                             key={demo.label} 
                                             onClick={() => setSelectedDemo(demo)} 
-                                            className={`flex items-center justify-between p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border-2 transition-all group ${demo.color} text-left active:scale-[0.98] shadow-sm hover:shadow-xl`}
+                                            className={`flex items-center justify-between p-10 rounded-[2.5rem] border-2 transition-all group ${demo.color} text-left active:scale-[0.98] shadow-sm hover:shadow-xl`}
                                         >
-                                            <div className="text-left min-w-0">
-                                                <span className="text-[11px] md:text-[13px] font-black text-gray-900 uppercase tracking-widest block mb-1 truncate">{demo.label}</span>
-                                                <span className="text-[9px] md:text-[11px] text-gray-400 font-bold uppercase tracking-tight block opacity-60 group-hover:opacity-100 transition-opacity truncate">{demo.email}</span>
+                                            <div className="text-left">
+                                                <span className="text-[13px] font-black text-gray-900 uppercase tracking-widest block mb-1">{demo.label}</span>
+                                                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-tight block opacity-60 group-hover:opacity-100 transition-opacity">{demo.email}</span>
                                             </div>
-                                            <div className="p-2 md:p-3 rounded-xl bg-white/50 border border-white group-hover:bg-white transition-all shadow-sm ml-4 shrink-0">
-                                                <ArrowRight size={16} className="text-gray-400 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
+                                            <div className="p-3 rounded-xl bg-white/50 border border-white group-hover:bg-white transition-all shadow-sm">
+                                                <ArrowRight size={20} className="text-gray-400 group-hover:text-gray-900 transition-all group-hover:translate-x-1" strokeWidth={3}/>
                                             </div>
                                         </button>
                                     ))}

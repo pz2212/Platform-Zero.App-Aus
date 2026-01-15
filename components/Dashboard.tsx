@@ -15,7 +15,8 @@ import {
   Search, Filter, Info, RefreshCw, Sparkles, ChevronRight,
   TrendingDown, Pencil, Lock, Gift, Camera, Settings, Plus,
   Layout, History as HistoryIcon, Camera as ScannerIcon,
-  UserCheck, User as UserIcon, Send, Calendar, Printer, Leaf, Sprout
+  UserCheck, User as UserIcon, Send, Calendar, Printer, Leaf, Sprout,
+  ChevronUp
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -81,7 +82,6 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                 <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30 shrink-0">
                     <div className="flex items-center gap-3 md:gap-5">
                         <div className="w-10 h-10 md:w-14 md:h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
-                            {/* Fixed: removed md:size */}
                             <Plus size={24} />
                         </div>
                         <div>
@@ -89,7 +89,6 @@ const DemandSourcingModal = ({ isOpen, onClose, product, user, currentDemand }: 
                             <p className="text-[8px] md:text-[10px] text-indigo-600 font-black uppercase tracking-widest mt-1">Deficit: {currentDemand}kg</p>
                         </div>
                     </div>
-                    {/* Fixed: removed md:size */}
                     <button onClick={onClose} className="p-2 md:p-3 bg-white rounded-full text-gray-400 hover:text-gray-900 shadow-sm border border-gray-100 transition-all"><X size={20} /></button>
                 </div>
 
@@ -214,6 +213,7 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
     if (sellingProducts.length === 0 || isFinished) return null;
 
     const current = sellingProducts[currentIndex];
+    if (!current) return null;
 
     const handleNext = () => {
         if (currentIndex < sellingProducts.length - 1) {
@@ -238,9 +238,8 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
                 <Sparkles size={140} className="text-indigo-900"/>
             </div>
             
-            <div className="flex flex-col xl:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
-                <div className="flex items-center gap-4 md:gap-6 w-full xl:w-auto">
-                    {/* Fixed: removed md:size */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
+                <div className="flex items-center gap-4 md:gap-6 w-full lg:w-auto">
                     <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 border-4 border-white shrink-0">
                         <Lock size={22} strokeWidth={2.5}/>
                     </div>
@@ -254,7 +253,7 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
                     </div>
                 </div>
 
-                <div className="w-full xl:flex-1 flex items-center gap-4 md:gap-8 bg-gray-50/80 p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border border-gray-100">
+                <div className="w-full lg:flex-1 flex items-center gap-4 md:gap-8 bg-gray-50/80 p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border border-gray-100">
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] md:rounded-2xl overflow-hidden border border-gray-100 shrink-0 shadow-sm bg-white">
                         <img src={current.imageUrl} className="w-full h-full object-cover" />
                     </div>
@@ -266,7 +265,7 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     {isEditing ? (
                         <div className="flex items-center gap-2 w-full animate-in slide-in-from-right-2">
                             <div className="relative flex-1 sm:w-32 md:w-40">
@@ -282,22 +281,19 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
                                 />
                             </div>
                             <button onClick={handleUpdate} className="px-6 md:px-10 py-3 md:py-4 bg-indigo-600 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl">Lock</button>
-                            {/* Fixed: removed md:size */}
                             <button onClick={() => setIsEditing(false)} className="p-3 md:p-4 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl md:rounded-2xl"><X size={20}/></button>
                         </div>
                     ) : (
                         <>
-                            {/* Fixed: removed md:size */}
                             <button 
                                 onClick={handleNext}
-                                className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-emerald-500 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto px-6 md:px-10 py-4 md:py-5 bg-emerald-500 text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-2"
                             >
                                 <CheckCircle size={16}/> No Change
                             </button>
-                            {/* Fixed: removed md:size */}
                             <button 
                                 onClick={() => setIsEditing(true)}
-                                className="w-full sm:flex-none px-10 md:px-14 py-4 md:py-5 bg-[#0F172A] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto px-6 md:px-10 py-4 md:py-5 bg-[#0F172A] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <Pencil size={16}/> Update
                             </button>
@@ -309,8 +305,8 @@ const MorningPriceLock = ({ user, products, onComplete }: { user: User, products
     );
 };
 
-// Simplified Demand Matrix Item for Mobile
-const DemandMatrixItem = ({ product, item, demand, onSource }: { product: Product, item?: InventoryItem, demand: number, onSource: () => void }) => {
+const DemandMatrixItem = ({ product, item, demand, onSource }: { product: Product | undefined, item?: InventoryItem, demand: number, onSource: () => void }) => {
+    if (!product) return null;
     const onHand = item?.quantityKg || 0;
     const deficit = demand - onHand;
     const progress = Math.min(100, (onHand / demand) * 100);
@@ -366,7 +362,6 @@ const DemandMatrixItem = ({ product, item, demand, onSource }: { product: Produc
     );
 };
 
-/* Added OrderAssignmentModal to fix compilation error */
 const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, customers, onAssigned }: {
     isOpen: boolean,
     onClose: () => void,
@@ -382,6 +377,7 @@ const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, custome
 
     if (!isOpen || !order) return null;
 
+    const buyer = customers.find(c => c.id === order.buyerId);
     const wholesalersPackers = mockService.getPackers(order.sellerId);
     const wholesalersDrivers = mockService.getDrivers(order.sellerId);
 
@@ -400,56 +396,132 @@ const OrderAssignmentModal = ({ isOpen, onClose, order, products, users, custome
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
-                    <div>
-                        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Assign Operations Team</h2>
-                        <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Order #{order.id.split('-').pop()}</p>
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-gray-100">
+                <div className="p-8 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center bg-white gap-6 shrink-0">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-blue-50 rounded-[1.25rem] flex items-center justify-center text-blue-600 font-black text-2xl shadow-inner border border-blue-100">
+                            {buyer?.businessName ? buyer.businessName.charAt(0) : 'B'}
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">{buyer?.businessName || 'Market Buyer'}</h2>
+                            <div className="flex items-center gap-4 mt-3">
+                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">Confirmed</span>
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Clock size={12}/> Logged: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="text-gray-300 hover:text-gray-900 p-2 bg-white rounded-full border border-gray-100 shadow-sm"><X size={24}/></button>
-                </div>
-
-                <div className="p-8 space-y-8">
-                    <div className="space-y-4">
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Select Packer</label>
-                        <select 
-                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/10 transition-all"
-                            value={selectedPacker}
-                            onChange={e => setSelectedPacker(e.target.value)}
-                        >
-                            <option value="">Choose Packer...</option>
-                            {wholesalersPackers.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-4">
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Select Driver</label>
-                        <select 
-                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:ring-4 focus:ring-indigo-50/10 transition-all"
-                            value={selectedDriver}
-                            onChange={e => setSelectedDriver(e.target.value)}
-                        >
-                            <option value="">Choose Driver...</option>
-                            {wholesalersDrivers.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex items-start gap-4">
-                        <Info size={20} className="text-indigo-600 shrink-0 mt-0.5"/>
-                        <p className="text-[11px] text-indigo-800 font-medium leading-relaxed">
-                            Assigning a team will notify both the packer and driver via their respective portal apps. The order status will update to <span className="font-black">Confirmed</span>.
-                        </p>
+                    <div className="flex items-center gap-8">
+                        <div className="text-right">
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Trade Total</p>
+                            <p className="text-4xl font-black text-gray-900 tracking-tighter leading-none">${order.totalAmount.toFixed(2)}</p>
+                        </div>
+                        <button onClick={onClose} className="p-4 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-2xl transition-all"><ChevronUp size={24} strokeWidth={3}/></button>
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex gap-4">
-                    <button onClick={onClose} className="flex-1 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all">Cancel</button>
+                <div className="flex-1 overflow-y-auto p-10 bg-white custom-scrollbar">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* LEFT: ORDER MANIFEST */}
+                        <div className="space-y-6">
+                            <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] flex items-center gap-2">
+                                <Boxes size={18}/> Order Manifest
+                            </h3>
+                            <div className="border border-gray-100 rounded-[2rem] overflow-hidden bg-gray-50/20 shadow-inner-sm">
+                                <table className="w-full text-left">
+                                    <thead className="bg-white border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        <tr>
+                                            <th className="px-8 py-5">Item</th>
+                                            <th className="px-8 py-5">Qty</th>
+                                            <th className="px-8 py-5 text-right">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {order.items.map((item, idx) => {
+                                            const p = products.find(prod => prod.id === item.productId);
+                                            return (
+                                                <tr key={idx} className="group hover:bg-white transition-colors">
+                                                    <td className="px-8 py-6">
+                                                        <div className="font-black text-gray-900 uppercase text-sm tracking-tight">{p?.name || 'Produce Item'}</div>
+                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{p?.variety || 'Standard'}</p>
+                                                    </td>
+                                                    <td className="px-8 py-6 font-black text-gray-600 text-sm">{item.quantityKg}{p?.unit || 'KG'}</td>
+                                                    <td className="px-8 py-6 text-right font-black text-gray-900 text-sm">${(item.quantityKg * item.pricePerKg).toFixed(2)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* RIGHT: TEAM ASSIGNMENT */}
+                        <div className="space-y-10">
+                            <div className="space-y-6">
+                                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] flex items-center gap-2">
+                                    Assign Operations Team
+                                </h3>
+                                
+                                <div className="space-y-4">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Packer</label>
+                                    <div className="relative group">
+                                        <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
+                                        <select 
+                                            className="w-full pl-12 pr-10 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl font-black text-sm text-gray-900 outline-none focus:bg-white focus:border-indigo-500 appearance-none transition-all shadow-inner-sm"
+                                            value={selectedPacker}
+                                            onChange={e => setSelectedPacker(e.target.value)}
+                                        >
+                                            <option value="">Select team member...</option>
+                                            {wholesalersPackers.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                                        </select>
+                                        <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none"/>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Driver</label>
+                                    <div className="relative group">
+                                        <Truck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-indigo-600 transition-colors" size={20}/>
+                                        <select 
+                                            className="w-full pl-12 pr-10 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl font-black text-sm text-gray-900 outline-none focus:bg-white focus:border-indigo-500 appearance-none transition-all shadow-inner-sm"
+                                            value={selectedDriver}
+                                            onChange={e => setSelectedDriver(e.target.value)}
+                                        >
+                                            <option value="">Select team member...</option>
+                                            {wholesalersDrivers.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                                        </select>
+                                        <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100 flex items-start gap-5">
+                                <Info size={24} className="text-indigo-600 shrink-0 mt-1"/>
+                                <p className="text-xs text-indigo-800 font-medium leading-relaxed">
+                                    Finalizing this assignment will notify both the <span className="font-black">Packer</span> and <span className="font-black">Driver</span> via their trade portals. The order will move to <span className="font-black text-indigo-900 italic">Processing</span> status.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-8 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row gap-4 shrink-0">
+                    <button 
+                        onClick={onClose} 
+                        className="flex-1 py-5 bg-white border-2 border-gray-200 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 shadow-sm"
+                    >
+                        Discard
+                    </button>
+                    <button 
+                        className="flex-1 py-5 bg-white border-2 border-gray-900 text-gray-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-gray-50 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-3"
+                    >
+                        <Printer size={18}/> Print Slip
+                    </button>
                     <button 
                         onClick={handleAssign}
                         disabled={isSaving || !selectedPacker || !selectedDriver}
-                        className="flex-[2] py-4 bg-[#043003] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
+                        className="flex-[2] py-5 bg-[#043003] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
                     >
-                        {isSaving ? <Loader2 className="animate-spin" size={20}/> : <><CheckCircle size={20}/> Assign Team</>}
+                        {isSaving ? <Loader2 className="animate-spin" size={20}/> : <><CheckCircle size={20} strokeWidth={3}/> Commit Fulfillment Team</>}
                     </button>
                 </div>
             </div>
@@ -472,6 +544,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [sourcingProduct, setSourcingProduct] = useState<{product: Product, demand: number} | null>(null);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
 
+  // Refs for scrolling logic
+  const pipelineRef = useRef<HTMLDivElement>(null);
+  const demandRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 5000);
@@ -493,6 +569,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const handleAcceptOrder = (orderId: string) => {
     mockService.acceptOrderV2(orderId);
     loadData();
+  };
+
+  const scrollToPipeline = (tab: 'INCOMING' | 'PROCESSING' | 'ACTIVE') => {
+    setOrderSubTab(tab);
+    pipelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const scrollToDemand = () => {
+    demandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const incomingQueue = orders.filter(o => o.status === 'Pending');
@@ -535,21 +620,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       {/* KPI ROW - Responsive Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
-              { label: 'ORDERS TODAY', value: incomingQueue.length + processingQueue.length, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'WHOLESALERS', value: '2', icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-              { label: 'ON THE ROAD', value: activeFulfillment.length, icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: 'REVENUE', value: `$${processingQueue.reduce((s, o) => s + o.totalAmount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50' }
+              { id: 'ORDERS', label: 'ORDERS TODAY', value: incomingQueue.length + processingQueue.length, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50', action: () => scrollToPipeline('INCOMING') },
+              { id: 'WHOLESALERS', label: 'WHOLESALERS', value: '2', icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50', action: () => navigate('/contacts') },
+              { id: 'ROAD', label: 'ON THE ROAD', value: activeFulfillment.length, icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50', action: () => scrollToPipeline('ACTIVE') },
+              { id: 'REVENUE', label: 'REVENUE', value: `$${processingQueue.reduce((s, o) => s + o.totalAmount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50', action: () => navigate('/accounts') }
           ].map((card, i) => (
-              <div key={i} className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-32 md:h-40 group hover:shadow-md transition-all">
+              <button 
+                key={i} 
+                onClick={card.action}
+                className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between h-32 md:h-40 group hover:shadow-md hover:border-emerald-100 transition-all text-left outline-none"
+              >
                   <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none truncate">{card.label}</span>
-                  <div className="flex justify-between items-end">
+                  <div className="flex justify-between items-end w-full">
                       <h3 className="text-xl md:text-4xl font-black text-gray-900 tracking-tighter truncate pr-2">{card.value}</h3>
                       <div className={`p-2 md:p-3 rounded-xl md:rounded-2xl ${card.bg} ${card.color} border border-white shadow-inner-sm shrink-0 group-hover:scale-110 transition-transform`}>
-                          {/* Fixed: removed md:size */}
                           <card.icon size={16} />
                       </div>
                   </div>
-              </div>
+              </button>
           ))}
       </div>
 
@@ -558,7 +646,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between group hover:shadow-md transition-all gap-6">
             <div className="flex items-center gap-4 md:gap-6 w-full">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-50 text-[#4A3AFF] rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-indigo-100 shadow-inner-sm shrink-0">
-                    {/* Fixed: removed md:size */}
                     <Sparkles size={24}/>
                 </div>
                 <div className="min-w-0 flex-1">
@@ -581,7 +668,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm p-6 md:p-8 flex items-center justify-between group hover:shadow-md transition-all gap-4">
              <div className="flex items-center gap-4 md:gap-6">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-50 text-emerald-600 rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center border border-emerald-100 shadow-inner-sm shrink-0">
-                    {/* Fixed: removed md:size */}
                     <Sprout size={24}/>
                 </div>
                 <div>
@@ -590,7 +676,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 </div>
              </div>
              <button onClick={() => navigate('/impact')} className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-gray-50 text-gray-300 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all shadow-sm">
-                {/* Fixed: removed md:size */}
                 <ArrowRight size={20} strokeWidth={3}/>
              </button>
           </div>
@@ -604,11 +689,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8">
           
           {/* LEFT: DEMAND MATRIX */}
-          <div className="xl:col-span-4 h-fit">
+          <div className="xl:col-span-4 h-fit" ref={demandRef}>
             <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                 <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/20 shrink-0">
                     <div className="flex items-center gap-4 mb-2">
-                        {/* Fixed: removed md:size */}
                         <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0"><LayoutGrid size={18}/></div>
                         <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tight">Demand Matrix</h2>
                     </div>
@@ -618,26 +702,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         product={products.find(p => p.name.includes('Tomatoes')) || products[0]} 
                         item={inventory.find(i => i.productId === 'p1')}
                         demand={50}
-                        onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Tomatoes')) || products[0], demand: 50 })}
+                        onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Tomatoes')) || products[0] || null, demand: 50 })}
                     />
                     <DemandMatrixItem 
                         product={products.find(p => p.name.includes('Lettuce')) || products[1]} 
                         item={inventory.find(i => i.productId === 'p2')}
                         demand={50}
-                        onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Lettuce')) || products[1], demand: 50 })}
+                        onSource={() => setSourcingProduct({ product: products.find(p => p.name.includes('Lettuce')) || products[1] || null, demand: 50 })}
                     />
                 </div>
             </div>
           </div>
 
           {/* RIGHT: FULFILLMENT PIPELINE */}
-          <div className="xl:col-span-8">
+          <div className="xl:col-span-8" ref={pipelineRef}>
             <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full min-h-[400px] md:min-h-[600px]">
                 <div className="p-6 md:p-10 border-b border-gray-100 bg-white shrink-0">
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-10">
                         <div className="flex items-center gap-4 md:gap-5">
                             <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-[1.25rem] md:rounded-[1.5rem] flex items-center justify-center text-gray-900 border border-gray-100 shadow-inner-sm shrink-0">
-                                {/* Fixed: removed md:size */}
                                 <HistoryIcon size={24}/>
                             </div>
                             <div>
@@ -657,7 +740,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                     onClick={() => setOrderSubTab(t.id as any)}
                                     className={`flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 md:gap-3 whitespace-nowrap ${orderSubTab === t.id ? 'bg-white text-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    {/* Fixed: removed md:size */}
                                     <t.icon size={14}/> {t.label}
                                 </button>
                             ))}
@@ -668,7 +750,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <div className="p-4 md:p-10 flex-1 overflow-y-auto bg-gray-50/20 custom-scrollbar space-y-4 md:space-y-6">
                     {currentList.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center opacity-30 py-24 md:py-32 grayscale text-center px-6">
-                            {/* Fixed: removed md:size */}
                             <Package size={48} className="text-gray-200 mb-6" />
                             <p className="text-[10px] md:text-sm font-black uppercase tracking-widest">No active trades in this category</p>
                         </div>
@@ -688,7 +769,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                             <h4 className="font-black text-gray-900 text-lg md:text-2xl uppercase tracking-tighter leading-none mb-2 md:mb-3 truncate group-hover:text-blue-600 transition-colors">{buyer?.businessName || 'Market Buyer'}</h4>
                                             <div className="flex flex-wrap items-center gap-3 md:gap-6">
                                                 <span className={`px-2 md:px-4 py-1 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border shadow-sm ${order.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{order.status.toUpperCase()}</span>
-                                                {/* Fixed: removed md:size */}
                                                 <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2"><Clock size={12}/> LOGGED: {new Date(order.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                                             </div>
                                         </div>
@@ -708,7 +788,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                             </button>
                                         ) : (
                                             <div className="p-3 md:p-5 rounded-xl md:rounded-2xl bg-gray-50 border border-gray-100 text-gray-300 transition-all group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100">
-                                                {/* Fixed: removed md:size */}
                                                 <ChevronRight size={24} strokeWidth={3}/>
                                             </div>
                                         )}
@@ -742,7 +821,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] w-full max-w-6xl h-full max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col border border-gray-100">
             <div className="p-6 md:p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
               <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 md:gap-4 uppercase leading-none truncate">
-                {/* Fixed: removed md:size */}
                 <Camera size={28} className="text-indigo-600 shrink-0"/> 
                 Visual Scanner
               </h2>
@@ -750,7 +828,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 onClick={() => setIsScannerModalOpen(false)} 
                 className="text-gray-400 hover:text-gray-900 p-2 md:p-2 bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"
               >
-                {/* Fixed: removed md:size */}
                 <X size={24}/>
               </button>
             </div>

@@ -386,7 +386,7 @@ const AppLayout = ({ children, user, onLogout, onPasswordSet, onOpenInterests }:
                   </button>
 
                   {isMobileMenuOpen && (
-                    <div className="absolute right-0 top-14 w-[260px] bg-white rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 py-4 px-3 z-[60] animate-in zoom-in-95 slide-in-from-top-2 duration-200">
+                    <div className="absolute right-0 top-14 w-[280px] max-w-[90vw] bg-white rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 py-4 px-3 z-[60] animate-in zoom-in-95 slide-in-from-top-2 duration-200 max-h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
                         <div className="px-4 py-2 mb-4 border-b border-gray-50">
                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">Account</p>
                             <p className="font-black text-gray-900 uppercase truncate text-xs">{user.businessName}</p>
